@@ -1,0 +1,659 @@
+{
+  "engine": "paddleocr",
+  "image_size": {
+    "width": 640,
+    "height": 480
+  },
+  "full_text": "Aduanced Settings\nWARNING: Setting wrong values in bel\nmay cause system to malfund\nCPU Configuration\nIDE Configuration\nSuperIO Configuration\nACPI Configuration\nEvent Log Configuration\nHyper Transport Configuration\nIPMI 2.0 Configuration\nMPS Configuration\npreep Cap Si",
+  "blocks": [
+    {
+      "block_num": 0,
+      "lines": [
+        {
+          "line_num": 0,
+          "text": "Aduanced Settings",
+          "bbox": {
+            "left": 136,
+            "top": 12,
+            "width": 244,
+            "height": 39
+          },
+          "words": [
+            {
+              "text": "Aduanced",
+              "confidence": 99.06,
+              "bbox": {
+                "left": 148,
+                "top": 12,
+                "width": 102,
+                "height": 39
+              }
+            },
+            {
+              "text": "Settings",
+              "confidence": 99.06,
+              "bbox": {
+                "left": 273,
+                "top": 12,
+                "width": 102,
+                "height": 39
+              }
+            }
+          ],
+          "bg_color": [
+            145,
+            145,
+            145
+          ],
+          "fg_color": [
+            145,
+            145,
+            145
+          ],
+          "highlighted": false
+        },
+        {
+          "line_num": 1,
+          "text": "WARNING: Setting wrong values in bel",
+          "bbox": {
+            "left": 132,
+            "top": 74,
+            "width": 508,
+            "height": 45
+          },
+          "words": [
+            {
+              "text": "WARNING",
+              "confidence": 98.37,
+              "bbox": {
+                "left": 144,
+                "top": 74,
+                "width": 85,
+                "height": 45
+              }
+            },
+            {
+              "text": ":",
+              "confidence": 98.37,
+              "bbox": {
+                "left": 241,
+                "top": 74,
+                "width": 17,
+                "height": 45
+              }
+            },
+            {
+              "text": "Setting",
+              "confidence": 98.37,
+              "bbox": {
+                "left": 269,
+                "top": 74,
+                "width": 91,
+                "height": 45
+              }
+            },
+            {
+              "text": "wrong",
+              "confidence": 98.37,
+              "bbox": {
+                "left": 383,
+                "top": 74,
+                "width": 63,
+                "height": 45
+              }
+            },
+            {
+              "text": "values",
+              "confidence": 98.37,
+              "bbox": {
+                "left": 469,
+                "top": 74,
+                "width": 74,
+                "height": 45
+              }
+            },
+            {
+              "text": "in",
+              "confidence": 98.37,
+              "bbox": {
+                "left": 571,
+                "top": 74,
+                "width": 17,
+                "height": 45
+              }
+            },
+            {
+              "text": "bel",
+              "confidence": 98.37,
+              "bbox": {
+                "left": 611,
+                "top": 74,
+                "width": 29,
+                "height": 45
+              }
+            }
+          ],
+          "bg_color": [
+            165,
+            165,
+            165
+          ],
+          "fg_color": [
+            165,
+            165,
+            165
+          ],
+          "highlighted": false
+        },
+        {
+          "line_num": 2,
+          "text": "may cause system to malfund",
+          "bbox": {
+            "left": 256,
+            "top": 113,
+            "width": 383,
+            "height": 37
+          },
+          "words": [
+            {
+              "text": "may",
+              "confidence": 97.52,
+              "bbox": {
+                "left": 271,
+                "top": 113,
+                "width": 30,
+                "height": 37
+              }
+            },
+            {
+              "text": "cause",
+              "confidence": 97.52,
+              "bbox": {
+                "left": 326,
+                "top": 113,
+                "width": 60,
+                "height": 37
+              }
+            },
+            {
+              "text": "system",
+              "confidence": 97.52,
+              "bbox": {
+                "left": 411,
+                "top": 113,
+                "width": 76,
+                "height": 37
+              }
+            },
+            {
+              "text": "to",
+              "confidence": 97.52,
+              "bbox": {
+                "left": 512,
+                "top": 113,
+                "width": 20,
+                "height": 37
+              }
+            },
+            {
+              "text": "malfund",
+              "confidence": 97.52,
+              "bbox": {
+                "left": 552,
+                "top": 113,
+                "width": 91,
+                "height": 37
+              }
+            }
+          ],
+          "bg_color": [
+            165,
+            165,
+            165
+          ],
+          "fg_color": [
+            165,
+            165,
+            165
+          ],
+          "highlighted": false
+        },
+        {
+          "line_num": 3,
+          "text": "CPU Configuration",
+          "bbox": {
+            "left": 150,
+            "top": 172,
+            "width": 256,
+            "height": 42
+          },
+          "words": [
+            {
+              "text": "CPU",
+              "confidence": 99.98,
+              "bbox": {
+                "left": 168,
+                "top": 172,
+                "width": 34,
+                "height": 42
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.98,
+              "bbox": {
+                "left": 224,
+                "top": 172,
+                "width": 176,
+                "height": 42
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            175,
+            175
+          ],
+          "fg_color": [
+            225,
+            225,
+            245
+          ],
+          "highlighted": false
+        },
+        {
+          "line_num": 4,
+          "text": "IDE Configuration",
+          "bbox": {
+            "left": 150,
+            "top": 206,
+            "width": 256,
+            "height": 42
+          },
+          "words": [
+            {
+              "text": "IDE",
+              "confidence": 99.6,
+              "bbox": {
+                "left": 162,
+                "top": 206,
+                "width": 34,
+                "height": 42
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.6,
+              "bbox": {
+                "left": 224,
+                "top": 206,
+                "width": 176,
+                "height": 42
+              }
+            }
+          ],
+          "bg_color": [
+            245,
+            245,
+            255
+          ],
+          "fg_color": [
+            165,
+            165,
+            165
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 5,
+          "text": "SuperIO Configuration",
+          "bbox": {
+            "left": 148,
+            "top": 241,
+            "width": 316,
+            "height": 43
+          },
+          "words": [
+            {
+              "text": "SuperIO",
+              "confidence": 99.57,
+              "bbox": {
+                "left": 160,
+                "top": 241,
+                "width": 94,
+                "height": 43
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.57,
+              "bbox": {
+                "left": 277,
+                "top": 241,
+                "width": 181,
+                "height": 43
+              }
+            }
+          ],
+          "bg_color": [
+            245,
+            245,
+            255
+          ],
+          "fg_color": [
+            175,
+            175,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 6,
+          "text": "ACPI Configuration",
+          "bbox": {
+            "left": 147,
+            "top": 277,
+            "width": 272,
+            "height": 39
+          },
+          "words": [
+            {
+              "text": "ACPI",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 158,
+                "top": 277,
+                "width": 46,
+                "height": 39
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 230,
+                "top": 277,
+                "width": 181,
+                "height": 39
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            175,
+            175
+          ],
+          "fg_color": [
+            175,
+            175,
+            175
+          ],
+          "highlighted": false
+        },
+        {
+          "line_num": 7,
+          "text": "Event Log Configuration",
+          "bbox": {
+            "left": 143,
+            "top": 311,
+            "width": 352,
+            "height": 44
+          },
+          "words": [
+            {
+              "text": "Event",
+              "confidence": 98.59,
+              "bbox": {
+                "left": 155,
+                "top": 311,
+                "width": 63,
+                "height": 44
+              }
+            },
+            {
+              "text": "Log",
+              "confidence": 98.59,
+              "bbox": {
+                "left": 246,
+                "top": 311,
+                "width": 34,
+                "height": 44
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 98.59,
+              "bbox": {
+                "left": 303,
+                "top": 311,
+                "width": 188,
+                "height": 44
+              }
+            }
+          ],
+          "bg_color": [
+            185,
+            185,
+            185
+          ],
+          "fg_color": [
+            185,
+            185,
+            185
+          ],
+          "highlighted": false
+        },
+        {
+          "line_num": 8,
+          "text": "Hyper Transport Configuration",
+          "bbox": {
+            "left": 140,
+            "top": 346,
+            "width": 447,
+            "height": 50
+          },
+          "words": [
+            {
+              "text": "Hyper",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 153,
+                "top": 346,
+                "width": 62,
+                "height": 50
+              }
+            },
+            {
+              "text": "Transport",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 246,
+                "top": 346,
+                "width": 124,
+                "height": 50
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 395,
+                "top": 346,
+                "width": 186,
+                "height": 50
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            175,
+            175
+          ],
+          "fg_color": [
+            175,
+            175,
+            175
+          ],
+          "highlighted": false
+        },
+        {
+          "line_num": 9,
+          "text": "IPMI 2.0 Configuration",
+          "bbox": {
+            "left": 138,
+            "top": 382,
+            "width": 343,
+            "height": 46
+          },
+          "words": [
+            {
+              "text": "IPMI",
+              "confidence": 99.98,
+              "bbox": {
+                "left": 150,
+                "top": 382,
+                "width": 51,
+                "height": 46
+              }
+            },
+            {
+              "text": "2.0",
+              "confidence": 99.98,
+              "bbox": {
+                "left": 230,
+                "top": 382,
+                "width": 34,
+                "height": 46
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.98,
+              "bbox": {
+                "left": 287,
+                "top": 382,
+                "width": 188,
+                "height": 46
+              }
+            }
+          ],
+          "bg_color": [
+            185,
+            175,
+            175
+          ],
+          "fg_color": [
+            185,
+            175,
+            175
+          ],
+          "highlighted": false
+        },
+        {
+          "line_num": 10,
+          "text": "MPS Configuration",
+          "bbox": {
+            "left": 135,
+            "top": 417,
+            "width": 269,
+            "height": 48
+          },
+          "words": [
+            {
+              "text": "MPS",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 148,
+                "top": 417,
+                "width": 38,
+                "height": 48
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 212,
+                "top": 417,
+                "width": 183,
+                "height": 48
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            175,
+            175
+          ],
+          "fg_color": [
+            175,
+            175,
+            175
+          ],
+          "highlighted": false
+        },
+        {
+          "line_num": 11,
+          "text": "preep Cap Si",
+          "bbox": {
+            "left": 235,
+            "top": 463,
+            "width": 165,
+            "height": 14
+          },
+          "words": [
+            {
+              "text": "preep",
+              "confidence": 52.83,
+              "bbox": {
+                "left": 242,
+                "top": 463,
+                "width": 61,
+                "height": 14
+              }
+            },
+            {
+              "text": "Cap",
+              "confidence": 52.83,
+              "bbox": {
+                "left": 331,
+                "top": 463,
+                "width": 33,
+                "height": 14
+              }
+            },
+            {
+              "text": "Si",
+              "confidence": 52.83,
+              "bbox": {
+                "left": 381,
+                "top": 463,
+                "width": 14,
+                "height": 14
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            175,
+            175
+          ],
+          "fg_color": [
+            175,
+            175,
+            175
+          ],
+          "highlighted": false
+        }
+      ]
+    }
+  ],
+  "captured_at": "20260803-154327",
+  "screen_bg_color": [
+    175,
+    175,
+    175
+  ],
+  "fields": {},
+  "fields_unverified": {}
+}

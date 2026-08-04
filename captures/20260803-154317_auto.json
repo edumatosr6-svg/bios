@@ -1,0 +1,304 @@
+{
+  "engine": "paddleocr",
+  "image_size": {
+    "width": 640,
+    "height": 480
+  },
+  "full_text": "47tY\nW601\n870F\nMosey pae liggin)\ngesnwdry seto\n423654\nPie tieta",
+  "blocks": [
+    {
+      "block_num": 0,
+      "lines": [
+        {
+          "line_num": 0,
+          "text": "47tY",
+          "bbox": {
+            "left": 380,
+            "top": 227,
+            "width": 39,
+            "height": 17
+          },
+          "words": [
+            {
+              "text": "47tY",
+              "confidence": 59.83,
+              "bbox": {
+                "left": 385,
+                "top": 229,
+                "width": 30,
+                "height": 13
+              }
+            }
+          ],
+          "bg_color": [
+            135,
+            125,
+            135
+          ],
+          "fg_color": [
+            135,
+            125,
+            135
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 1,
+          "text": "W601",
+          "bbox": {
+            "left": 382,
+            "top": 244,
+            "width": 43,
+            "height": 15
+          },
+          "words": [
+            {
+              "text": "W601",
+              "confidence": 39.61,
+              "bbox": {
+                "left": 389,
+                "top": 244,
+                "width": 33,
+                "height": 15
+              }
+            }
+          ],
+          "bg_color": [
+            135,
+            125,
+            135
+          ],
+          "fg_color": [
+            135,
+            125,
+            135
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 2,
+          "text": "870F",
+          "bbox": {
+            "left": 384,
+            "top": 258,
+            "width": 36,
+            "height": 15
+          },
+          "words": [
+            {
+              "text": "870F",
+              "confidence": 59.42,
+              "bbox": {
+                "left": 389,
+                "top": 258,
+                "width": 27,
+                "height": 15
+              }
+            }
+          ],
+          "bg_color": [
+            155,
+            145,
+            155
+          ],
+          "fg_color": [
+            155,
+            145,
+            155
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 3,
+          "text": "Mosey pae liggin)",
+          "bbox": {
+            "left": 391,
+            "top": 292,
+            "width": 69,
+            "height": 14
+          },
+          "words": [
+            {
+              "text": "Mosey",
+              "confidence": 54.49,
+              "bbox": {
+                "left": 395,
+                "top": 292,
+                "width": 19,
+                "height": 14
+              }
+            },
+            {
+              "text": "pae",
+              "confidence": 54.49,
+              "bbox": {
+                "left": 416,
+                "top": 292,
+                "width": 14,
+                "height": 14
+              }
+            },
+            {
+              "text": "liggin",
+              "confidence": 54.49,
+              "bbox": {
+                "left": 432,
+                "top": 292,
+                "width": 24,
+                "height": 14
+              }
+            },
+            {
+              "text": ")",
+              "confidence": 54.49,
+              "bbox": {
+                "left": 456,
+                "top": 292,
+                "width": 2,
+                "height": 14
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            165,
+            175
+          ],
+          "fg_color": [
+            175,
+            165,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 4,
+          "text": "gesnwdry seto",
+          "bbox": {
+            "left": 392,
+            "top": 310,
+            "width": 63,
+            "height": 11
+          },
+          "words": [
+            {
+              "text": "gesnwdry",
+              "confidence": 48.04,
+              "bbox": {
+                "left": 395,
+                "top": 310,
+                "width": 35,
+                "height": 11
+              }
+            },
+            {
+              "text": "seto",
+              "confidence": 48.04,
+              "bbox": {
+                "left": 434,
+                "top": 310,
+                "width": 18,
+                "height": 11
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            165,
+            175
+          ],
+          "fg_color": [
+            175,
+            165,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 5,
+          "text": "423654",
+          "bbox": {
+            "left": 394,
+            "top": 323,
+            "width": 40,
+            "height": 18
+          },
+          "words": [
+            {
+              "text": "423654",
+              "confidence": 75.34,
+              "bbox": {
+                "left": 398,
+                "top": 326,
+                "width": 33,
+                "height": 12
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            165,
+            175
+          ],
+          "fg_color": [
+            175,
+            165,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 6,
+          "text": "Pie tieta",
+          "bbox": {
+            "left": 413,
+            "top": 338,
+            "width": 46,
+            "height": 22
+          },
+          "words": [
+            {
+              "text": "Pie",
+              "confidence": 49.37,
+              "bbox": {
+                "left": 422,
+                "top": 341,
+                "width": 13,
+                "height": 16
+              }
+            },
+            {
+              "text": "tieta",
+              "confidence": 49.37,
+              "bbox": {
+                "left": 441,
+                "top": 341,
+                "width": 19,
+                "height": 16
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            165,
+            165
+          ],
+          "fg_color": [
+            175,
+            165,
+            165
+          ],
+          "highlighted": true
+        }
+      ]
+    }
+  ],
+  "captured_at": "20260803-154317",
+  "screen_bg_color": [
+    5,
+    5,
+    5
+  ],
+  "fields": {},
+  "fields_unverified": {}
+}

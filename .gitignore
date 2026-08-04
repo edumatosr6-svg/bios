@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+
+# PyInstaller build artifacts -- regenerate with the command in PROCESSO_OCR.md
+build/
+dist/
+
+# Claude Code local environment state
+.claude/
+
+# Captures folder is mostly ad-hoc test data from this session; keep only
+# the real BIOS photo fixtures that test_selection.py depends on.
+captures/*
+!captures/20260803-1543*
+
+# Ad-hoc debug output accumulated during development (logs, one-off dumps)
+*_log*.txt
+*.log
+camera_test*
+camera_index_*.png
+droidcam_page.html
+ocr_check*.json
+ocr_with_selection.json
+final_check.json
+out.json

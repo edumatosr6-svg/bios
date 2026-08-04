@@ -1,0 +1,761 @@
+{
+  "engine": "paddleocr",
+  "image_size": {
+    "width": 640,
+    "height": 480
+  },
+  "full_text": "BIUS SETO\nMain\nAdvanced\nPCIPnP\nBoot\nAduanced Settings\nUARNING: Setting wrong lues in belou\nmaycause sustto malfunct\nCPU Configuration\nIDE Configuration\nSuperIO Configuration\nACPI Configoration\nEvent Log Configuration\nHyper Transport Configuration\nIPMI 2.0 Configuration\nMPS Configuration",
+  "blocks": [
+    {
+      "block_num": 0,
+      "lines": [
+        {
+          "line_num": 0,
+          "text": "BIUS SETO",
+          "bbox": {
+            "left": 519,
+            "top": 0,
+            "width": 121,
+            "height": 19
+          },
+          "words": [
+            {
+              "text": "BIUS",
+              "confidence": 92.45,
+              "bbox": {
+                "left": 531,
+                "top": 0,
+                "width": 39,
+                "height": 19
+              }
+            },
+            {
+              "text": "SETO",
+              "confidence": 92.45,
+              "bbox": {
+                "left": 594,
+                "top": 0,
+                "width": 39,
+                "height": 19
+              }
+            }
+          ],
+          "bg_color": [
+            105,
+            25,
+            15
+          ],
+          "fg_color": [
+            105,
+            25,
+            15
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 1,
+          "text": "Main",
+          "bbox": {
+            "left": 138,
+            "top": 11,
+            "width": 63,
+            "height": 33
+          },
+          "words": [
+            {
+              "text": "Main",
+              "confidence": 99.98,
+              "bbox": {
+                "left": 149,
+                "top": 11,
+                "width": 47,
+                "height": 33
+              }
+            }
+          ],
+          "bg_color": [
+            115,
+            25,
+            5
+          ],
+          "fg_color": [
+            115,
+            25,
+            5
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 2,
+          "text": "Advanced",
+          "bbox": {
+            "left": 245,
+            "top": 12,
+            "width": 111,
+            "height": 34
+          },
+          "words": [
+            {
+              "text": "Advanced",
+              "confidence": 99.22,
+              "bbox": {
+                "left": 255,
+                "top": 12,
+                "width": 93,
+                "height": 34
+              }
+            }
+          ],
+          "bg_color": [
+            155,
+            155,
+            155
+          ],
+          "fg_color": [
+            155,
+            155,
+            155
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 3,
+          "text": "PCIPnP",
+          "bbox": {
+            "left": 400,
+            "top": 13,
+            "width": 89,
+            "height": 35
+          },
+          "words": [
+            {
+              "text": "PCIPnP",
+              "confidence": 99.97,
+              "bbox": {
+                "left": 412,
+                "top": 13,
+                "width": 71,
+                "height": 35
+              }
+            }
+          ],
+          "bg_color": [
+            155,
+            35,
+            5
+          ],
+          "fg_color": [
+            155,
+            35,
+            5
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 4,
+          "text": "Boot",
+          "bbox": {
+            "left": 532,
+            "top": 19,
+            "width": 61,
+            "height": 30
+          },
+          "words": [
+            {
+              "text": "Boot",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 541,
+                "top": 19,
+                "width": 44,
+                "height": 30
+              }
+            }
+          ],
+          "bg_color": [
+            145,
+            35,
+            15
+          ],
+          "fg_color": [
+            145,
+            35,
+            15
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 5,
+          "text": "Aduanced Settings",
+          "bbox": {
+            "left": 137,
+            "top": 72,
+            "width": 231,
+            "height": 35
+          },
+          "words": [
+            {
+              "text": "Aduanced",
+              "confidence": 97.28,
+              "bbox": {
+                "left": 147,
+                "top": 72,
+                "width": 95,
+                "height": 35
+              }
+            },
+            {
+              "text": "Settings",
+              "confidence": 97.28,
+              "bbox": {
+                "left": 267,
+                "top": 72,
+                "width": 95,
+                "height": 35
+              }
+            }
+          ],
+          "bg_color": [
+            155,
+            155,
+            155
+          ],
+          "fg_color": [
+            155,
+            155,
+            155
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 6,
+          "text": "UARNING: Setting wrong lues in belou",
+          "bbox": {
+            "left": 132,
+            "top": 131,
+            "width": 508,
+            "height": 43
+          },
+          "words": [
+            {
+              "text": "UARNING",
+              "confidence": 97.13,
+              "bbox": {
+                "left": 143,
+                "top": 131,
+                "width": 88,
+                "height": 43
+              }
+            },
+            {
+              "text": ":",
+              "confidence": 97.13,
+              "bbox": {
+                "left": 236,
+                "top": 131,
+                "width": 17,
+                "height": 43
+              }
+            },
+            {
+              "text": "Setting",
+              "confidence": 97.13,
+              "bbox": {
+                "left": 264,
+                "top": 131,
+                "width": 83,
+                "height": 43
+              }
+            },
+            {
+              "text": "wrong",
+              "confidence": 97.13,
+              "bbox": {
+                "left": 369,
+                "top": 131,
+                "width": 61,
+                "height": 43
+              }
+            },
+            {
+              "text": "lues",
+              "confidence": 97.13,
+              "bbox": {
+                "left": 479,
+                "top": 131,
+                "width": 45,
+                "height": 43
+              }
+            },
+            {
+              "text": "in",
+              "confidence": 97.13,
+              "bbox": {
+                "left": 546,
+                "top": 131,
+                "width": 16,
+                "height": 43
+              }
+            },
+            {
+              "text": "belou",
+              "confidence": 97.13,
+              "bbox": {
+                "left": 584,
+                "top": 131,
+                "width": 55,
+                "height": 43
+              }
+            }
+          ],
+          "bg_color": [
+            155,
+            165,
+            165
+          ],
+          "fg_color": [
+            155,
+            165,
+            165
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 7,
+          "text": "maycause sustto malfunct",
+          "bbox": {
+            "left": 251,
+            "top": 168,
+            "width": 389,
+            "height": 35
+          },
+          "words": [
+            {
+              "text": "maycause",
+              "confidence": 98.0,
+              "bbox": {
+                "left": 266,
+                "top": 168,
+                "width": 110,
+                "height": 35
+              }
+            },
+            {
+              "text": "sustto",
+              "confidence": 98.0,
+              "bbox": {
+                "left": 396,
+                "top": 168,
+                "width": 116,
+                "height": 35
+              }
+            },
+            {
+              "text": "malfunct",
+              "confidence": 98.0,
+              "bbox": {
+                "left": 532,
+                "top": 168,
+                "width": 100,
+                "height": 35
+              }
+            }
+          ],
+          "bg_color": [
+            245,
+            245,
+            255
+          ],
+          "fg_color": [
+            175,
+            175,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 8,
+          "text": "CPU Configuration",
+          "bbox": {
+            "left": 155,
+            "top": 227,
+            "width": 238,
+            "height": 36
+          },
+          "words": [
+            {
+              "text": "CPU",
+              "confidence": 99.97,
+              "bbox": {
+                "left": 170,
+                "top": 227,
+                "width": 30,
+                "height": 36
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.97,
+              "bbox": {
+                "left": 220,
+                "top": 227,
+                "width": 171,
+                "height": 36
+              }
+            }
+          ],
+          "bg_color": [
+            165,
+            165,
+            155
+          ],
+          "fg_color": [
+            165,
+            165,
+            155
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 9,
+          "text": "IDE Configuration",
+          "bbox": {
+            "left": 154,
+            "top": 260,
+            "width": 240,
+            "height": 36
+          },
+          "words": [
+            {
+              "text": "IDE",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 164,
+                "top": 260,
+                "width": 35,
+                "height": 36
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 219,
+                "top": 260,
+                "width": 171,
+                "height": 36
+              }
+            }
+          ],
+          "bg_color": [
+            165,
+            165,
+            165
+          ],
+          "fg_color": [
+            165,
+            165,
+            165
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 10,
+          "text": "SuperIO Configuration",
+          "bbox": {
+            "left": 151,
+            "top": 292,
+            "width": 298,
+            "height": 40
+          },
+          "words": [
+            {
+              "text": "SuperIO",
+              "confidence": 98.8,
+              "bbox": {
+                "left": 163,
+                "top": 292,
+                "width": 91,
+                "height": 40
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 98.8,
+              "bbox": {
+                "left": 277,
+                "top": 292,
+                "width": 165,
+                "height": 40
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            175,
+            175
+          ],
+          "fg_color": [
+            175,
+            175,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 11,
+          "text": "ACPI Configoration",
+          "bbox": {
+            "left": 152,
+            "top": 327,
+            "width": 254,
+            "height": 33
+          },
+          "words": [
+            {
+              "text": "ACPI",
+              "confidence": 97.13,
+              "bbox": {
+                "left": 165,
+                "top": 327,
+                "width": 41,
+                "height": 33
+              }
+            },
+            {
+              "text": "Configoration",
+              "confidence": 97.13,
+              "bbox": {
+                "left": 233,
+                "top": 327,
+                "width": 168,
+                "height": 33
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            175,
+            175
+          ],
+          "fg_color": [
+            175,
+            175,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 12,
+          "text": "Event Log Configuration",
+          "bbox": {
+            "left": 150,
+            "top": 359,
+            "width": 327,
+            "height": 37
+          },
+          "words": [
+            {
+              "text": "Event",
+              "confidence": 99.74,
+              "bbox": {
+                "left": 160,
+                "top": 359,
+                "width": 60,
+                "height": 37
+              }
+            },
+            {
+              "text": "Log",
+              "confidence": 99.74,
+              "bbox": {
+                "left": 245,
+                "top": 359,
+                "width": 30,
+                "height": 37
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.74,
+              "bbox": {
+                "left": 300,
+                "top": 359,
+                "width": 171,
+                "height": 37
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            175,
+            175
+          ],
+          "fg_color": [
+            175,
+            175,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 13,
+          "text": "Hyper Transport Configuration",
+          "bbox": {
+            "left": 148,
+            "top": 392,
+            "width": 413,
+            "height": 41
+          },
+          "words": [
+            {
+              "text": "Hyper",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 159,
+                "top": 392,
+                "width": 60,
+                "height": 41
+              }
+            },
+            {
+              "text": "Transport",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 241,
+                "top": 392,
+                "width": 116,
+                "height": 41
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 385,
+                "top": 392,
+                "width": 171,
+                "height": 41
+              }
+            }
+          ],
+          "bg_color": [
+            185,
+            175,
+            175
+          ],
+          "fg_color": [
+            185,
+            175,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 14,
+          "text": "IPMI 2.0 Configuration",
+          "bbox": {
+            "left": 146,
+            "top": 424,
+            "width": 318,
+            "height": 41
+          },
+          "words": [
+            {
+              "text": "IPMI",
+              "confidence": 99.91,
+              "bbox": {
+                "left": 158,
+                "top": 424,
+                "width": 46,
+                "height": 41
+              }
+            },
+            {
+              "text": "2.0",
+              "confidence": 99.91,
+              "bbox": {
+                "left": 226,
+                "top": 424,
+                "width": 35,
+                "height": 41
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.91,
+              "bbox": {
+                "left": 283,
+                "top": 424,
+                "width": 177,
+                "height": 41
+              }
+            }
+          ],
+          "bg_color": [
+            185,
+            175,
+            175
+          ],
+          "fg_color": [
+            185,
+            175,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 15,
+          "text": "MPS Configuration",
+          "bbox": {
+            "left": 146,
+            "top": 458,
+            "width": 249,
+            "height": 22
+          },
+          "words": [
+            {
+              "text": "MPS",
+              "confidence": 96.09,
+              "bbox": {
+                "left": 158,
+                "top": 458,
+                "width": 29,
+                "height": 22
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 96.09,
+              "bbox": {
+                "left": 212,
+                "top": 458,
+                "width": 172,
+                "height": 22
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            175,
+            175
+          ],
+          "fg_color": [
+            175,
+            175,
+            175
+          ],
+          "highlighted": true
+        }
+      ]
+    }
+  ],
+  "captured_at": "20260803-154341",
+  "screen_bg_color": [
+    5,
+    5,
+    5
+  ],
+  "fields": {},
+  "fields_unverified": {}
+}

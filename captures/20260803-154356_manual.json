@@ -1,0 +1,604 @@
+{
+  "engine": "paddleocr",
+  "image_size": {
+    "width": 640,
+    "height": 480
+  },
+  "full_text": "CPU Configuration\nIDE Configuraion\nSuper10-Confuration\nACPI\nCon\ntion\nEvent Log Configuration\nHyper Transport Configurat\nIPMI 2.0 Configuration\nMPS Configuration\nPCI Express Configuration\nAMD PowerNow Configuratio\nAcgpnce Configuratil",
+  "blocks": [
+    {
+      "block_num": 0,
+      "lines": [
+        {
+          "line_num": 0,
+          "text": "CPU Configuration",
+          "bbox": {
+            "left": 161,
+            "top": 13,
+            "width": 327,
+            "height": 48
+          },
+          "words": [
+            {
+              "text": "CPU",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 175,
+                "top": 13,
+                "width": 45,
+                "height": 48
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 256,
+                "top": 13,
+                "width": 222,
+                "height": 48
+              }
+            }
+          ],
+          "bg_color": [
+            165,
+            165,
+            175
+          ],
+          "fg_color": [
+            165,
+            165,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 1,
+          "text": "IDE Configuraion",
+          "bbox": {
+            "left": 160,
+            "top": 58,
+            "width": 331,
+            "height": 47
+          },
+          "words": [
+            {
+              "text": "IDE",
+              "confidence": 99.62,
+              "bbox": {
+                "left": 174,
+                "top": 58,
+                "width": 45,
+                "height": 47
+              }
+            },
+            {
+              "text": "Configuraion",
+              "confidence": 99.62,
+              "bbox": {
+                "left": 255,
+                "top": 58,
+                "width": 229,
+                "height": 47
+              }
+            }
+          ],
+          "bg_color": [
+            255,
+            255,
+            255
+          ],
+          "fg_color": [
+            175,
+            175,
+            185
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 2,
+          "text": "Super10-Confuration",
+          "bbox": {
+            "left": 160,
+            "top": 104,
+            "width": 401,
+            "height": 44
+          },
+          "words": [
+            {
+              "text": "Super10-Confuration",
+              "confidence": 96.15,
+              "bbox": {
+                "left": 174,
+                "top": 104,
+                "width": 382,
+                "height": 44
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            175,
+            175
+          ],
+          "fg_color": [
+            255,
+            255,
+            255
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 3,
+          "text": "ACPI",
+          "bbox": {
+            "left": 163,
+            "top": 151,
+            "width": 93,
+            "height": 36
+          },
+          "words": [
+            {
+              "text": "ACPI",
+              "confidence": 99.93,
+              "bbox": {
+                "left": 181,
+                "top": 151,
+                "width": 60,
+                "height": 36
+              }
+            }
+          ],
+          "bg_color": [
+            165,
+            175,
+            175
+          ],
+          "fg_color": [
+            165,
+            175,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 4,
+          "text": "Con",
+          "bbox": {
+            "left": 252,
+            "top": 155,
+            "width": 71,
+            "height": 29
+          },
+          "words": [
+            {
+              "text": "Con",
+              "confidence": 99.07,
+              "bbox": {
+                "left": 271,
+                "top": 155,
+                "width": 44,
+                "height": 29
+              }
+            }
+          ],
+          "bg_color": [
+            165,
+            175,
+            175
+          ],
+          "fg_color": [
+            165,
+            175,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 5,
+          "text": "tion",
+          "bbox": {
+            "left": 428,
+            "top": 153,
+            "width": 79,
+            "height": 33
+          },
+          "words": [
+            {
+              "text": "tion",
+              "confidence": 99.94,
+              "bbox": {
+                "left": 439,
+                "top": 153,
+                "width": 60,
+                "height": 33
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            185,
+            185
+          ],
+          "fg_color": [
+            175,
+            185,
+            185
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 6,
+          "text": "Event Log Configuration",
+          "bbox": {
+            "left": 162,
+            "top": 194,
+            "width": 437,
+            "height": 41
+          },
+          "words": [
+            {
+              "text": "Event",
+              "confidence": 99.84,
+              "bbox": {
+                "left": 175,
+                "top": 194,
+                "width": 83,
+                "height": 41
+              }
+            },
+            {
+              "text": "Log",
+              "confidence": 99.84,
+              "bbox": {
+                "left": 292,
+                "top": 194,
+                "width": 41,
+                "height": 41
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.84,
+              "bbox": {
+                "left": 367,
+                "top": 194,
+                "width": 227,
+                "height": 41
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            175,
+            175
+          ],
+          "fg_color": [
+            175,
+            175,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 7,
+          "text": "Hyper Transport Configurat",
+          "bbox": {
+            "left": 159,
+            "top": 234,
+            "width": 480,
+            "height": 49
+          },
+          "words": [
+            {
+              "text": "Hyper",
+              "confidence": 99.65,
+              "bbox": {
+                "left": 180,
+                "top": 239,
+                "width": 79,
+                "height": 39
+              }
+            },
+            {
+              "text": "Transport",
+              "confidence": 99.65,
+              "bbox": {
+                "left": 288,
+                "top": 239,
+                "width": 158,
+                "height": 39
+              }
+            },
+            {
+              "text": "Configurat",
+              "confidence": 99.65,
+              "bbox": {
+                "left": 474,
+                "top": 239,
+                "width": 166,
+                "height": 39
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            175,
+            175
+          ],
+          "fg_color": [
+            175,
+            175,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 8,
+          "text": "IPMI 2.0 Configuration",
+          "bbox": {
+            "left": 160,
+            "top": 281,
+            "width": 424,
+            "height": 43
+          },
+          "words": [
+            {
+              "text": "IPMI",
+              "confidence": 99.95,
+              "bbox": {
+                "left": 180,
+                "top": 283,
+                "width": 60,
+                "height": 39
+              }
+            },
+            {
+              "text": "2.0",
+              "confidence": 99.95,
+              "bbox": {
+                "left": 273,
+                "top": 283,
+                "width": 47,
+                "height": 39
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.95,
+              "bbox": {
+                "left": 346,
+                "top": 283,
+                "width": 228,
+                "height": 39
+              }
+            }
+          ],
+          "bg_color": [
+            165,
+            165,
+            165
+          ],
+          "fg_color": [
+            165,
+            165,
+            165
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 9,
+          "text": "MPS Configuration",
+          "bbox": {
+            "left": 156,
+            "top": 326,
+            "width": 339,
+            "height": 46
+          },
+          "words": [
+            {
+              "text": "MPS",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 177,
+                "top": 328,
+                "width": 43,
+                "height": 42
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 256,
+                "top": 328,
+                "width": 231,
+                "height": 42
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            175,
+            175
+          ],
+          "fg_color": [
+            175,
+            175,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 10,
+          "text": "PCI Express Configuration",
+          "bbox": {
+            "left": 159,
+            "top": 367,
+            "width": 481,
+            "height": 51
+          },
+          "words": [
+            {
+              "text": "PCI",
+              "confidence": 99.93,
+              "bbox": {
+                "left": 180,
+                "top": 374,
+                "width": 43,
+                "height": 37
+              }
+            },
+            {
+              "text": "Express",
+              "confidence": 99.93,
+              "bbox": {
+                "left": 252,
+                "top": 374,
+                "width": 122,
+                "height": 37
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.93,
+              "bbox": {
+                "left": 403,
+                "top": 374,
+                "width": 222,
+                "height": 37
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            175,
+            175
+          ],
+          "fg_color": [
+            175,
+            175,
+            175
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 11,
+          "text": "AMD PowerNow Configuratio",
+          "bbox": {
+            "left": 156,
+            "top": 411,
+            "width": 484,
+            "height": 53
+          },
+          "words": [
+            {
+              "text": "AMD",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 178,
+                "top": 419,
+                "width": 45,
+                "height": 37
+              }
+            },
+            {
+              "text": "PowerNow",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 253,
+                "top": 419,
+                "width": 143,
+                "height": 37
+              }
+            },
+            {
+              "text": "Configuratio",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 426,
+                "top": 419,
+                "width": 203,
+                "height": 37
+              }
+            }
+          ],
+          "bg_color": [
+            175,
+            165,
+            165
+          ],
+          "fg_color": [
+            175,
+            165,
+            165
+          ],
+          "highlighted": true
+        },
+        {
+          "line_num": 12,
+          "text": "Acgpnce Configuratil",
+          "bbox": {
+            "left": 299,
+            "top": 455,
+            "width": 340,
+            "height": 25
+          },
+          "words": [
+            {
+              "text": "Acgpnce",
+              "confidence": 74.07,
+              "bbox": {
+                "left": 313,
+                "top": 459,
+                "width": 95,
+                "height": 19
+              }
+            },
+            {
+              "text": "Configuratil",
+              "confidence": 74.07,
+              "bbox": {
+                "left": 445,
+                "top": 459,
+                "width": 194,
+                "height": 19
+              }
+            }
+          ],
+          "bg_color": [
+            165,
+            165,
+            165
+          ],
+          "fg_color": [
+            165,
+            165,
+            165
+          ],
+          "highlighted": true
+        }
+      ]
+    }
+  ],
+  "captured_at": "20260803-154356",
+  "screen_bg_color": [
+    5,
+    5,
+    5
+  ],
+  "fields": {
+    "CPU Configuration": "Con",
+    "IDE Configuration": "Con",
+    "Super10-Configuration": "Con",
+    "ACPI": "Con",
+    "Event Log Configuration": "Con",
+    "Hyper Transport Configuration": "Con",
+    "IPMI 2.0 Configuration": "Con",
+    "MPS Configuration": "Con",
+    "PCI Express Configuration": "Con",
+    "AMD PowerNow Configuration": "Con",
+    "Acgpnce Configuration": "Con"
+  },
+  "fields_unverified": {}
+}
