@@ -1,0 +1,2431 @@
+{
+  "engine": "paddleocr",
+  "image_size": {
+    "width": 3840,
+    "height": 2160
+  },
+  "full_text": "POSITIVO\nSetup\nSave Options\n» Save Changes and Exit\nExit system setup after saving the changes.\nchad\nMain\n» Discard Changes and Exit\nAdvanced\nSecurity\nExit system setup without saving any changes.\nPrevias\nValues\nBoot\nSave & Exit\n» Save Changes\nEvent Log\nSave Changes done so far to any of the setup eptions.\nOptimozed\nDefaurts\n» Discard Changes\nDiscard Changes done so far to any of the setup options.\n» Restore Defaults\nRestore/Load Default values for all the setup options.\n» Windows - Push Button Reset\nTrigger Windows Push Button Reset\nWindows® Connected System Recovery (CSR)\n» Windows® Online Recovery - CSR\nThe Windows@ Connected System Recovery (CSR) is a Microsoft@ recovery feature that reinstalls the OS even if the Hoe:sso has\nVersion 2.22.0058. Copyright (C) 2026 Positivo Tecnologia SA\nDelete\nPause\nPrt Sc\nNumLk\nSorLk",
+  "blocks": [
+    {
+      "block_num": 0,
+      "lines": [
+        {
+          "line_num": 0,
+          "text": "POSITIVO",
+          "bbox": {
+            "left": 405,
+            "top": 161,
+            "width": 419,
+            "height": 72
+          },
+          "words": [
+            {
+              "text": "POSITIVO",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 439,
+                "top": 161,
+                "width": 364,
+                "height": 72
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            223,
+            171,
+            117
+          ],
+          "fg_color": [
+            245,
+            254,
+            245
+          ]
+        },
+        {
+          "line_num": 1,
+          "text": "Setup",
+          "bbox": {
+            "left": 512,
+            "top": 285,
+            "width": 235,
+            "height": 95
+          },
+          "words": [
+            {
+              "text": "Setup",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 543,
+                "top": 285,
+                "width": 182,
+                "height": 95
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            233,
+            185,
+            132
+          ],
+          "fg_color": [
+            252,
+            254,
+            236
+          ]
+        },
+        {
+          "line_num": 2,
+          "text": "Save Options",
+          "bbox": {
+            "left": 1388,
+            "top": 293,
+            "width": 219,
+            "height": 51
+          },
+          "words": [
+            {
+              "text": "Save",
+              "confidence": 99.93,
+              "bbox": {
+                "left": 1405,
+                "top": 293,
+                "width": 64,
+                "height": 51
+              }
+            },
+            {
+              "text": "Options",
+              "confidence": 99.93,
+              "bbox": {
+                "left": 1493,
+                "top": 293,
+                "width": 104,
+                "height": 51
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            75,
+            52,
+            46
+          ],
+          "fg_color": [
+            215,
+            173,
+            134
+          ]
+        },
+        {
+          "line_num": 3,
+          "text": "» Save Changes and Exit",
+          "bbox": {
+            "left": 1389,
+            "top": 379,
+            "width": 386,
+            "height": 49
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 99.79,
+              "bbox": {
+                "left": 1403,
+                "top": 379,
+                "width": 22,
+                "height": 49
+              }
+            },
+            {
+              "text": "Save",
+              "confidence": 99.79,
+              "bbox": {
+                "left": 1433,
+                "top": 379,
+                "width": 59,
+                "height": 49
+              }
+            },
+            {
+              "text": "Changes",
+              "confidence": 99.79,
+              "bbox": {
+                "left": 1514,
+                "top": 379,
+                "width": 125,
+                "height": 49
+              }
+            },
+            {
+              "text": "and",
+              "confidence": 99.79,
+              "bbox": {
+                "left": 1654,
+                "top": 379,
+                "width": 44,
+                "height": 49
+              }
+            },
+            {
+              "text": "Exit",
+              "confidence": 99.79,
+              "bbox": {
+                "left": 1720,
+                "top": 379,
+                "width": 51,
+                "height": 49
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            85,
+            64,
+            54
+          ],
+          "fg_color": [
+            225,
+            184,
+            146
+          ]
+        },
+        {
+          "line_num": 4,
+          "text": "Exit system setup after saving the changes.",
+          "bbox": {
+            "left": 1391,
+            "top": 442,
+            "width": 501,
+            "height": 43
+          },
+          "words": [
+            {
+              "text": "Exit",
+              "confidence": 99.57,
+              "bbox": {
+                "left": 1403,
+                "top": 442,
+                "width": 36,
+                "height": 43
+              }
+            },
+            {
+              "text": "system",
+              "confidence": 99.57,
+              "bbox": {
+                "left": 1451,
+                "top": 442,
+                "width": 72,
+                "height": 43
+              }
+            },
+            {
+              "text": "setup",
+              "confidence": 99.57,
+              "bbox": {
+                "left": 1541,
+                "top": 442,
+                "width": 54,
+                "height": 43
+              }
+            },
+            {
+              "text": "after",
+              "confidence": 99.57,
+              "bbox": {
+                "left": 1613,
+                "top": 442,
+                "width": 48,
+                "height": 43
+              }
+            },
+            {
+              "text": "saving",
+              "confidence": 99.57,
+              "bbox": {
+                "left": 1673,
+                "top": 442,
+                "width": 66,
+                "height": 43
+              }
+            },
+            {
+              "text": "the",
+              "confidence": 99.57,
+              "bbox": {
+                "left": 1751,
+                "top": 442,
+                "width": 30,
+                "height": 43
+              }
+            },
+            {
+              "text": "changes",
+              "confidence": 99.57,
+              "bbox": {
+                "left": 1799,
+                "top": 442,
+                "width": 85,
+                "height": 43
+              }
+            },
+            {
+              "text": ".",
+              "confidence": 99.57,
+              "bbox": {
+                "left": 1890,
+                "top": 442,
+                "width": 6,
+                "height": 43
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            95,
+            70,
+            61
+          ],
+          "fg_color": [
+            180,
+            154,
+            138
+          ]
+        },
+        {
+          "line_num": 5,
+          "text": "chad",
+          "bbox": {
+            "left": 506,
+            "top": 464,
+            "width": 85,
+            "height": 243
+          },
+          "words": [
+            {
+              "text": "chad",
+              "confidence": 65.32,
+              "bbox": {
+                "left": 506,
+                "top": 492,
+                "width": 82,
+                "height": 190
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            194,
+            175,
+            155
+          ],
+          "fg_color": [
+            95,
+            70,
+            55
+          ]
+        },
+        {
+          "line_num": 6,
+          "text": "Main",
+          "bbox": {
+            "left": 646,
+            "top": 464,
+            "width": 115,
+            "height": 50
+          },
+          "words": [
+            {
+              "text": "Main",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 671,
+                "top": 464,
+                "width": 75,
+                "height": 50
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            200,
+            178,
+            158
+          ],
+          "fg_color": [
+            254,
+            254,
+            244
+          ]
+        },
+        {
+          "line_num": 7,
+          "text": "» Discard Changes and Exit",
+          "bbox": {
+            "left": 1391,
+            "top": 517,
+            "width": 427,
+            "height": 49
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 1405,
+                "top": 517,
+                "width": 22,
+                "height": 49
+              }
+            },
+            {
+              "text": "Discard",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 1435,
+                "top": 517,
+                "width": 103,
+                "height": 49
+              }
+            },
+            {
+              "text": "Changes",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 1560,
+                "top": 517,
+                "width": 118,
+                "height": 49
+              }
+            },
+            {
+              "text": "and",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 1700,
+                "top": 517,
+                "width": 44,
+                "height": 49
+              }
+            },
+            {
+              "text": "Exit",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 1766,
+                "top": 517,
+                "width": 44,
+                "height": 49
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            114,
+            80,
+            66
+          ],
+          "fg_color": [
+            238,
+            197,
+            159
+          ]
+        },
+        {
+          "line_num": 8,
+          "text": "Advanced",
+          "bbox": {
+            "left": 648,
+            "top": 528,
+            "width": 213,
+            "height": 48
+          },
+          "words": [
+            {
+              "text": "Advanced",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 670,
+                "top": 528,
+                "width": 180,
+                "height": 48
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            209,
+            186,
+            165
+          ],
+          "fg_color": [
+            254,
+            254,
+            245
+          ]
+        },
+        {
+          "line_num": 9,
+          "text": "Security",
+          "bbox": {
+            "left": 648,
+            "top": 588,
+            "width": 182,
+            "height": 58
+          },
+          "words": [
+            {
+              "text": "Security",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 667,
+                "top": 588,
+                "width": 153,
+                "height": 58
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            212,
+            190,
+            170
+          ],
+          "fg_color": [
+            254,
+            254,
+            243
+          ]
+        },
+        {
+          "line_num": 10,
+          "text": "Exit system setup without saving any changes.",
+          "bbox": {
+            "left": 1393,
+            "top": 579,
+            "width": 535,
+            "height": 43
+          },
+          "words": [
+            {
+              "text": "Exit",
+              "confidence": 99.63,
+              "bbox": {
+                "left": 1405,
+                "top": 579,
+                "width": 36,
+                "height": 43
+              }
+            },
+            {
+              "text": "system",
+              "confidence": 99.63,
+              "bbox": {
+                "left": 1453,
+                "top": 579,
+                "width": 72,
+                "height": 43
+              }
+            },
+            {
+              "text": "setup",
+              "confidence": 99.63,
+              "bbox": {
+                "left": 1543,
+                "top": 579,
+                "width": 54,
+                "height": 43
+              }
+            },
+            {
+              "text": "without",
+              "confidence": 99.63,
+              "bbox": {
+                "left": 1615,
+                "top": 579,
+                "width": 78,
+                "height": 43
+              }
+            },
+            {
+              "text": "saving",
+              "confidence": 99.63,
+              "bbox": {
+                "left": 1705,
+                "top": 579,
+                "width": 66,
+                "height": 43
+              }
+            },
+            {
+              "text": "any",
+              "confidence": 99.63,
+              "bbox": {
+                "left": 1789,
+                "top": 579,
+                "width": 31,
+                "height": 43
+              }
+            },
+            {
+              "text": "changes",
+              "confidence": 99.63,
+              "bbox": {
+                "left": 1832,
+                "top": 579,
+                "width": 84,
+                "height": 43
+              }
+            },
+            {
+              "text": ".",
+              "confidence": 99.63,
+              "bbox": {
+                "left": 1922,
+                "top": 579,
+                "width": 6,
+                "height": 43
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            121,
+            87,
+            71
+          ],
+          "fg_color": [
+            196,
+            168,
+            149
+          ]
+        },
+        {
+          "line_num": 11,
+          "text": "Previas",
+          "bbox": {
+            "left": 3144,
+            "top": 585,
+            "width": 98,
+            "height": 28
+          },
+          "words": [
+            {
+              "text": "Previas",
+              "confidence": 88.1,
+              "bbox": {
+                "left": 3153,
+                "top": 585,
+                "width": 79,
+                "height": 28
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            183,
+            175,
+            149
+          ],
+          "fg_color": [
+            198,
+            197,
+            182
+          ]
+        },
+        {
+          "line_num": 12,
+          "text": "Values",
+          "bbox": {
+            "left": 3155,
+            "top": 615,
+            "width": 79,
+            "height": 29
+          },
+          "words": [
+            {
+              "text": "Values",
+              "confidence": 94.99,
+              "bbox": {
+                "left": 3164,
+                "top": 615,
+                "width": 63,
+                "height": 29
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            184,
+            175,
+            150
+          ],
+          "fg_color": [
+            196,
+            197,
+            183
+          ]
+        },
+        {
+          "line_num": 13,
+          "text": "Boot",
+          "bbox": {
+            "left": 650,
+            "top": 653,
+            "width": 114,
+            "height": 49
+          },
+          "words": [
+            {
+              "text": "Boot",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 674,
+                "top": 653,
+                "width": 78,
+                "height": 49
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            214,
+            192,
+            173
+          ],
+          "fg_color": [
+            254,
+            255,
+            245
+          ]
+        },
+        {
+          "line_num": 14,
+          "text": "Save & Exit",
+          "bbox": {
+            "left": 652,
+            "top": 718,
+            "width": 239,
+            "height": 44
+          },
+          "words": [
+            {
+              "text": "Save",
+              "confidence": 99.69,
+              "bbox": {
+                "left": 674,
+                "top": 718,
+                "width": 73,
+                "height": 44
+              }
+            },
+            {
+              "text": "&",
+              "confidence": 99.69,
+              "bbox": {
+                "left": 762,
+                "top": 718,
+                "width": 44,
+                "height": 44
+              }
+            },
+            {
+              "text": "Exit",
+              "confidence": 99.69,
+              "bbox": {
+                "left": 821,
+                "top": 718,
+                "width": 66,
+                "height": 44
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            127,
+            96,
+            79
+          ],
+          "fg_color": [
+            251,
+            253,
+            244
+          ]
+        },
+        {
+          "line_num": 15,
+          "text": "» Save Changes",
+          "bbox": {
+            "left": 1393,
+            "top": 738,
+            "width": 254,
+            "height": 50
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 99.6,
+              "bbox": {
+                "left": 1408,
+                "top": 738,
+                "width": 24,
+                "height": 50
+              }
+            },
+            {
+              "text": "Save",
+              "confidence": 99.6,
+              "bbox": {
+                "left": 1440,
+                "top": 738,
+                "width": 54,
+                "height": 50
+              }
+            },
+            {
+              "text": "Changes",
+              "confidence": 99.6,
+              "bbox": {
+                "left": 1518,
+                "top": 738,
+                "width": 125,
+                "height": 50
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            141,
+            110,
+            88
+          ],
+          "fg_color": [
+            244,
+            210,
+            175
+          ]
+        },
+        {
+          "line_num": 16,
+          "text": "Event Log",
+          "bbox": {
+            "left": 652,
+            "top": 777,
+            "width": 216,
+            "height": 56
+          },
+          "words": [
+            {
+              "text": "Event",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 670,
+                "top": 777,
+                "width": 106,
+                "height": 56
+              }
+            },
+            {
+              "text": "Log",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 803,
+                "top": 777,
+                "width": 53,
+                "height": 56
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            222,
+            201,
+            182
+          ],
+          "fg_color": [
+            254,
+            254,
+            245
+          ]
+        },
+        {
+          "line_num": 17,
+          "text": "Save Changes done so far to any of the setup eptions.",
+          "bbox": {
+            "left": 1396,
+            "top": 802,
+            "width": 608,
+            "height": 36
+          },
+          "words": [
+            {
+              "text": "Save",
+              "confidence": 97.34,
+              "bbox": {
+                "left": 1407,
+                "top": 802,
+                "width": 44,
+                "height": 36
+              }
+            },
+            {
+              "text": "Changes",
+              "confidence": 97.34,
+              "bbox": {
+                "left": 1467,
+                "top": 802,
+                "width": 88,
+                "height": 36
+              }
+            },
+            {
+              "text": "done",
+              "confidence": 97.34,
+              "bbox": {
+                "left": 1572,
+                "top": 802,
+                "width": 49,
+                "height": 36
+              }
+            },
+            {
+              "text": "so",
+              "confidence": 97.34,
+              "bbox": {
+                "left": 1632,
+                "top": 802,
+                "width": 22,
+                "height": 36
+              }
+            },
+            {
+              "text": "far",
+              "confidence": 97.34,
+              "bbox": {
+                "left": 1665,
+                "top": 802,
+                "width": 28,
+                "height": 36
+              }
+            },
+            {
+              "text": "to",
+              "confidence": 97.34,
+              "bbox": {
+                "left": 1704,
+                "top": 802,
+                "width": 16,
+                "height": 36
+              }
+            },
+            {
+              "text": "any",
+              "confidence": 97.34,
+              "bbox": {
+                "left": 1737,
+                "top": 802,
+                "width": 27,
+                "height": 36
+              }
+            },
+            {
+              "text": "of",
+              "confidence": 97.34,
+              "bbox": {
+                "left": 1781,
+                "top": 802,
+                "width": 16,
+                "height": 36
+              }
+            },
+            {
+              "text": "the",
+              "confidence": 97.34,
+              "bbox": {
+                "left": 1808,
+                "top": 802,
+                "width": 28,
+                "height": 36
+              }
+            },
+            {
+              "text": "setup",
+              "confidence": 97.34,
+              "bbox": {
+                "left": 1852,
+                "top": 802,
+                "width": 55,
+                "height": 36
+              }
+            },
+            {
+              "text": "eptions",
+              "confidence": 97.34,
+              "bbox": {
+                "left": 1918,
+                "top": 802,
+                "width": 77,
+                "height": 36
+              }
+            },
+            {
+              "text": ".",
+              "confidence": 97.34,
+              "bbox": {
+                "left": 2001,
+                "top": 802,
+                "width": 5,
+                "height": 36
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            147,
+            117,
+            100
+          ],
+          "fg_color": [
+            215,
+            189,
+            171
+          ]
+        },
+        {
+          "line_num": 18,
+          "text": "Optimozed",
+          "bbox": {
+            "left": 3139,
+            "top": 804,
+            "width": 112,
+            "height": 30
+          },
+          "words": [
+            {
+              "text": "Optimozed",
+              "confidence": 87.57,
+              "bbox": {
+                "left": 3148,
+                "top": 806,
+                "width": 99,
+                "height": 26
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            188,
+            190,
+            171
+          ],
+          "fg_color": [
+            197,
+            209,
+            198
+          ]
+        },
+        {
+          "line_num": 19,
+          "text": "Defaurts",
+          "bbox": {
+            "left": 3145,
+            "top": 836,
+            "width": 97,
+            "height": 25
+          },
+          "words": [
+            {
+              "text": "Defaurts",
+              "confidence": 93.27,
+              "bbox": {
+                "left": 3157,
+                "top": 836,
+                "width": 79,
+                "height": 25
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            190,
+            194,
+            178
+          ],
+          "fg_color": [
+            197,
+            211,
+            203
+          ]
+        },
+        {
+          "line_num": 20,
+          "text": "» Discard Changes",
+          "bbox": {
+            "left": 1395,
+            "top": 876,
+            "width": 294,
+            "height": 47
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 99.51,
+              "bbox": {
+                "left": 1409,
+                "top": 876,
+                "width": 22,
+                "height": 47
+              }
+            },
+            {
+              "text": "Discard",
+              "confidence": 99.51,
+              "bbox": {
+                "left": 1439,
+                "top": 876,
+                "width": 103,
+                "height": 47
+              }
+            },
+            {
+              "text": "Changes",
+              "confidence": 99.51,
+              "bbox": {
+                "left": 1564,
+                "top": 876,
+                "width": 118,
+                "height": 47
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            157,
+            126,
+            106
+          ],
+          "fg_color": [
+            251,
+            223,
+            189
+          ]
+        },
+        {
+          "line_num": 21,
+          "text": "Discard Changes done so far to any of the setup options.",
+          "bbox": {
+            "left": 1399,
+            "top": 940,
+            "width": 638,
+            "height": 34
+          },
+          "words": [
+            {
+              "text": "Discard",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 1410,
+                "top": 940,
+                "width": 79,
+                "height": 34
+              }
+            },
+            {
+              "text": "Changes",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 1506,
+                "top": 940,
+                "width": 85,
+                "height": 34
+              }
+            },
+            {
+              "text": "done",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 1608,
+                "top": 940,
+                "width": 46,
+                "height": 34
+              }
+            },
+            {
+              "text": "so",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 1665,
+                "top": 940,
+                "width": 23,
+                "height": 34
+              }
+            },
+            {
+              "text": "far",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 1699,
+                "top": 940,
+                "width": 28,
+                "height": 34
+              }
+            },
+            {
+              "text": "to",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 1739,
+                "top": 940,
+                "width": 17,
+                "height": 34
+              }
+            },
+            {
+              "text": "any",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 1767,
+                "top": 940,
+                "width": 34,
+                "height": 34
+              }
+            },
+            {
+              "text": "of",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 1812,
+                "top": 940,
+                "width": 17,
+                "height": 34
+              }
+            },
+            {
+              "text": "the",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 1841,
+                "top": 940,
+                "width": 28,
+                "height": 34
+              }
+            },
+            {
+              "text": "setup",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 1886,
+                "top": 940,
+                "width": 51,
+                "height": 34
+              }
+            },
+            {
+              "text": "options",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 1954,
+                "top": 940,
+                "width": 74,
+                "height": 34
+              }
+            },
+            {
+              "text": ".",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 2033,
+                "top": 940,
+                "width": 6,
+                "height": 34
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            164,
+            136,
+            116
+          ],
+          "fg_color": [
+            228,
+            202,
+            183
+          ]
+        },
+        {
+          "line_num": 22,
+          "text": "» Restore Defaults",
+          "bbox": {
+            "left": 1398,
+            "top": 1014,
+            "width": 297,
+            "height": 40
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 97.05,
+              "bbox": {
+                "left": 1410,
+                "top": 1017,
+                "width": 18,
+                "height": 35
+              }
+            },
+            {
+              "text": "Restore",
+              "confidence": 97.05,
+              "bbox": {
+                "left": 1441,
+                "top": 1017,
+                "width": 105,
+                "height": 35
+              }
+            },
+            {
+              "text": "Defaults",
+              "confidence": 97.05,
+              "bbox": {
+                "left": 1571,
+                "top": 1017,
+                "width": 117,
+                "height": 35
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            172,
+            141,
+            121
+          ],
+          "fg_color": [
+            254,
+            235,
+            203
+          ]
+        },
+        {
+          "line_num": 23,
+          "text": "Restore/Load Default values for all the setup options.",
+          "bbox": {
+            "left": 1400,
+            "top": 1073,
+            "width": 609,
+            "height": 34
+          },
+          "words": [
+            {
+              "text": "Restore",
+              "confidence": 99.15,
+              "bbox": {
+                "left": 1410,
+                "top": 1076,
+                "width": 80,
+                "height": 28
+              }
+            },
+            {
+              "text": "/",
+              "confidence": 99.15,
+              "bbox": {
+                "left": 1500,
+                "top": 1076,
+                "width": 5,
+                "height": 28
+              }
+            },
+            {
+              "text": "Load",
+              "confidence": 99.15,
+              "bbox": {
+                "left": 1510,
+                "top": 1076,
+                "width": 45,
+                "height": 28
+              }
+            },
+            {
+              "text": "Default",
+              "confidence": 99.15,
+              "bbox": {
+                "left": 1575,
+                "top": 1076,
+                "width": 75,
+                "height": 28
+              }
+            },
+            {
+              "text": "values",
+              "confidence": 99.15,
+              "bbox": {
+                "left": 1660,
+                "top": 1076,
+                "width": 70,
+                "height": 28
+              }
+            },
+            {
+              "text": "for",
+              "confidence": 99.15,
+              "bbox": {
+                "left": 1740,
+                "top": 1076,
+                "width": 30,
+                "height": 28
+              }
+            },
+            {
+              "text": "all",
+              "confidence": 99.15,
+              "bbox": {
+                "left": 1780,
+                "top": 1076,
+                "width": 25,
+                "height": 28
+              }
+            },
+            {
+              "text": "the",
+              "confidence": 99.15,
+              "bbox": {
+                "left": 1815,
+                "top": 1076,
+                "width": 30,
+                "height": 28
+              }
+            },
+            {
+              "text": "setup",
+              "confidence": 99.15,
+              "bbox": {
+                "left": 1860,
+                "top": 1076,
+                "width": 50,
+                "height": 28
+              }
+            },
+            {
+              "text": "options",
+              "confidence": 99.15,
+              "bbox": {
+                "left": 1925,
+                "top": 1076,
+                "width": 75,
+                "height": 28
+              }
+            },
+            {
+              "text": ".",
+              "confidence": 99.15,
+              "bbox": {
+                "left": 2005,
+                "top": 1076,
+                "width": 5,
+                "height": 28
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            177,
+            149,
+            130
+          ],
+          "fg_color": [
+            238,
+            213,
+            194
+          ]
+        },
+        {
+          "line_num": 24,
+          "text": "» Windows - Push Button Reset",
+          "bbox": {
+            "left": 1401,
+            "top": 1147,
+            "width": 488,
+            "height": 42
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 98.42,
+              "bbox": {
+                "left": 1413,
+                "top": 1152,
+                "width": 18,
+                "height": 33
+              }
+            },
+            {
+              "text": "Windows",
+              "confidence": 98.42,
+              "bbox": {
+                "left": 1450,
+                "top": 1152,
+                "width": 124,
+                "height": 33
+              }
+            },
+            {
+              "text": "-",
+              "confidence": 98.42,
+              "bbox": {
+                "left": 1580,
+                "top": 1152,
+                "width": 24,
+                "height": 33
+              }
+            },
+            {
+              "text": "Push",
+              "confidence": 98.42,
+              "bbox": {
+                "left": 1611,
+                "top": 1152,
+                "width": 61,
+                "height": 33
+              }
+            },
+            {
+              "text": "Button",
+              "confidence": 98.42,
+              "bbox": {
+                "left": 1697,
+                "top": 1152,
+                "width": 93,
+                "height": 33
+              }
+            },
+            {
+              "text": "Reset",
+              "confidence": 98.42,
+              "bbox": {
+                "left": 1815,
+                "top": 1152,
+                "width": 74,
+                "height": 33
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            184,
+            156,
+            135
+          ],
+          "fg_color": [
+            255,
+            245,
+            215
+          ]
+        },
+        {
+          "line_num": 25,
+          "text": "Trigger Windows Push Button Reset",
+          "bbox": {
+            "left": 1401,
+            "top": 1207,
+            "width": 413,
+            "height": 42
+          },
+          "words": [
+            {
+              "text": "Trigger",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 1413,
+                "top": 1212,
+                "width": 78,
+                "height": 32
+              }
+            },
+            {
+              "text": "Windows",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 1503,
+                "top": 1212,
+                "width": 90,
+                "height": 32
+              }
+            },
+            {
+              "text": "Push",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 1611,
+                "top": 1212,
+                "width": 42,
+                "height": 32
+              }
+            },
+            {
+              "text": "Button",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 1671,
+                "top": 1212,
+                "width": 66,
+                "height": 32
+              }
+            },
+            {
+              "text": "Reset",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 1755,
+                "top": 1212,
+                "width": 54,
+                "height": 32
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            190,
+            162,
+            142
+          ],
+          "fg_color": [
+            245,
+            221,
+            202
+          ]
+        },
+        {
+          "line_num": 26,
+          "text": "Windows® Connected System Recovery (CSR)",
+          "bbox": {
+            "left": 1400,
+            "top": 1359,
+            "width": 704,
+            "height": 55
+          },
+          "words": [
+            {
+              "text": "Windows",
+              "confidence": 98.83,
+              "bbox": {
+                "left": 1421,
+                "top": 1370,
+                "width": 129,
+                "height": 32
+              }
+            },
+            {
+              "text": "®",
+              "confidence": 98.83,
+              "bbox": {
+                "left": 1565,
+                "top": 1370,
+                "width": 21,
+                "height": 32
+              }
+            },
+            {
+              "text": "Connected",
+              "confidence": 98.83,
+              "bbox": {
+                "left": 1593,
+                "top": 1370,
+                "width": 151,
+                "height": 32
+              }
+            },
+            {
+              "text": "System",
+              "confidence": 98.83,
+              "bbox": {
+                "left": 1766,
+                "top": 1370,
+                "width": 93,
+                "height": 32
+              }
+            },
+            {
+              "text": "Recovery",
+              "confidence": 98.83,
+              "bbox": {
+                "left": 1888,
+                "top": 1370,
+                "width": 122,
+                "height": 32
+              }
+            },
+            {
+              "text": "(",
+              "confidence": 98.83,
+              "bbox": {
+                "left": 2017,
+                "top": 1370,
+                "width": 22,
+                "height": 32
+              }
+            },
+            {
+              "text": "CSR",
+              "confidence": 98.83,
+              "bbox": {
+                "left": 2046,
+                "top": 1370,
+                "width": 36,
+                "height": 32
+              }
+            },
+            {
+              "text": ")",
+              "confidence": 98.83,
+              "bbox": {
+                "left": 2096,
+                "top": 1370,
+                "width": 8,
+                "height": 32
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            199,
+            173,
+            154
+          ],
+          "fg_color": [
+            254,
+            254,
+            245
+          ]
+        },
+        {
+          "line_num": 27,
+          "text": "» Windows® Online Recovery - CSR",
+          "bbox": {
+            "left": 1402,
+            "top": 1444,
+            "width": 545,
+            "height": 51
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 97.01,
+              "bbox": {
+                "left": 1415,
+                "top": 1454,
+                "width": 21,
+                "height": 31
+              }
+            },
+            {
+              "text": "Windows",
+              "confidence": 97.01,
+              "bbox": {
+                "left": 1449,
+                "top": 1454,
+                "width": 124,
+                "height": 31
+              }
+            },
+            {
+              "text": "®",
+              "confidence": 97.01,
+              "bbox": {
+                "left": 1586,
+                "top": 1454,
+                "width": 28,
+                "height": 31
+              }
+            },
+            {
+              "text": "Online",
+              "confidence": 97.01,
+              "bbox": {
+                "left": 1621,
+                "top": 1454,
+                "width": 89,
+                "height": 31
+              }
+            },
+            {
+              "text": "Recovery",
+              "confidence": 97.01,
+              "bbox": {
+                "left": 1730,
+                "top": 1454,
+                "width": 124,
+                "height": 31
+              }
+            },
+            {
+              "text": "-",
+              "confidence": 97.01,
+              "bbox": {
+                "left": 1860,
+                "top": 1454,
+                "width": 28,
+                "height": 31
+              }
+            },
+            {
+              "text": "CSR",
+              "confidence": 97.01,
+              "bbox": {
+                "left": 1895,
+                "top": 1454,
+                "width": 41,
+                "height": 31
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            202,
+            175,
+            155
+          ],
+          "fg_color": [
+            254,
+            247,
+            220
+          ]
+        },
+        {
+          "line_num": 28,
+          "text": "The Windows@ Connected System Recovery (CSR) is a Microsoft@ recovery feature that reinstalls the OS even if the Hoe:sso has",
+          "bbox": {
+            "left": 1404,
+            "top": 1486,
+            "width": 1447,
+            "height": 62
+          },
+          "words": [
+            {
+              "text": "The",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 1415,
+                "top": 1514,
+                "width": 33,
+                "height": 6
+              }
+            },
+            {
+              "text": "Windows",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 1470,
+                "top": 1514,
+                "width": 88,
+                "height": 6
+              }
+            },
+            {
+              "text": "@",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 1569,
+                "top": 1514,
+                "width": 16,
+                "height": 6
+              }
+            },
+            {
+              "text": "Connected",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 1591,
+                "top": 1514,
+                "width": 110,
+                "height": 6
+              }
+            },
+            {
+              "text": "System",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 1717,
+                "top": 1514,
+                "width": 72,
+                "height": 6
+              }
+            },
+            {
+              "text": "Recovery",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 1805,
+                "top": 1514,
+                "width": 94,
+                "height": 6
+              }
+            },
+            {
+              "text": "(",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 1899,
+                "top": 1514,
+                "width": 16,
+                "height": 6
+              }
+            },
+            {
+              "text": "CSR",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 1921,
+                "top": 1514,
+                "width": 33,
+                "height": 6
+              }
+            },
+            {
+              "text": ")",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 1959,
+                "top": 1514,
+                "width": 11,
+                "height": 6
+              }
+            },
+            {
+              "text": "is",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 1976,
+                "top": 1514,
+                "width": 11,
+                "height": 6
+              }
+            },
+            {
+              "text": "a",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 1998,
+                "top": 1514,
+                "width": 5,
+                "height": 6
+              }
+            },
+            {
+              "text": "Microsoft",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2025,
+                "top": 1514,
+                "width": 94,
+                "height": 6
+              }
+            },
+            {
+              "text": "@",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2130,
+                "top": 1514,
+                "width": 16,
+                "height": 6
+              }
+            },
+            {
+              "text": "recovery",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2152,
+                "top": 1514,
+                "width": 82,
+                "height": 6
+              }
+            },
+            {
+              "text": "feature",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2251,
+                "top": 1514,
+                "width": 71,
+                "height": 6
+              }
+            },
+            {
+              "text": "that",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2333,
+                "top": 1514,
+                "width": 39,
+                "height": 6
+              }
+            },
+            {
+              "text": "reinstalls",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2383,
+                "top": 1514,
+                "width": 99,
+                "height": 6
+              }
+            },
+            {
+              "text": "the",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2493,
+                "top": 1514,
+                "width": 27,
+                "height": 6
+              }
+            },
+            {
+              "text": "OS",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2537,
+                "top": 1514,
+                "width": 27,
+                "height": 6
+              }
+            },
+            {
+              "text": "even",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2581,
+                "top": 1514,
+                "width": 44,
+                "height": 6
+              }
+            },
+            {
+              "text": "if",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2636,
+                "top": 1514,
+                "width": 11,
+                "height": 6
+              }
+            },
+            {
+              "text": "the",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2658,
+                "top": 1514,
+                "width": 27,
+                "height": 6
+              }
+            },
+            {
+              "text": "Hoe",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2702,
+                "top": 1514,
+                "width": 38,
+                "height": 6
+              }
+            },
+            {
+              "text": ":",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2746,
+                "top": 1514,
+                "width": 5,
+                "height": 6
+              }
+            },
+            {
+              "text": "sso",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2757,
+                "top": 1514,
+                "width": 33,
+                "height": 6
+              }
+            },
+            {
+              "text": "has",
+              "confidence": 95.22,
+              "bbox": {
+                "left": 2806,
+                "top": 1514,
+                "width": 28,
+                "height": 6
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            195,
+            181,
+            169
+          ],
+          "fg_color": [
+            217,
+            219,
+            219
+          ]
+        },
+        {
+          "line_num": 29,
+          "text": "Version 2.22.0058. Copyright (C) 2026 Positivo Tecnologia SA",
+          "bbox": {
+            "left": 1830,
+            "top": 1683,
+            "width": 794,
+            "height": 59
+          },
+          "words": [
+            {
+              "text": "Version",
+              "confidence": 99.14,
+              "bbox": {
+                "left": 1843,
+                "top": 1703,
+                "width": 87,
+                "height": 20
+              }
+            },
+            {
+              "text": "2.22.0058",
+              "confidence": 99.14,
+              "bbox": {
+                "left": 1950,
+                "top": 1703,
+                "width": 120,
+                "height": 20
+              }
+            },
+            {
+              "text": ".",
+              "confidence": 99.14,
+              "bbox": {
+                "left": 2076,
+                "top": 1703,
+                "width": 14,
+                "height": 20
+              }
+            },
+            {
+              "text": "Copyright",
+              "confidence": 99.14,
+              "bbox": {
+                "left": 2096,
+                "top": 1703,
+                "width": 114,
+                "height": 20
+              }
+            },
+            {
+              "text": "(",
+              "confidence": 99.14,
+              "bbox": {
+                "left": 2216,
+                "top": 1703,
+                "width": 14,
+                "height": 20
+              }
+            },
+            {
+              "text": "C",
+              "confidence": 99.14,
+              "bbox": {
+                "left": 2236,
+                "top": 1703,
+                "width": 7,
+                "height": 20
+              }
+            },
+            {
+              "text": ")",
+              "confidence": 99.14,
+              "bbox": {
+                "left": 2243,
+                "top": 1703,
+                "width": 20,
+                "height": 20
+              }
+            },
+            {
+              "text": "2026",
+              "confidence": 99.14,
+              "bbox": {
+                "left": 2270,
+                "top": 1703,
+                "width": 53,
+                "height": 20
+              }
+            },
+            {
+              "text": "Positivo",
+              "confidence": 99.14,
+              "bbox": {
+                "left": 2343,
+                "top": 1703,
+                "width": 87,
+                "height": 20
+              }
+            },
+            {
+              "text": "Tecnologia",
+              "confidence": 99.14,
+              "bbox": {
+                "left": 2450,
+                "top": 1703,
+                "width": 126,
+                "height": 20
+              }
+            },
+            {
+              "text": "SA",
+              "confidence": 99.14,
+              "bbox": {
+                "left": 2596,
+                "top": 1703,
+                "width": 20,
+                "height": 20
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            190,
+            178,
+            168
+          ],
+          "fg_color": [
+            218,
+            218,
+            214
+          ]
+        },
+        {
+          "line_num": 30,
+          "text": "Delete",
+          "bbox": {
+            "left": 3310,
+            "top": 2100,
+            "width": 105,
+            "height": 31
+          },
+          "words": [
+            {
+              "text": "Delete",
+              "confidence": 99.98,
+              "bbox": {
+                "left": 3328,
+                "top": 2104,
+                "width": 75,
+                "height": 24
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            1,
+            11,
+            13
+          ],
+          "fg_color": [
+            22,
+            42,
+            49
+          ]
+        },
+        {
+          "line_num": 31,
+          "text": "Pause",
+          "bbox": {
+            "left": 2961,
+            "top": 2116,
+            "width": 100,
+            "height": 30
+          },
+          "words": [
+            {
+              "text": "Pause",
+              "confidence": 99.98,
+              "bbox": {
+                "left": 2974,
+                "top": 2119,
+                "width": 77,
+                "height": 25
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            2,
+            9,
+            9
+          ],
+          "fg_color": [
+            34,
+            54,
+            64
+          ]
+        },
+        {
+          "line_num": 32,
+          "text": "Prt Sc",
+          "bbox": {
+            "left": 2790,
+            "top": 2137,
+            "width": 99,
+            "height": 23
+          },
+          "words": [
+            {
+              "text": "Prt",
+              "confidence": 90.71,
+              "bbox": {
+                "left": 2805,
+                "top": 2137,
+                "width": 31,
+                "height": 23
+              }
+            },
+            {
+              "text": "Sc",
+              "confidence": 90.71,
+              "bbox": {
+                "left": 2859,
+                "top": 2137,
+                "width": 19,
+                "height": 23
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            1,
+            7,
+            8
+          ],
+          "fg_color": [
+            44,
+            61,
+            67
+          ]
+        },
+        {
+          "line_num": 33,
+          "text": "NumLk",
+          "bbox": {
+            "left": 3142,
+            "top": 2135,
+            "width": 120,
+            "height": 25
+          },
+          "words": [
+            {
+              "text": "NumLk",
+              "confidence": 97.36,
+              "bbox": {
+                "left": 3165,
+                "top": 2137,
+                "width": 88,
+                "height": 22
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            0,
+            10,
+            14
+          ],
+          "fg_color": [
+            35,
+            54,
+            62
+          ]
+        },
+        {
+          "line_num": 34,
+          "text": "SorLk",
+          "bbox": {
+            "left": 3334,
+            "top": 2128,
+            "width": 90,
+            "height": 31
+          },
+          "words": [
+            {
+              "text": "SorLk",
+              "confidence": 77.94,
+              "bbox": {
+                "left": 3352,
+                "top": 2132,
+                "width": 66,
+                "height": 24
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            2,
+            13,
+            14
+          ],
+          "fg_color": [
+            26,
+            41,
+            48
+          ]
+        }
+      ]
+    }
+  ],
+  "screen_bg_color": [
+    101,
+    111,
+    107
+  ],
+  "captured_at": "manual"
+}

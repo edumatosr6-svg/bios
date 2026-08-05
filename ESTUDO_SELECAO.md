@@ -112,3 +112,42 @@ Implementado em `selection.py`: as linhas são agrupadas em fileiras por posiç�
 Resultado (`test_selection.py`): os dois níveis detectados simultaneamente na mesma foto (`Advanced [menu_strip]` + `ACPI Configuration [body]`), sintéticos 3/3 mantidos, falso positivo em 1,9% (subiu de 1,4% — o preço de ganhar esse segundo sinal).
 
 **Ressalva de confiança:** os limiares da `menu_strip` (piso 60, razão 2,2, mínimo de 4 itens) foram calibrados contra **um único exemplo real** de barra de menu. Revisar quando os outros 2 modelos de BIOS estiverem disponíveis.
+
+---
+
+## Segundo modelo real (Positivo) — menu vertical, não horizontal (2026-08-04)
+
+O usuário fotografou 5 telas de uma **BIOS Positivo** real (segundo modelo distinto que vemos, depois da AMI) — menu numa coluna vertical à esquerda (Main/Advanced/Security/Boot/Save & Exit/Event Log) em vez da barra horizontal da AMI. Resultado inicial: **0 de 9 seleções genuínas detectadas.** Toda a lógica de "menu_strip" só reconhecia fileira horizontal; um menu em coluna caía inteiro em `body` e era comparado contra a tela toda, do mesmo jeito que já tinha falhado com a AMI antes da correção anterior.
+
+### O que foi generalizado
+
+**Agrupamento por coluna, além de fileira.** Medindo a geometria real: itens do mesmo menu variam só 4-46px no `x0`, contra 400-2000px de distância entre colunas diferentes (barra lateral / lista de submenu / ícones à direita). O mesmo algoritmo de agrupamento por vão (`_cluster_1d`) que já existia pra fileira (vão no Y) foi reaproveitado pro eixo X.
+
+**Divisão por continuidade, não aceitar/rejeitar.** A primeira versão rejeitava o grupo inteiro se UM vão interno fosse grande demais — descartando também a parte boa. Ex: título + rótulos + dica de atalho de teclado compartilham a mesma margem esquerda (mesma "coluna" por X), mas título e atalho ficam longe verticalmente dos rótulos do meio. `_split_by_gaps` divide em sub-sequências contíguas em vez de aceitar ou rejeitar o grupo todo.
+
+**Gap medido fim-a-início, não início-a-início.** "Boot" (estreito) e "Security" (largo) ficam colados com ~20px de espaço real, mas ~100-200px de distância início-a-início só por causa da largura da própria palavra. Comparar fim de um item com início do próximo isola o espaço visual de verdade.
+
+**Limiar de fundo (sinal A) diferente pra corpo vs. fileira/coluna.** A mesma constante (`MIN_BG_DISTANCE=250`) era usada nos dois contextos. Seleções reais em grupos locais pequenos mediram `d_bg` entre 75-146 — bem abaixo de 250, mas também bem acima do que qualquer item não-selecionado no mesmo grupo mediu (<26). Novo `STRIP_MIN_BG_DISTANCE=100`, só pra fileira/coluna; o corpo manteve 250.
+
+**"Só o mais forte vence" também no sinal A.** Antes só o sinal B (cor de texto) tinha essa disciplina. Com o limiar de fundo mais permissivo, ruído de foto real passou a fazer múltiplas linhas baterem o piso ao mesmo tempo — agora o sinal A também exige vencedor claro sobre o segundo colocado.
+
+### Resultado final (`test_selection.py`)
+
+| Item | Status |
+|---|---|
+| Barra lateral (Advanced / Save & Exit) | **4 de 5 fotos** — 1 com sinal fraco (foto específica, ângulo/exposição), documentado, não exigido |
+| Item de submenu (MAC Address, Hardware Monitor, CPU Overheat, Save Changes) | **1 de 4** — ver limitação abaixo |
+| Falso positivo (~240 capturas negativas) | 2,0% (subiu de 1,4% — preço de detectar coluna vertical também) |
+| Sintéticos + AMI (re-rotulados) | continuam 100% corretos |
+
+**Descoberta de rotulagem:** a lista de itens de configuração da própria AMI (CPU Configuration, IDE Configuration, ... ACPI Configuration) TAMBÉM é uma coluna vertical de itens parecidos — só não tinha nome antes porque "coluna" não existia como conceito. Ela virou `menu_column` em vez de `body`, sem mudar qual linha é detectada. `body` agora significa especificamente "item isolado, não faz parte de uma lista grande o bastante" — mais raro do que antes, de propósito.
+
+### Limitação conhecida: item de submenu com descrição colada embaixo
+
+Na lista de submenu da Positivo, cada item tem uma linha de descrição logo abaixo (ex: "MAC Address Pass-Through (MAPT)" seguido de "Configure MAC Address Pass-Through..."). Numa foto real, a barra de destaque branca não preenche perfeitamente a caixa delimitadora apertada do OCR — a borda "vaza" um pouco pra linha vizinha. Medido num caso: o item real teve `d_bg=122.2`, e sua PRÓPRIA descrição (contaminada pelo vazamento) teve `d_bg=121.5` — praticamente empatados. A regra de "vencedor precisa bater o segundo colocado por 2,2x" corretamente se recusa a escolher entre os dois quase-iguais, então nenhum dos dois é marcado.
+
+Não tentei consertar isso às cegas — precisa de mais fotos reais desse padrão específico (item+descrição colados) pra calibrar com confiança. O sinal A (barra lateral) não sofre desse problema porque os itens da barra lateral não têm descrição colada embaixo.
+
+### Por que threshold-chasing tem limite
+
+Ao longo dessa investigação, cada ajuste de limiar pra resolver um caso specific revelou um caso novo: primeiro o `std` (ruído de compressão), depois o piso de distância de fundo, depois múltiplos vencedores no sinal A, depois uma fileira espúria por coincidência de posição, depois a métrica de vão errada, depois um grupo que precisa dividir em vez de rejeitar. Em algum ponto — aqui, quando restou 1 foto com sinal fraco e 3 com vazamento de vizinhança — baixar mais o limiar geral custava mais em falso positivo do que valia pra esses casos específicos. Documentar como limitação conhecida, com o número exato medido, é mais honesto do que ficar ajustando até "parecer que passou".

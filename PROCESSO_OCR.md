@@ -20,9 +20,11 @@ Pipeline fechado em 2026-08-03. Cobre da captura da câmera até a saída final;
    - **Sinal A — barra de fundo invertida**: um bloco sólido de cor contrastante atrás do item (ex: barra branca com texto preto numa tela preta).
    - **Sinal B — cor de texto diferente**: o fundo não muda, só a cor do texto do item selecionado (é assim que a BIOS AMI real das nossas fotos funciona: o item selecionado fica branco enquanto os outros ficam azuis).
 
-   E existem **dois níveis de seleção ao mesmo tempo**: a aba ativa no menu superior (`region: "menu_strip"`) e o item focado no corpo da tela (`region: "body"`). Cada linha destacada carrega essa informação, e as duas podem aparecer juntas na mesma tela — foi exatamente o caso encontrado numa das fotos reais (aba "Advanced" ativa + item "ACPI Configuration" focado).
+   E o menu pode ser **horizontal ou vertical**: a BIOS AMI usa uma barra de abas no topo, a BIOS Positivo (2º modelo real testado) usa uma coluna lateral à esquerda. As linhas são agrupadas tanto em fileiras quanto em colunas (por posição na tela), e cada grupo grande o bastante (`region: "menu_strip"` pra fileira, `region: "menu_column"` pra coluna) é julgado contra si mesmo, não contra a tela toda — necessário porque menu e corpo costumam ter cores de fundo bem diferentes. `region: "body"` sobrou pra itens isolados que não fazem parte de nenhuma lista grande.
 
-   Roda sempre (é só processamento de imagem, sem chamada de rede). Ver "Precisão da detecção" abaixo para como isso foi calibrado, e `ESTUDO_SELECAO.md` para o comparativo de métodos e a decisão sobre os dois níveis.
+   Isso também permite **múltiplos níveis de seleção ao mesmo tempo**: a aba/item ativo no menu (`menu_strip`/`menu_column`) e o item focado no corpo — cada linha destacada carrega essa informação, e os níveis podem aparecer juntos na mesma tela (visto de verdade numa foto real: aba "Advanced" ativa + item "ACPI Configuration" focado, ao mesmo tempo).
+
+   Roda sempre (é só processamento de imagem, sem chamada de rede). Ver "Precisão da detecção" abaixo para como isso foi calibrado, e `ESTUDO_SELECAO.md` para o comparativo de métodos, a validação contra 2 modelos de BIOS reais, e as limitações conhecidas que restaram.
 
 5. **Extração de campos via LLM local**
    O texto bruto do OCR vai pro modelo Qwen3 4B rodando na NPU da máquina da fábrica (Lemonade/FastFlowLM). Ele organiza o texto em pares `"BIOS Version": "F.31"`, etc., e pode limpar rótulos conhecidos com erro de OCR (ex: "Systym Date" → "System Date"). Ele **nunca** deve alterar o valor em si.
@@ -63,13 +65,16 @@ A primeira versão marcava **39,5% de todas as linhas** como selecionadas — in
 
 Além disso, o sinal B é limitado a **um item por tela**: uma BIOS seleciona exatamente um item, então várias linhas com cor estranha significam que aquela tela não está mostrando seleção nenhuma.
 
-Resultado, medido por `test_selection.py`:
+Resultado, medido por `test_selection.py` (2026-08-04, após validar contra o 2º modelo de BIOS real — Positivo, menu vertical):
 
 | Conjunto | Resultado |
 |---|---|
 | Sintéticos (barra invertida, gabarito por construção) | 3/3 exatos |
-| Fotos de BIOS AMI real (seleção por cor de texto) | 3/3 exatos |
-| ~240 capturas sem seleção nenhuma | 1,4% falsos positivos (era 39,5%) |
+| Fotos de BIOS AMI real (menu horizontal) | 3/3 exatos |
+| Fotos de BIOS Positivo real (menu vertical) | 4/5 barra lateral, 1/4 item de submenu (limitações documentadas em `ESTUDO_SELECAO.md`) |
+| ~240 capturas sem seleção nenhuma | 2,0% falsos positivos (era 39,5% na primeira versão; 1,4% antes de generalizar pra menu vertical) |
+
+Duas limitações conhecidas e não resolvidas às cegas, ambas documentadas com o número exato medido em `selection.py` e `ESTUDO_SELECAO.md`: (1) uma foto com sinal de cor mais fraco que o piso calibrado (ângulo/exposição variam de foto pra foto); (2) itens de submenu com uma linha de descrição colada embaixo, onde o vazamento de cor da barra de destaque na foto real deixa a descrição quase tão "suspeita" quanto o item de verdade.
 
 Rodar após qualquer mudança:
 

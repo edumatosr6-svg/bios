@@ -1,0 +1,1109 @@
+{
+  "engine": "paddleocr",
+  "image_size": {
+    "width": 3840,
+    "height": 2160
+  },
+  "full_text": "POSITIVO\nSetup\nCPU Temperature\n61C\nCPU Fan Speed\n3098 RPM\nMain\nCPU Overheat Alert Configuration\nAdvanced\nConfigure CPU Overheat Alert Parameters.\nSecurity\n» CPU SMART FAN Configuration\nPrevious\nValues\nBoot\nConfigure CPU SMART FAN Parameters.\nSave & Exit\nEvent Log\nOptimized\nDefaults\nBack\nVersion 2.22.0058. Copyright (C) 2026 Positivo Tecnologia SA",
+  "blocks": [
+    {
+      "block_num": 0,
+      "lines": [
+        {
+          "line_num": 0,
+          "text": "POSITIVO",
+          "bbox": {
+            "left": 560,
+            "top": 369,
+            "width": 386,
+            "height": 70
+          },
+          "words": [
+            {
+              "text": "POSITIVO",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 592,
+                "top": 369,
+                "width": 332,
+                "height": 70
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            236,
+            181,
+            123
+          ],
+          "fg_color": [
+            251,
+            254,
+            247
+          ]
+        },
+        {
+          "line_num": 1,
+          "text": "Setup",
+          "bbox": {
+            "left": 651,
+            "top": 487,
+            "width": 217,
+            "height": 91
+          },
+          "words": [
+            {
+              "text": "Setup",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 680,
+                "top": 487,
+                "width": 174,
+                "height": 91
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            247,
+            193,
+            139
+          ],
+          "fg_color": [
+            254,
+            254,
+            236
+          ]
+        },
+        {
+          "line_num": 2,
+          "text": "CPU Temperature",
+          "bbox": {
+            "left": 1476,
+            "top": 493,
+            "width": 281,
+            "height": 49
+          },
+          "words": [
+            {
+              "text": "CPU",
+              "confidence": 99.09,
+              "bbox": {
+                "left": 1491,
+                "top": 493,
+                "width": 44,
+                "height": 49
+              }
+            },
+            {
+              "text": "Temperature",
+              "confidence": 99.09,
+              "bbox": {
+                "left": 1558,
+                "top": 493,
+                "width": 191,
+                "height": 49
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            74,
+            56,
+            56
+          ],
+          "fg_color": [
+            231,
+            190,
+            151
+          ]
+        },
+        {
+          "line_num": 3,
+          "text": "61C",
+          "bbox": {
+            "left": 2358,
+            "top": 503,
+            "width": 74,
+            "height": 43
+          },
+          "words": [
+            {
+              "text": "61C",
+              "confidence": 97.72,
+              "bbox": {
+                "left": 2372,
+                "top": 503,
+                "width": 50,
+                "height": 43
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            57,
+            56,
+            66
+          ],
+          "fg_color": [
+            228,
+            231,
+            229
+          ]
+        },
+        {
+          "line_num": 4,
+          "text": "CPU Fan Speed",
+          "bbox": {
+            "left": 1474,
+            "top": 574,
+            "width": 238,
+            "height": 51
+          },
+          "words": [
+            {
+              "text": "CPU",
+              "confidence": 99.67,
+              "bbox": {
+                "left": 1489,
+                "top": 574,
+                "width": 47,
+                "height": 51
+              }
+            },
+            {
+              "text": "Fan",
+              "confidence": 99.67,
+              "bbox": {
+                "left": 1560,
+                "top": 574,
+                "width": 39,
+                "height": 51
+              }
+            },
+            {
+              "text": "Speed",
+              "confidence": 99.67,
+              "bbox": {
+                "left": 1623,
+                "top": 574,
+                "width": 79,
+                "height": 51
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            89,
+            69,
+            64
+          ],
+          "fg_color": [
+            238,
+            197,
+            161
+          ]
+        },
+        {
+          "line_num": 5,
+          "text": "3098 RPM",
+          "bbox": {
+            "left": 2358,
+            "top": 583,
+            "width": 148,
+            "height": 46
+          },
+          "words": [
+            {
+              "text": "3098",
+              "confidence": 99.96,
+              "bbox": {
+                "left": 2372,
+                "top": 583,
+                "width": 56,
+                "height": 46
+              }
+            },
+            {
+              "text": "RPM",
+              "confidence": 99.96,
+              "bbox": {
+                "left": 2449,
+                "top": 583,
+                "width": 42,
+                "height": 46
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            73,
+            67,
+            70
+          ],
+          "fg_color": [
+            246,
+            248,
+            242
+          ]
+        },
+        {
+          "line_num": 6,
+          "text": "Main",
+          "bbox": {
+            "left": 765,
+            "top": 653,
+            "width": 109,
+            "height": 54
+          },
+          "words": [
+            {
+              "text": "Main",
+              "confidence": 99.92,
+              "bbox": {
+                "left": 791,
+                "top": 653,
+                "width": 68,
+                "height": 54
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            205,
+            182,
+            165
+          ],
+          "fg_color": [
+            254,
+            254,
+            245
+          ]
+        },
+        {
+          "line_num": 7,
+          "text": "CPU Overheat Alert Configuration",
+          "bbox": {
+            "left": 1487,
+            "top": 658,
+            "width": 532,
+            "height": 50
+          },
+          "words": [
+            {
+              "text": "CPU",
+              "confidence": 99.29,
+              "bbox": {
+                "left": 1515,
+                "top": 658,
+                "width": 48,
+                "height": 50
+              }
+            },
+            {
+              "text": "Overheat",
+              "confidence": 99.29,
+              "bbox": {
+                "left": 1583,
+                "top": 658,
+                "width": 130,
+                "height": 50
+              }
+            },
+            {
+              "text": "Alert",
+              "confidence": 99.29,
+              "bbox": {
+                "left": 1734,
+                "top": 658,
+                "width": 61,
+                "height": 50
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.29,
+              "bbox": {
+                "left": 1816,
+                "top": 658,
+                "width": 198,
+                "height": 50
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            117,
+            85,
+            77
+          ],
+          "fg_color": [
+            254,
+            254,
+            244
+          ]
+        },
+        {
+          "line_num": 8,
+          "text": "Advanced",
+          "bbox": {
+            "left": 763,
+            "top": 716,
+            "width": 202,
+            "height": 50
+          },
+          "words": [
+            {
+              "text": "Advanced",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 786,
+                "top": 716,
+                "width": 173,
+                "height": 50
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            175,
+            153,
+            138
+          ],
+          "fg_color": [
+            241,
+            243,
+            239
+          ]
+        },
+        {
+          "line_num": 9,
+          "text": "Configure CPU Overheat Alert Parameters.",
+          "bbox": {
+            "left": 1473,
+            "top": 718,
+            "width": 479,
+            "height": 42
+          },
+          "words": [
+            {
+              "text": "Configure",
+              "confidence": 99.24,
+              "bbox": {
+                "left": 1485,
+                "top": 718,
+                "width": 102,
+                "height": 42
+              }
+            },
+            {
+              "text": "CPU",
+              "confidence": 99.24,
+              "bbox": {
+                "left": 1599,
+                "top": 718,
+                "width": 36,
+                "height": 42
+              }
+            },
+            {
+              "text": "Overheat",
+              "confidence": 99.24,
+              "bbox": {
+                "left": 1653,
+                "top": 718,
+                "width": 96,
+                "height": 42
+              }
+            },
+            {
+              "text": "Alert",
+              "confidence": 99.24,
+              "bbox": {
+                "left": 1761,
+                "top": 718,
+                "width": 48,
+                "height": 42
+              }
+            },
+            {
+              "text": "Parameters",
+              "confidence": 99.24,
+              "bbox": {
+                "left": 1821,
+                "top": 718,
+                "width": 120,
+                "height": 42
+              }
+            },
+            {
+              "text": ".",
+              "confidence": 99.24,
+              "bbox": {
+                "left": 1947,
+                "top": 718,
+                "width": 6,
+                "height": 42
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            117,
+            86,
+            77
+          ],
+          "fg_color": [
+            202,
+            174,
+            160
+          ]
+        },
+        {
+          "line_num": 10,
+          "text": "Security",
+          "bbox": {
+            "left": 760,
+            "top": 772,
+            "width": 174,
+            "height": 60
+          },
+          "words": [
+            {
+              "text": "Security",
+              "confidence": 99.84,
+              "bbox": {
+                "left": 780,
+                "top": 772,
+                "width": 142,
+                "height": 60
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            214,
+            196,
+            179
+          ],
+          "fg_color": [
+            254,
+            254,
+            246
+          ]
+        },
+        {
+          "line_num": 11,
+          "text": "» CPU SMART FAN Configuration",
+          "bbox": {
+            "left": 1469,
+            "top": 789,
+            "width": 506,
+            "height": 55
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 99.48,
+              "bbox": {
+                "left": 1485,
+                "top": 789,
+                "width": 22,
+                "height": 55
+              }
+            },
+            {
+              "text": "CPU",
+              "confidence": 99.48,
+              "bbox": {
+                "left": 1515,
+                "top": 789,
+                "width": 45,
+                "height": 55
+              }
+            },
+            {
+              "text": "SMART",
+              "confidence": 99.48,
+              "bbox": {
+                "left": 1583,
+                "top": 789,
+                "width": 98,
+                "height": 55
+              }
+            },
+            {
+              "text": "FAN",
+              "confidence": 99.48,
+              "bbox": {
+                "left": 1696,
+                "top": 789,
+                "width": 52,
+                "height": 55
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.48,
+              "bbox": {
+                "left": 1771,
+                "top": 789,
+                "width": 196,
+                "height": 55
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            129,
+            96,
+            82
+          ],
+          "fg_color": [
+            251,
+            220,
+            180
+          ]
+        },
+        {
+          "line_num": 12,
+          "text": "Previous",
+          "bbox": {
+            "left": 3268,
+            "top": 786,
+            "width": 107,
+            "height": 32
+          },
+          "words": [
+            {
+              "text": "Previous",
+              "confidence": 99.55,
+              "bbox": {
+                "left": 3278,
+                "top": 786,
+                "width": 91,
+                "height": 32
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            229,
+            204,
+            167
+          ],
+          "fg_color": [
+            249,
+            245,
+            221
+          ]
+        },
+        {
+          "line_num": 13,
+          "text": "Values",
+          "bbox": {
+            "left": 3279,
+            "top": 817,
+            "width": 87,
+            "height": 32
+          },
+          "words": [
+            {
+              "text": "Values",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 3295,
+                "top": 817,
+                "width": 65,
+                "height": 32
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            231,
+            207,
+            171
+          ],
+          "fg_color": [
+            250,
+            248,
+            225
+          ]
+        },
+        {
+          "line_num": 14,
+          "text": "Boot",
+          "bbox": {
+            "left": 761,
+            "top": 833,
+            "width": 106,
+            "height": 51
+          },
+          "words": [
+            {
+              "text": "Boot",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 778,
+                "top": 833,
+                "width": 82,
+                "height": 51
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            219,
+            200,
+            184
+          ],
+          "fg_color": [
+            254,
+            254,
+            248
+          ]
+        },
+        {
+          "line_num": 15,
+          "text": "Configure CPU SMART FAN Parameters.",
+          "bbox": {
+            "left": 1469,
+            "top": 852,
+            "width": 447,
+            "height": 44
+          },
+          "words": [
+            {
+              "text": "Configure",
+              "confidence": 97.87,
+              "bbox": {
+                "left": 1481,
+                "top": 852,
+                "width": 102,
+                "height": 44
+              }
+            },
+            {
+              "text": "CPU",
+              "confidence": 97.87,
+              "bbox": {
+                "left": 1595,
+                "top": 852,
+                "width": 36,
+                "height": 44
+              }
+            },
+            {
+              "text": "SMART",
+              "confidence": 97.87,
+              "bbox": {
+                "left": 1649,
+                "top": 852,
+                "width": 66,
+                "height": 44
+              }
+            },
+            {
+              "text": "FAN",
+              "confidence": 97.87,
+              "bbox": {
+                "left": 1733,
+                "top": 852,
+                "width": 30,
+                "height": 44
+              }
+            },
+            {
+              "text": "Parameters",
+              "confidence": 97.87,
+              "bbox": {
+                "left": 1781,
+                "top": 852,
+                "width": 126,
+                "height": 44
+              }
+            },
+            {
+              "text": ".",
+              "confidence": 97.87,
+              "bbox": {
+                "left": 1907,
+                "top": 852,
+                "width": 6,
+                "height": 44
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            136,
+            105,
+            88
+          ],
+          "fg_color": [
+            218,
+            188,
+            172
+          ]
+        },
+        {
+          "line_num": 16,
+          "text": "Save & Exit",
+          "bbox": {
+            "left": 759,
+            "top": 893,
+            "width": 226,
+            "height": 53
+          },
+          "words": [
+            {
+              "text": "Save",
+              "confidence": 95.66,
+              "bbox": {
+                "left": 776,
+                "top": 893,
+                "width": 74,
+                "height": 53
+              }
+            },
+            {
+              "text": "&",
+              "confidence": 95.66,
+              "bbox": {
+                "left": 858,
+                "top": 893,
+                "width": 49,
+                "height": 53
+              }
+            },
+            {
+              "text": "Exit",
+              "confidence": 95.66,
+              "bbox": {
+                "left": 915,
+                "top": 893,
+                "width": 66,
+                "height": 53
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            230,
+            210,
+            192
+          ],
+          "fg_color": [
+            254,
+            254,
+            246
+          ]
+        },
+        {
+          "line_num": 17,
+          "text": "Event Log",
+          "bbox": {
+            "left": 755,
+            "top": 951,
+            "width": 206,
+            "height": 63
+          },
+          "words": [
+            {
+              "text": "Event",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 774,
+                "top": 951,
+                "width": 95,
+                "height": 63
+              }
+            },
+            {
+              "text": "Log",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 898,
+                "top": 951,
+                "width": 57,
+                "height": 63
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            231,
+            214,
+            195
+          ],
+          "fg_color": [
+            254,
+            254,
+            247
+          ]
+        },
+        {
+          "line_num": 18,
+          "text": "Optimized",
+          "bbox": {
+            "left": 3264,
+            "top": 1013,
+            "width": 127,
+            "height": 32
+          },
+          "words": [
+            {
+              "text": "Optimized",
+              "confidence": 99.98,
+              "bbox": {
+                "left": 3274,
+                "top": 1013,
+                "width": 112,
+                "height": 32
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            235,
+            220,
+            187
+          ],
+          "fg_color": [
+            249,
+            253,
+            233
+          ]
+        },
+        {
+          "line_num": 19,
+          "text": "Defaults",
+          "bbox": {
+            "left": 3272,
+            "top": 1042,
+            "width": 108,
+            "height": 34
+          },
+          "words": [
+            {
+              "text": "Defaults",
+              "confidence": 99.97,
+              "bbox": {
+                "left": 3287,
+                "top": 1042,
+                "width": 88,
+                "height": 34
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            236,
+            224,
+            191
+          ],
+          "fg_color": [
+            248,
+            253,
+            234
+          ]
+        },
+        {
+          "line_num": 20,
+          "text": "Back",
+          "bbox": {
+            "left": 3297,
+            "top": 1242,
+            "width": 64,
+            "height": 30
+          },
+          "words": [
+            {
+              "text": "Back",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 3312,
+                "top": 1242,
+                "width": 45,
+                "height": 30
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            235,
+            238,
+            216
+          ],
+          "fg_color": [
+            246,
+            254,
+            242
+          ]
+        },
+        {
+          "line_num": 21,
+          "text": "Version 2.22.0058. Copyright (C) 2026 Positivo Tecnologia SA",
+          "bbox": {
+            "left": 1880,
+            "top": 1918,
+            "width": 839,
+            "height": 52
+          },
+          "words": [
+            {
+              "text": "Version",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 1893,
+                "top": 1918,
+                "width": 91,
+                "height": 52
+              }
+            },
+            {
+              "text": "2.22.0058",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 2003,
+                "top": 1918,
+                "width": 124,
+                "height": 52
+              }
+            },
+            {
+              "text": ".",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 2133,
+                "top": 1918,
+                "width": 13,
+                "height": 52
+              }
+            },
+            {
+              "text": "Copyright",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 2153,
+                "top": 1918,
+                "width": 123,
+                "height": 52
+              }
+            },
+            {
+              "text": "(",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 2283,
+                "top": 1918,
+                "width": 13,
+                "height": 52
+              }
+            },
+            {
+              "text": "C",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 2302,
+                "top": 1918,
+                "width": 7,
+                "height": 52
+              }
+            },
+            {
+              "text": ")",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 2315,
+                "top": 1918,
+                "width": 13,
+                "height": 52
+              }
+            },
+            {
+              "text": "2026",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 2341,
+                "top": 1918,
+                "width": 52,
+                "height": 52
+              }
+            },
+            {
+              "text": "Positivo",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 2413,
+                "top": 1918,
+                "width": 97,
+                "height": 52
+              }
+            },
+            {
+              "text": "Tecnologia",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 2530,
+                "top": 1918,
+                "width": 136,
+                "height": 52
+              }
+            },
+            {
+              "text": "SA",
+              "confidence": 99.88,
+              "bbox": {
+                "left": 2686,
+                "top": 1918,
+                "width": 19,
+                "height": 52
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            209,
+            188,
+            169
+          ],
+          "fg_color": [
+            247,
+            242,
+            231
+          ]
+        }
+      ]
+    }
+  ],
+  "screen_bg_color": [
+    119,
+    126,
+    124
+  ],
+  "captured_at": "manual"
+}

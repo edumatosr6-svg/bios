@@ -10,9 +10,12 @@ dist/
 .claude/
 
 # Captures folder is mostly ad-hoc test data from this session; keep only
-# the real BIOS photo fixtures that test_selection.py depends on.
+# the real BIOS photo fixtures that test_selection.py depends on
+# (AMI: 20260803-1543*, horizontal tab strip; Positivo: positivo_*, vertical
+# sidebar -- see ESTUDO_SELECAO.md for why both models are fixtures).
 captures/*
 !captures/20260803-1543*
+!captures/positivo_*
 
 # Ad-hoc debug output accumulated during development (logs, one-off dumps)
 *_log*.txt

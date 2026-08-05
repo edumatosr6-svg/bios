@@ -1,0 +1,2213 @@
+{
+  "engine": "paddleocr",
+  "image_size": {
+    "width": 3840,
+    "height": 2160
+  },
+  "full_text": "POSITIVO\nSetup\n MAC Address Pass-Through (MAPT)\nConfigure MAC Address Pass-Through to USB Docking Station\n» Trusted Computing\nMain\nTrusted Computing Settings\nAdvanced\nSecurity\n» Device Control\nPrevious\nBoot\nDevice Control Information\nValues\nSave & Exit\n» Hardware Monitor\nEvent Log\nHardware Monitor Information\n» Smart Charging\nOptimized\nDefaults\nBattery charge limiting mode should be implemented, where the maximum level to which the device will be charged is reduced to extend\nbattery life.\n» Network Stack Configuration\nNetwork Stack Settings\nBack\n» TLS Auth. Configuration\nPress <Enter> to select Tls Auth Configuration.\n» Positivo Asset Protection (PAP)\nPositivo Asset Protection (PAP)- Anti-theft BIOS Module.\n» Absolute Persistence(R) Module\nAbsolute Persistence(R) Module\nVersion 2.22.0058. Copyright (C) 2026 Positivo Tecnologia SA",
+  "blocks": [
+    {
+      "block_num": 0,
+      "lines": [
+        {
+          "line_num": 0,
+          "text": "POSITIVO",
+          "bbox": {
+            "left": 245,
+            "top": 188,
+            "width": 433,
+            "height": 76
+          },
+          "words": [
+            {
+              "text": "POSITIVO",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 280,
+                "top": 188,
+                "width": 368,
+                "height": 76
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            178,
+            144,
+            104
+          ],
+          "fg_color": [
+            191,
+            212,
+            215
+          ]
+        },
+        {
+          "line_num": 1,
+          "text": "Setup",
+          "bbox": {
+            "left": 349,
+            "top": 323,
+            "width": 247,
+            "height": 101
+          },
+          "words": [
+            {
+              "text": "Setup",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 383,
+                "top": 323,
+                "width": 188,
+                "height": 101
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            185,
+            155,
+            119
+          ],
+          "fg_color": [
+            205,
+            212,
+            201
+          ]
+        },
+        {
+          "line_num": 2,
+          "text": " MAC Address Pass-Through (MAPT)",
+          "bbox": {
+            "left": 1285,
+            "top": 335,
+            "width": 640,
+            "height": 55
+          },
+          "words": [
+            {
+              "text": "MAC",
+              "confidence": 98.55,
+              "bbox": {
+                "left": 1330,
+                "top": 335,
+                "width": 58,
+                "height": 55
+              }
+            },
+            {
+              "text": "Address",
+              "confidence": 98.55,
+              "bbox": {
+                "left": 1410,
+                "top": 335,
+                "width": 125,
+                "height": 55
+              }
+            },
+            {
+              "text": "Pass-Through",
+              "confidence": 98.55,
+              "bbox": {
+                "left": 1557,
+                "top": 335,
+                "width": 228,
+                "height": 55
+              }
+            },
+            {
+              "text": "(",
+              "confidence": 98.55,
+              "bbox": {
+                "left": 1793,
+                "top": 335,
+                "width": 22,
+                "height": 55
+              }
+            },
+            {
+              "text": "MAPT",
+              "confidence": 98.55,
+              "bbox": {
+                "left": 1822,
+                "top": 335,
+                "width": 81,
+                "height": 55
+              }
+            },
+            {
+              "text": ")",
+              "confidence": 98.55,
+              "bbox": {
+                "left": 1917,
+                "top": 335,
+                "width": 8,
+                "height": 55
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            76,
+            62,
+            60
+          ],
+          "fg_color": [
+            253,
+            252,
+            243
+          ]
+        },
+        {
+          "line_num": 3,
+          "text": "Configure MAC Address Pass-Through to USB Docking Station",
+          "bbox": {
+            "left": 1282,
+            "top": 403,
+            "width": 782,
+            "height": 52
+          },
+          "words": [
+            {
+              "text": "Configure",
+              "confidence": 98.81,
+              "bbox": {
+                "left": 1294,
+                "top": 403,
+                "width": 114,
+                "height": 52
+              }
+            },
+            {
+              "text": "MAC",
+              "confidence": 98.81,
+              "bbox": {
+                "left": 1426,
+                "top": 403,
+                "width": 42,
+                "height": 52
+              }
+            },
+            {
+              "text": "Address",
+              "confidence": 98.81,
+              "bbox": {
+                "left": 1486,
+                "top": 403,
+                "width": 90,
+                "height": 52
+              }
+            },
+            {
+              "text": "Pass-Through",
+              "confidence": 98.81,
+              "bbox": {
+                "left": 1594,
+                "top": 403,
+                "width": 162,
+                "height": 52
+              }
+            },
+            {
+              "text": "to",
+              "confidence": 98.81,
+              "bbox": {
+                "left": 1774,
+                "top": 403,
+                "width": 18,
+                "height": 52
+              }
+            },
+            {
+              "text": "USB",
+              "confidence": 98.81,
+              "bbox": {
+                "left": 1810,
+                "top": 403,
+                "width": 36,
+                "height": 52
+              }
+            },
+            {
+              "text": "Docking",
+              "confidence": 98.81,
+              "bbox": {
+                "left": 1864,
+                "top": 403,
+                "width": 96,
+                "height": 52
+              }
+            },
+            {
+              "text": "Station",
+              "confidence": 98.81,
+              "bbox": {
+                "left": 1972,
+                "top": 403,
+                "width": 85,
+                "height": 52
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            78,
+            62,
+            59
+          ],
+          "fg_color": [
+            165,
+            147,
+            136
+          ]
+        },
+        {
+          "line_num": 4,
+          "text": "» Trusted Computing",
+          "bbox": {
+            "left": 1278,
+            "top": 485,
+            "width": 378,
+            "height": 58
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 1295,
+                "top": 485,
+                "width": 24,
+                "height": 58
+              }
+            },
+            {
+              "text": "Trusted",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 1327,
+                "top": 485,
+                "width": 120,
+                "height": 58
+              }
+            },
+            {
+              "text": "Computing",
+              "confidence": 98.62,
+              "bbox": {
+                "left": 1471,
+                "top": 485,
+                "width": 176,
+                "height": 58
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            94,
+            73,
+            66
+          ],
+          "fg_color": [
+            217,
+            189,
+            159
+          ]
+        },
+        {
+          "line_num": 5,
+          "text": "Main",
+          "bbox": {
+            "left": 485,
+            "top": 514,
+            "width": 120,
+            "height": 53
+          },
+          "words": [
+            {
+              "text": "Main",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 511,
+                "top": 514,
+                "width": 85,
+                "height": 53
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            157,
+            150,
+            142
+          ],
+          "fg_color": [
+            207,
+            215,
+            214
+          ]
+        },
+        {
+          "line_num": 6,
+          "text": "Trusted Computing Settings",
+          "bbox": {
+            "left": 1281,
+            "top": 555,
+            "width": 360,
+            "height": 46
+          },
+          "words": [
+            {
+              "text": "Trusted",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 1294,
+                "top": 555,
+                "width": 86,
+                "height": 46
+              }
+            },
+            {
+              "text": "Computing",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 1398,
+                "top": 555,
+                "width": 124,
+                "height": 46
+              }
+            },
+            {
+              "text": "Settings",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 1540,
+                "top": 555,
+                "width": 92,
+                "height": 46
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            102,
+            80,
+            72
+          ],
+          "fg_color": [
+            184,
+            165,
+            151
+          ]
+        },
+        {
+          "line_num": 7,
+          "text": "Advanced",
+          "bbox": {
+            "left": 487,
+            "top": 583,
+            "width": 223,
+            "height": 54
+          },
+          "words": [
+            {
+              "text": "Advanced",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 512,
+                "top": 583,
+                "width": 188,
+                "height": 54
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            86,
+            77,
+            76
+          ],
+          "fg_color": [
+            201,
+            215,
+            217
+          ]
+        },
+        {
+          "line_num": 8,
+          "text": "Security",
+          "bbox": {
+            "left": 487,
+            "top": 650,
+            "width": 188,
+            "height": 61
+          },
+          "words": [
+            {
+              "text": "Security",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 506,
+                "top": 650,
+                "width": 159,
+                "height": 61
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            166,
+            161,
+            154
+          ],
+          "fg_color": [
+            211,
+            222,
+            222
+          ]
+        },
+        {
+          "line_num": 9,
+          "text": "» Device Control",
+          "bbox": {
+            "left": 1278,
+            "top": 641,
+            "width": 290,
+            "height": 45
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 99.69,
+              "bbox": {
+                "left": 1299,
+                "top": 641,
+                "width": 20,
+                "height": 45
+              }
+            },
+            {
+              "text": "Device",
+              "confidence": 99.69,
+              "bbox": {
+                "left": 1325,
+                "top": 641,
+                "width": 100,
+                "height": 45
+              }
+            },
+            {
+              "text": "Control",
+              "confidence": 99.69,
+              "bbox": {
+                "left": 1445,
+                "top": 641,
+                "width": 120,
+                "height": 45
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            118,
+            91,
+            80
+          ],
+          "fg_color": [
+            228,
+            201,
+            171
+          ]
+        },
+        {
+          "line_num": 10,
+          "text": "Previous",
+          "bbox": {
+            "left": 3310,
+            "top": 679,
+            "width": 117,
+            "height": 32
+          },
+          "words": [
+            {
+              "text": "Previous",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 3320,
+                "top": 679,
+                "width": 103,
+                "height": 32
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            196,
+            190,
+            172
+          ],
+          "fg_color": [
+            214,
+            224,
+            216
+          ]
+        },
+        {
+          "line_num": 11,
+          "text": "Boot",
+          "bbox": {
+            "left": 488,
+            "top": 717,
+            "width": 117,
+            "height": 53
+          },
+          "words": [
+            {
+              "text": "Boot",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 513,
+                "top": 717,
+                "width": 82,
+                "height": 53
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            164,
+            161,
+            155
+          ],
+          "fg_color": [
+            206,
+            218,
+            219
+          ]
+        },
+        {
+          "line_num": 12,
+          "text": "Device Control Information",
+          "bbox": {
+            "left": 1279,
+            "top": 708,
+            "width": 354,
+            "height": 40
+          },
+          "words": [
+            {
+              "text": "Device",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 1294,
+                "top": 708,
+                "width": 70,
+                "height": 40
+              }
+            },
+            {
+              "text": "Control",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 1385,
+                "top": 708,
+                "width": 80,
+                "height": 40
+              }
+            },
+            {
+              "text": "Information",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 1481,
+                "top": 708,
+                "width": 144,
+                "height": 40
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            124,
+            100,
+            88
+          ],
+          "fg_color": [
+            198,
+            178,
+            164
+          ]
+        },
+        {
+          "line_num": 13,
+          "text": "Values",
+          "bbox": {
+            "left": 3319,
+            "top": 713,
+            "width": 98,
+            "height": 34
+          },
+          "words": [
+            {
+              "text": "Values",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 3335,
+                "top": 713,
+                "width": 72,
+                "height": 34
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            197,
+            192,
+            174
+          ],
+          "fg_color": [
+            212,
+            224,
+            217
+          ]
+        },
+        {
+          "line_num": 14,
+          "text": "Save & Exit",
+          "bbox": {
+            "left": 489,
+            "top": 785,
+            "width": 249,
+            "height": 53
+          },
+          "words": [
+            {
+              "text": "Save",
+              "confidence": 99.83,
+              "bbox": {
+                "left": 506,
+                "top": 785,
+                "width": 88,
+                "height": 53
+              }
+            },
+            {
+              "text": "&",
+              "confidence": 99.83,
+              "bbox": {
+                "left": 602,
+                "top": 785,
+                "width": 48,
+                "height": 53
+              }
+            },
+            {
+              "text": "Exit",
+              "confidence": 99.83,
+              "bbox": {
+                "left": 666,
+                "top": 785,
+                "width": 64,
+                "height": 53
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            174,
+            171,
+            165
+          ],
+          "fg_color": [
+            217,
+            230,
+            230
+          ]
+        },
+        {
+          "line_num": 15,
+          "text": "» Hardware Monitor",
+          "bbox": {
+            "left": 1279,
+            "top": 794,
+            "width": 348,
+            "height": 44
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 99.02,
+              "bbox": {
+                "left": 1297,
+                "top": 794,
+                "width": 18,
+                "height": 44
+              }
+            },
+            {
+              "text": "Hardware",
+              "confidence": 99.02,
+              "bbox": {
+                "left": 1328,
+                "top": 794,
+                "width": 141,
+                "height": 44
+              }
+            },
+            {
+              "text": "Monitor",
+              "confidence": 99.02,
+              "bbox": {
+                "left": 1500,
+                "top": 794,
+                "width": 117,
+                "height": 44
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            133,
+            110,
+            97
+          ],
+          "fg_color": [
+            240,
+            215,
+            187
+          ]
+        },
+        {
+          "line_num": 16,
+          "text": "Event Log",
+          "bbox": {
+            "left": 486,
+            "top": 851,
+            "width": 229,
+            "height": 64
+          },
+          "words": [
+            {
+              "text": "Event",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 507,
+                "top": 851,
+                "width": 104,
+                "height": 64
+              }
+            },
+            {
+              "text": "Log",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 640,
+                "top": 851,
+                "width": 66,
+                "height": 64
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            171,
+            171,
+            167
+          ],
+          "fg_color": [
+            211,
+            227,
+            230
+          ]
+        },
+        {
+          "line_num": 17,
+          "text": "Hardware Monitor Information",
+          "bbox": {
+            "left": 1278,
+            "top": 860,
+            "width": 395,
+            "height": 41
+          },
+          "words": [
+            {
+              "text": "Hardware",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 1294,
+                "top": 860,
+                "width": 108,
+                "height": 41
+              }
+            },
+            {
+              "text": "Monitor",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 1423,
+                "top": 860,
+                "width": 82,
+                "height": 41
+              }
+            },
+            {
+              "text": "Information",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 1521,
+                "top": 860,
+                "width": 144,
+                "height": 41
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            139,
+            117,
+            106
+          ],
+          "fg_color": [
+            208,
+            190,
+            177
+          ]
+        },
+        {
+          "line_num": 18,
+          "text": "» Smart Charging",
+          "bbox": {
+            "left": 1274,
+            "top": 943,
+            "width": 310,
+            "height": 54
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 96.19,
+              "bbox": {
+                "left": 1290,
+                "top": 943,
+                "width": 24,
+                "height": 54
+              }
+            },
+            {
+              "text": "Smart",
+              "confidence": 96.19,
+              "bbox": {
+                "left": 1322,
+                "top": 943,
+                "width": 94,
+                "height": 54
+              }
+            },
+            {
+              "text": "Charging",
+              "confidence": 96.19,
+              "bbox": {
+                "left": 1439,
+                "top": 943,
+                "width": 133,
+                "height": 54
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            148,
+            125,
+            113
+          ],
+          "fg_color": [
+            243,
+            220,
+            196
+          ]
+        },
+        {
+          "line_num": 19,
+          "text": "Optimized",
+          "bbox": {
+            "left": 3291,
+            "top": 934,
+            "width": 143,
+            "height": 35
+          },
+          "words": [
+            {
+              "text": "Optimized",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 3308,
+                "top": 934,
+                "width": 117,
+                "height": 35
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            199,
+            207,
+            199
+          ],
+          "fg_color": [
+            208,
+            229,
+            232
+          ]
+        },
+        {
+          "line_num": 20,
+          "text": "Defaults",
+          "bbox": {
+            "left": 3298,
+            "top": 968,
+            "width": 121,
+            "height": 35
+          },
+          "words": [
+            {
+              "text": "Defaults",
+              "confidence": 99.98,
+              "bbox": {
+                "left": 3315,
+                "top": 968,
+                "width": 96,
+                "height": 35
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            200,
+            210,
+            206
+          ],
+          "fg_color": [
+            208,
+            231,
+            234
+          ]
+        },
+        {
+          "line_num": 21,
+          "text": "Battery charge limiting mode should be implemented, where the maximum level to which the device will be charged is reduced to extend",
+          "bbox": {
+            "left": 1277,
+            "top": 1011,
+            "width": 1735,
+            "height": 67
+          },
+          "words": [
+            {
+              "text": "Battery",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 1293,
+                "top": 1011,
+                "width": 77,
+                "height": 67
+              }
+            },
+            {
+              "text": "charge",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 1387,
+                "top": 1011,
+                "width": 77,
+                "height": 67
+              }
+            },
+            {
+              "text": "limiting",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 1475,
+                "top": 1011,
+                "width": 93,
+                "height": 67
+              }
+            },
+            {
+              "text": "mode",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 1590,
+                "top": 1011,
+                "width": 56,
+                "height": 67
+              }
+            },
+            {
+              "text": "should",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 1662,
+                "top": 1011,
+                "width": 77,
+                "height": 67
+              }
+            },
+            {
+              "text": "be",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 1756,
+                "top": 1011,
+                "width": 16,
+                "height": 67
+              }
+            },
+            {
+              "text": "implemented",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 1789,
+                "top": 1011,
+                "width": 159,
+                "height": 67
+              }
+            },
+            {
+              "text": ",",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 1954,
+                "top": 1011,
+                "width": 17,
+                "height": 67
+              }
+            },
+            {
+              "text": "where",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 1976,
+                "top": 1011,
+                "width": 66,
+                "height": 67
+              }
+            },
+            {
+              "text": "the",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 2059,
+                "top": 1011,
+                "width": 27,
+                "height": 67
+              }
+            },
+            {
+              "text": "maximum",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 2114,
+                "top": 1011,
+                "width": 104,
+                "height": 67
+              }
+            },
+            {
+              "text": "level",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 2235,
+                "top": 1011,
+                "width": 55,
+                "height": 67
+              }
+            },
+            {
+              "text": "to",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 2306,
+                "top": 1011,
+                "width": 17,
+                "height": 67
+              }
+            },
+            {
+              "text": "which",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 2340,
+                "top": 1011,
+                "width": 60,
+                "height": 67
+              }
+            },
+            {
+              "text": "the",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 2417,
+                "top": 1011,
+                "width": 33,
+                "height": 67
+              }
+            },
+            {
+              "text": "device",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 2472,
+                "top": 1011,
+                "width": 66,
+                "height": 67
+              }
+            },
+            {
+              "text": "will",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 2560,
+                "top": 1011,
+                "width": 38,
+                "height": 67
+              }
+            },
+            {
+              "text": "be",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 2615,
+                "top": 1011,
+                "width": 16,
+                "height": 67
+              }
+            },
+            {
+              "text": "charged",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 2648,
+                "top": 1011,
+                "width": 94,
+                "height": 67
+              }
+            },
+            {
+              "text": "is",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 2753,
+                "top": 1011,
+                "width": 16,
+                "height": 67
+              }
+            },
+            {
+              "text": "reduced",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 2786,
+                "top": 1011,
+                "width": 93,
+                "height": 67
+              }
+            },
+            {
+              "text": "to",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 2896,
+                "top": 1011,
+                "width": 16,
+                "height": 67
+              }
+            },
+            {
+              "text": "extend",
+              "confidence": 99.58,
+              "bbox": {
+                "left": 2929,
+                "top": 1011,
+                "width": 77,
+                "height": 67
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            151,
+            135,
+            123
+          ],
+          "fg_color": [
+            205,
+            193,
+            186
+          ]
+        },
+        {
+          "line_num": 22,
+          "text": "battery life.",
+          "bbox": {
+            "left": 1276,
+            "top": 1045,
+            "width": 155,
+            "height": 38
+          },
+          "words": [
+            {
+              "text": "battery",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 1288,
+                "top": 1045,
+                "width": 82,
+                "height": 38
+              }
+            },
+            {
+              "text": "life",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 1382,
+                "top": 1045,
+                "width": 35,
+                "height": 38
+              }
+            },
+            {
+              "text": ".",
+              "confidence": 99.99,
+              "bbox": {
+                "left": 1422,
+                "top": 1045,
+                "width": 6,
+                "height": 38
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            156,
+            135,
+            123
+          ],
+          "fg_color": [
+            216,
+            199,
+            187
+          ]
+        },
+        {
+          "line_num": 23,
+          "text": "» Network Stack Configuration",
+          "bbox": {
+            "left": 1275,
+            "top": 1128,
+            "width": 533,
+            "height": 54
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 99.69,
+              "bbox": {
+                "left": 1289,
+                "top": 1128,
+                "width": 21,
+                "height": 54
+              }
+            },
+            {
+              "text": "Network",
+              "confidence": 99.69,
+              "bbox": {
+                "left": 1323,
+                "top": 1128,
+                "width": 130,
+                "height": 54
+              }
+            },
+            {
+              "text": "Stack",
+              "confidence": 99.69,
+              "bbox": {
+                "left": 1473,
+                "top": 1128,
+                "width": 82,
+                "height": 54
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 99.69,
+              "bbox": {
+                "left": 1576,
+                "top": 1128,
+                "width": 218,
+                "height": 54
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            165,
+            142,
+            129
+          ],
+          "fg_color": [
+            249,
+            229,
+            206
+          ]
+        },
+        {
+          "line_num": 24,
+          "text": "Network Stack Settings",
+          "bbox": {
+            "left": 1275,
+            "top": 1196,
+            "width": 298,
+            "height": 40
+          },
+          "words": [
+            {
+              "text": "Network",
+              "confidence": 98.51,
+              "bbox": {
+                "left": 1292,
+                "top": 1196,
+                "width": 88,
+                "height": 40
+              }
+            },
+            {
+              "text": "Stack",
+              "confidence": 98.51,
+              "bbox": {
+                "left": 1397,
+                "top": 1196,
+                "width": 60,
+                "height": 40
+              }
+            },
+            {
+              "text": "Settings",
+              "confidence": 98.51,
+              "bbox": {
+                "left": 1474,
+                "top": 1196,
+                "width": 93,
+                "height": 40
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            169,
+            146,
+            133
+          ],
+          "fg_color": [
+            224,
+            207,
+            194
+          ]
+        },
+        {
+          "line_num": 25,
+          "text": "Back",
+          "bbox": {
+            "left": 3318,
+            "top": 1192,
+            "width": 67,
+            "height": 25
+          },
+          "words": [
+            {
+              "text": "Back",
+              "confidence": 100.0,
+              "bbox": {
+                "left": 3330,
+                "top": 1192,
+                "width": 46,
+                "height": 25
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            196,
+            222,
+            230
+          ],
+          "fg_color": [
+            202,
+            235,
+            246
+          ]
+        },
+        {
+          "line_num": 26,
+          "text": "» TLS Auth. Configuration",
+          "bbox": {
+            "left": 1273,
+            "top": 1277,
+            "width": 448,
+            "height": 54
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 97.0,
+              "bbox": {
+                "left": 1288,
+                "top": 1277,
+                "width": 22,
+                "height": 54
+              }
+            },
+            {
+              "text": "TLS",
+              "confidence": 97.0,
+              "bbox": {
+                "left": 1317,
+                "top": 1277,
+                "width": 44,
+                "height": 54
+              }
+            },
+            {
+              "text": "Auth",
+              "confidence": 97.0,
+              "bbox": {
+                "left": 1391,
+                "top": 1277,
+                "width": 65,
+                "height": 54
+              }
+            },
+            {
+              "text": ".",
+              "confidence": 97.0,
+              "bbox": {
+                "left": 1464,
+                "top": 1277,
+                "width": 14,
+                "height": 54
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 97.0,
+              "bbox": {
+                "left": 1493,
+                "top": 1277,
+                "width": 220,
+                "height": 54
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            176,
+            153,
+            139
+          ],
+          "fg_color": [
+            248,
+            231,
+            209
+          ]
+        },
+        {
+          "line_num": 27,
+          "text": "Press <Enter> to select Tls Auth Configuration.",
+          "bbox": {
+            "left": 1274,
+            "top": 1345,
+            "width": 579,
+            "height": 44
+          },
+          "words": [
+            {
+              "text": "Press",
+              "confidence": 98.1,
+              "bbox": {
+                "left": 1284,
+                "top": 1345,
+                "width": 60,
+                "height": 44
+              }
+            },
+            {
+              "text": "<",
+              "confidence": 98.1,
+              "bbox": {
+                "left": 1349,
+                "top": 1345,
+                "width": 15,
+                "height": 44
+              }
+            },
+            {
+              "text": "Enter",
+              "confidence": 98.1,
+              "bbox": {
+                "left": 1374,
+                "top": 1345,
+                "width": 55,
+                "height": 44
+              }
+            },
+            {
+              "text": ">",
+              "confidence": 98.1,
+              "bbox": {
+                "left": 1434,
+                "top": 1345,
+                "width": 20,
+                "height": 44
+              }
+            },
+            {
+              "text": "to",
+              "confidence": 98.1,
+              "bbox": {
+                "left": 1459,
+                "top": 1345,
+                "width": 15,
+                "height": 44
+              }
+            },
+            {
+              "text": "select",
+              "confidence": 98.1,
+              "bbox": {
+                "left": 1489,
+                "top": 1345,
+                "width": 70,
+                "height": 44
+              }
+            },
+            {
+              "text": "Tls",
+              "confidence": 98.1,
+              "bbox": {
+                "left": 1574,
+                "top": 1345,
+                "width": 30,
+                "height": 44
+              }
+            },
+            {
+              "text": "Auth",
+              "confidence": 98.1,
+              "bbox": {
+                "left": 1619,
+                "top": 1345,
+                "width": 50,
+                "height": 44
+              }
+            },
+            {
+              "text": "Configuration",
+              "confidence": 98.1,
+              "bbox": {
+                "left": 1684,
+                "top": 1345,
+                "width": 161,
+                "height": 44
+              }
+            },
+            {
+              "text": ".",
+              "confidence": 98.1,
+              "bbox": {
+                "left": 1850,
+                "top": 1345,
+                "width": 5,
+                "height": 44
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            180,
+            158,
+            144
+          ],
+          "fg_color": [
+            227,
+            210,
+            197
+          ]
+        },
+        {
+          "line_num": 28,
+          "text": "» Positivo Asset Protection (PAP)",
+          "bbox": {
+            "left": 1271,
+            "top": 1426,
+            "width": 568,
+            "height": 55
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 98.11,
+              "bbox": {
+                "left": 1286,
+                "top": 1426,
+                "width": 21,
+                "height": 55
+              }
+            },
+            {
+              "text": "Positivo",
+              "confidence": 98.11,
+              "bbox": {
+                "left": 1315,
+                "top": 1426,
+                "width": 122,
+                "height": 55
+              }
+            },
+            {
+              "text": "Asset",
+              "confidence": 98.11,
+              "bbox": {
+                "left": 1465,
+                "top": 1426,
+                "width": 79,
+                "height": 55
+              }
+            },
+            {
+              "text": "Protection",
+              "confidence": 98.11,
+              "bbox": {
+                "left": 1566,
+                "top": 1426,
+                "width": 165,
+                "height": 55
+              }
+            },
+            {
+              "text": "(",
+              "confidence": 98.11,
+              "bbox": {
+                "left": 1738,
+                "top": 1426,
+                "width": 22,
+                "height": 55
+              }
+            },
+            {
+              "text": "PAP",
+              "confidence": 98.11,
+              "bbox": {
+                "left": 1767,
+                "top": 1426,
+                "width": 50,
+                "height": 55
+              }
+            },
+            {
+              "text": ")",
+              "confidence": 98.11,
+              "bbox": {
+                "left": 1832,
+                "top": 1426,
+                "width": 7,
+                "height": 55
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            185,
+            163,
+            148
+          ],
+          "fg_color": [
+            248,
+            232,
+            210
+          ]
+        },
+        {
+          "line_num": 29,
+          "text": "Positivo Asset Protection (PAP)- Anti-theft BIOS Module.",
+          "bbox": {
+            "left": 1272,
+            "top": 1495,
+            "width": 710,
+            "height": 46
+          },
+          "words": [
+            {
+              "text": "Positivo",
+              "confidence": 98.35,
+              "bbox": {
+                "left": 1282,
+                "top": 1495,
+                "width": 90,
+                "height": 46
+              }
+            },
+            {
+              "text": "Asset",
+              "confidence": 98.35,
+              "bbox": {
+                "left": 1392,
+                "top": 1495,
+                "width": 60,
+                "height": 46
+              }
+            },
+            {
+              "text": "Protection",
+              "confidence": 98.35,
+              "bbox": {
+                "left": 1467,
+                "top": 1495,
+                "width": 120,
+                "height": 46
+              }
+            },
+            {
+              "text": "(",
+              "confidence": 98.35,
+              "bbox": {
+                "left": 1592,
+                "top": 1495,
+                "width": 15,
+                "height": 46
+              }
+            },
+            {
+              "text": "PAP",
+              "confidence": 98.35,
+              "bbox": {
+                "left": 1612,
+                "top": 1495,
+                "width": 35,
+                "height": 46
+              }
+            },
+            {
+              "text": ")-",
+              "confidence": 98.35,
+              "bbox": {
+                "left": 1657,
+                "top": 1495,
+                "width": 30,
+                "height": 46
+              }
+            },
+            {
+              "text": "Anti-theft",
+              "confidence": 98.35,
+              "bbox": {
+                "left": 1692,
+                "top": 1495,
+                "width": 115,
+                "height": 46
+              }
+            },
+            {
+              "text": "BIOS",
+              "confidence": 98.35,
+              "bbox": {
+                "left": 1822,
+                "top": 1495,
+                "width": 50,
+                "height": 46
+              }
+            },
+            {
+              "text": "Module",
+              "confidence": 98.35,
+              "bbox": {
+                "left": 1897,
+                "top": 1495,
+                "width": 76,
+                "height": 46
+              }
+            },
+            {
+              "text": ".",
+              "confidence": 98.35,
+              "bbox": {
+                "left": 1978,
+                "top": 1495,
+                "width": 5,
+                "height": 46
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            187,
+            166,
+            151
+          ],
+          "fg_color": [
+            226,
+            210,
+            197
+          ]
+        },
+        {
+          "line_num": 30,
+          "text": "» Absolute Persistence(R) Module",
+          "bbox": {
+            "left": 1270,
+            "top": 1577,
+            "width": 578,
+            "height": 53
+          },
+          "words": [
+            {
+              "text": "»",
+              "confidence": 98.86,
+              "bbox": {
+                "left": 1284,
+                "top": 1577,
+                "width": 21,
+                "height": 53
+              }
+            },
+            {
+              "text": "Absolute",
+              "confidence": 98.86,
+              "bbox": {
+                "left": 1318,
+                "top": 1577,
+                "width": 137,
+                "height": 53
+              }
+            },
+            {
+              "text": "Persistence",
+              "confidence": 98.86,
+              "bbox": {
+                "left": 1476,
+                "top": 1577,
+                "width": 178,
+                "height": 53
+              }
+            },
+            {
+              "text": "(",
+              "confidence": 98.86,
+              "bbox": {
+                "left": 1668,
+                "top": 1577,
+                "width": 6,
+                "height": 53
+              }
+            },
+            {
+              "text": "R",
+              "confidence": 98.86,
+              "bbox": {
+                "left": 1688,
+                "top": 1577,
+                "width": 7,
+                "height": 53
+              }
+            },
+            {
+              "text": ")",
+              "confidence": 98.86,
+              "bbox": {
+                "left": 1702,
+                "top": 1577,
+                "width": 20,
+                "height": 53
+              }
+            },
+            {
+              "text": "Module",
+              "confidence": 98.86,
+              "bbox": {
+                "left": 1736,
+                "top": 1577,
+                "width": 103,
+                "height": 53
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            188,
+            168,
+            153
+          ],
+          "fg_color": [
+            242,
+            229,
+            209
+          ]
+        },
+        {
+          "line_num": 31,
+          "text": "Absolute Persistence(R) Module",
+          "bbox": {
+            "left": 1271,
+            "top": 1644,
+            "width": 402,
+            "height": 40
+          },
+          "words": [
+            {
+              "text": "Absolute",
+              "confidence": 99.94,
+              "bbox": {
+                "left": 1286,
+                "top": 1644,
+                "width": 95,
+                "height": 40
+              }
+            },
+            {
+              "text": "Persistence",
+              "confidence": 99.94,
+              "bbox": {
+                "left": 1401,
+                "top": 1644,
+                "width": 135,
+                "height": 40
+              }
+            },
+            {
+              "text": "(",
+              "confidence": 99.94,
+              "bbox": {
+                "left": 1541,
+                "top": 1644,
+                "width": 5,
+                "height": 40
+              }
+            },
+            {
+              "text": "R",
+              "confidence": 99.94,
+              "bbox": {
+                "left": 1556,
+                "top": 1644,
+                "width": 5,
+                "height": 40
+              }
+            },
+            {
+              "text": ")",
+              "confidence": 99.94,
+              "bbox": {
+                "left": 1566,
+                "top": 1644,
+                "width": 15,
+                "height": 40
+              }
+            },
+            {
+              "text": "Module",
+              "confidence": 99.94,
+              "bbox": {
+                "left": 1591,
+                "top": 1644,
+                "width": 75,
+                "height": 40
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            185,
+            168,
+            154
+          ],
+          "fg_color": [
+            212,
+            201,
+            190
+          ]
+        },
+        {
+          "line_num": 32,
+          "text": "Version 2.22.0058. Copyright (C) 2026 Positivo Tecnologia SA",
+          "bbox": {
+            "left": 1735,
+            "top": 1904,
+            "width": 913,
+            "height": 63
+          },
+          "words": [
+            {
+              "text": "Version",
+              "confidence": 98.88,
+              "bbox": {
+                "left": 1750,
+                "top": 1904,
+                "width": 100,
+                "height": 63
+              }
+            },
+            {
+              "text": "2.22.0058",
+              "confidence": 98.88,
+              "bbox": {
+                "left": 1872,
+                "top": 1904,
+                "width": 136,
+                "height": 63
+              }
+            },
+            {
+              "text": ".",
+              "confidence": 98.88,
+              "bbox": {
+                "left": 2008,
+                "top": 1904,
+                "width": 22,
+                "height": 63
+              }
+            },
+            {
+              "text": "Copyright",
+              "confidence": 98.88,
+              "bbox": {
+                "left": 2037,
+                "top": 1904,
+                "width": 129,
+                "height": 63
+              }
+            },
+            {
+              "text": "(",
+              "confidence": 98.88,
+              "bbox": {
+                "left": 2174,
+                "top": 1904,
+                "width": 14,
+                "height": 63
+              }
+            },
+            {
+              "text": "C",
+              "confidence": 98.88,
+              "bbox": {
+                "left": 2195,
+                "top": 1904,
+                "width": 7,
+                "height": 63
+              }
+            },
+            {
+              "text": ")",
+              "confidence": 98.88,
+              "bbox": {
+                "left": 2209,
+                "top": 1904,
+                "width": 15,
+                "height": 63
+              }
+            },
+            {
+              "text": "2026",
+              "confidence": 98.88,
+              "bbox": {
+                "left": 2231,
+                "top": 1904,
+                "width": 65,
+                "height": 63
+              }
+            },
+            {
+              "text": "Positivo",
+              "confidence": 98.88,
+              "bbox": {
+                "left": 2317,
+                "top": 1904,
+                "width": 108,
+                "height": 63
+              }
+            },
+            {
+              "text": "Tecnologia",
+              "confidence": 98.88,
+              "bbox": {
+                "left": 2446,
+                "top": 1904,
+                "width": 144,
+                "height": 63
+              }
+            },
+            {
+              "text": "SA",
+              "confidence": 98.88,
+              "bbox": {
+                "left": 2612,
+                "top": 1904,
+                "width": 21,
+                "height": 63
+              }
+            }
+          ],
+          "highlighted": false,
+          "region": null,
+          "bg_color": [
+            176,
+            161,
+            148
+          ],
+          "fg_color": [
+            199,
+            189,
+            180
+          ]
+        }
+      ]
+    }
+  ],
+  "screen_bg_color": [
+    145,
+    138,
+    131
+  ],
+  "captured_at": "manual"
+}
