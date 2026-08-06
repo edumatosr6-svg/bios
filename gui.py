@@ -23,18 +23,181 @@ panel just says so instead of the whole app hanging or refusing to
 start.
 """
 import multiprocessing as mp
+import os
 import queue
 import threading
 import time
 import tkinter as tk
 from tkinter import ttk
 
+# Quiet the backend's per-frame chatter before OpenCV is imported. A lost
+# camera logs a warning on every failed grab, which at 33 reads a second
+# buries anything useful in the console.
+os.environ.setdefault("OPENCV_LOG_LEVEL", "SILENT")
+
 import cv2
+
+cv2.setLogLevel(0)
 from PIL import Image, ImageTk
 
 from capture import list_camera_devices, resolve_camera_source
 from extract import DEFAULT_HOST, DEFAULT_MODEL, DEFAULT_PORT, ExtractionError
 from sender import send_result
+
+
+# 1280x720, not 1920x1080. More pixels is not more detail: measured on the
+# UGREEN 4K webcam pointed at a BIOS screen, sharpness was 612 at 720p and
+# 85 at 1080p -- the higher mode is interpolated, and the text goes from
+# crisp to mush. Cameras advertise modes they cannot actually resolve, so
+# the default is the resolution that survived measurement, and --resolution
+# exists for hardware that does better.
+REQUESTED_WIDTH, REQUESTED_HEIGHT = 1280, 720
+
+# A camera that has gone away fails every read. Tolerate a few dropped
+# frames, then treat it as lost -- see _on_read_failure.
+MAX_CONSECUTIVE_READ_FAILURES = 30
+
+
+def request_resolution(cap, width=REQUESTED_WIDTH, height=REQUESTED_HEIGHT):
+    """Ask the camera for a resolution usable for BIOS text, and report
+    what it actually gave.
+
+    OpenCV opens a webcam at whatever the driver offers by default, which
+    is routinely 640x480. That is fine for a video call and hopeless for
+    BIOS menu text -- at that size there are not enough pixels per
+    character for OCR to recognise anything, and the failure looks like
+    "the OCR is bad" rather than "the image is too small".
+
+    The plain request comes first and MJPG is only a fallback. Many USB
+    webcams cannot carry their higher modes as raw YUY2 and need the codec
+    switch to reach them -- but MJPG is compressed, and on text its
+    artefacts land exactly on the glyph edges OCR depends on. Asking for
+    the codec only when the resolution was refused keeps the uncompressed
+    path whenever it is available.
+
+    Cameras also substitute a nearby mode without saying so, hence reading
+    the values back rather than assuming the request was honoured.
+    """
+    def apply():
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        return (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
+                int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+
+    got = apply()
+    if got != (width, height):
+        cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
+        got = apply()
+    return got
+
+
+def _perception_worker_process(engine_name, lang, in_queue, out_queue):
+    """Runs the perception engine in a child process, model kept warm.
+
+    Same process-isolation reason as the legacy worker below: OCR holds
+    the GIL for seconds at a time and would freeze the window.
+
+    Only the acquisition stage is rebuilt per frame. Everything after it
+    is constructed once and reused, because the extraction stage owns the
+    loaded OCR model -- rebuilding the pipeline wholesale would reload it
+    on every capture and add seconds to each one.
+    """
+    from perception.model import Perception
+    from perception.pipeline import run_pipeline
+    from perception.stages import (
+        Acquisition, Characterisation, Conditioning, Equivalence, Extraction,
+        Grouping, Identity, Regionalisation, Serialisation, StateInference,
+        Typing,
+    )
+
+    warm = [
+        Conditioning(),
+        Extraction(engine=engine_name),
+        Characterisation(),
+        Regionalisation(),
+        Grouping(),
+        Equivalence(),
+        StateInference(),
+        Typing(),
+        Identity(),
+        Serialisation(view="full"),
+    ]
+
+    while True:
+        item = in_queue.get()
+        if item is None:
+            break
+        frame, auto = item
+
+        captured_at = time.strftime("%Y%m%d-%H%M%S")
+        try:
+            stages = [Acquisition(frames=[frame], captured_at=captured_at)] + warm
+            result = run_pipeline(stages)
+        except Exception:                                     # noqa: BLE001
+            # A crash here used to kill the worker outright. The queue
+            # then had no consumer, the UI waited forever with its busy
+            # flag still set, and every later capture -- automatic or from
+            # the button -- silently went nowhere. Reporting the failure
+            # and staying alive turns a dead app into one bad capture.
+            import traceback
+
+            out_queue.put((
+                {
+                    "mode": "perception",
+                    "error": traceback.format_exc(),
+                    "captured_at": captured_at,
+                },
+                None,
+                auto,
+            ))
+            continue
+        perception = result.perception
+
+        # Flatten to plain data before crossing the process boundary: the
+        # model objects hold numpy arrays and the surface image, none of
+        # which needs to be pickled back to the UI.
+        states = {s.element_id: s for s in perception.states}
+        lines = []
+        for primitive in sorted(
+            (p for p in perception.primitives if p.is_symbolic and p.content),
+            key=lambda p: (p.geometry.y, p.geometry.x),
+        ):
+            state = states.get(primitive.id)
+            klass = perception.klass(state.class_id) if state else None
+            group = perception.group(klass.group_id) if klass else None
+            typing = perception.type_of(group.id) if group else None
+            lines.append({
+                "text": primitive.content,
+                "state": state.name if state else None,
+                "confidence": round(state.confidence, 3) if state else None,
+                "channels": list(state.channels) if state else [],
+                "hint": typing.semantic_hint if typing else None,
+            })
+
+        out_queue.put((
+            {
+                "mode": "perception",
+                "captured_at": captured_at,
+                "contract": result.contract,
+                "lines": lines,
+                "counts": {
+                    "primitives": len(perception.primitives),
+                    "regions": len(perception.regions),
+                    "groups": len(perception.groups),
+                    "classes": len(perception.classes),
+                    "states": len(perception.states),
+                },
+                "abstentions": [a.as_dict() for a in perception.abstentions],
+                "screen_id": perception.identity.screen_id if perception.identity else None,
+                "surface": {
+                    "width": perception.surface.width if perception.surface else 0,
+                    "height": perception.surface.height if perception.surface else 0,
+                    "rectified": perception.surface.rectified if perception.surface else False,
+                },
+            },
+            frame,
+            auto,
+        ))
 
 
 def _ocr_worker_process(engine_name, lang, extract_cfg, in_queue, out_queue):
@@ -76,9 +239,15 @@ class BiosOcrApp:
     def __init__(self, root, camera_source=0, stable_threshold=8.0,
                  stable_frames_required=6, change_threshold=10.0,
                  min_ocr_interval=5.0, engine="paddleocr", lang=None,
-                 extract_cfg=None):
+                 extract_cfg=None, mode="perception",
+                 resolution=(REQUESTED_WIDTH, REQUESTED_HEIGHT)):
         self.root = root
-        self.root.title("BIOS OCR - live preview")
+        self.mode = mode
+        self.resolution = resolution
+        self.root.title(
+            "BIOS - perception engine (live)" if mode == "perception"
+            else "BIOS OCR - live preview"
+        )
 
         self.stable_threshold = stable_threshold
         self.stable_frames_required = stable_frames_required
@@ -88,14 +257,21 @@ class BiosOcrApp:
 
         self.in_queue = mp.Queue()
         self.out_queue = mp.Queue()
-        self.worker = mp.Process(
-            target=_ocr_worker_process,
-            args=(engine, lang, extract_cfg, self.in_queue, self.out_queue),
-            daemon=True,
-        )
+        if mode == "perception":
+            target, args = (
+                _perception_worker_process,
+                (engine, lang, self.in_queue, self.out_queue),
+            )
+        else:
+            target, args = (
+                _ocr_worker_process,
+                (engine, lang, extract_cfg, self.in_queue, self.out_queue),
+            )
+        self.worker = mp.Process(target=target, args=args, daemon=True)
         self.worker.start()
 
         self.cap = None
+        self.read_failures = 0
         self.camera_connect_queue = queue.Queue()
         self.connecting = False
         self.camera_list_queue = queue.Queue()
@@ -196,14 +372,16 @@ class BiosOcrApp:
         cap = cv2.VideoCapture(resolved)
         if not cap.isOpened():
             cap.release()
-            self.camera_connect_queue.put((None, source))
+            self.camera_connect_queue.put((None, source, None))
         else:
-            self.camera_connect_queue.put((cap, source))
+            self.camera_connect_queue.put(
+                (cap, source, request_resolution(cap, *self.resolution))
+            )
 
     def _poll_camera_connect(self):
         try:
             while True:
-                cap, source = self.camera_connect_queue.get_nowait()
+                cap, source, resolution = self.camera_connect_queue.get_nowait()
                 self.connecting = False
                 self.connect_button.state(["!disabled"])
                 if cap is None:
@@ -214,7 +392,12 @@ class BiosOcrApp:
                     if self.cap is not None:
                         self.cap.release()
                     self.cap = cap
-                    self.status_var.set(f"connected to {source!r}, waiting for a stable screen...")
+                    width, height = resolution
+                    warning = "  -- too coarse for BIOS text!" if width < 1280 else ""
+                    self.status_var.set(
+                        f"connected to {source!r} at {width}x{height}{warning}"
+                        f" -- waiting for a stable screen..."
+                    )
         except queue.Empty:
             pass
         self.root.after(200, self._poll_camera_connect)
@@ -223,10 +406,41 @@ class BiosOcrApp:
         if self.cap is not None:
             ok, frame = self.cap.read()
             if ok:
+                self.read_failures = 0
                 self.latest_frame = frame
                 self._render_frame(frame)
                 self._check_stability(frame)
+            else:
+                self._on_read_failure()
         self.root.after(30, self._video_tick)
+
+    def _on_read_failure(self):
+        """Give up on a camera that has stopped delivering frames.
+
+        A USB camera can be invalidated mid-session -- unplugged, claimed
+        by another process, or driven into a bad state by repeated abrupt
+        shutdowns. The read then fails every time, and polling it 33 times
+        a second produces thousands of identical backend warnings while
+        the window still shows the last good frame, so it looks like the
+        app is fine and the screen simply stopped changing.
+
+        Releasing after a short run of failures turns that into a visible,
+        actionable state. The threshold is not zero because an occasional
+        dropped frame is normal and not worth disconnecting over.
+        """
+        self.read_failures += 1
+        if self.read_failures < MAX_CONSECUTIVE_READ_FAILURES:
+            return
+
+        self.cap.release()
+        self.cap = None
+        self.read_failures = 0
+        self.latest_frame = None
+        self.video_label.configure(image="", text="camera stopped delivering frames")
+        self.video_label.image = None
+        self.status_var.set(
+            "camera lost -- unplug and replug the USB cable, then press Connect"
+        )
 
     def _render_frame(self, frame):
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -265,8 +479,18 @@ class BiosOcrApp:
         self.prev_gray = gray
 
     def _force_ocr(self):
-        if self.latest_frame is not None:
-            self._run_ocr_async(self.latest_frame, auto=False)
+        if self.latest_frame is None:
+            self.status_var.set("no frame yet -- connect a camera first")
+            return
+        if not self.worker.is_alive():
+            self.status_var.set("processing worker is not running -- restart the app")
+            return
+        if self.ocr_busy:
+            # Queueing a second capture on top of a running one just makes
+            # the operator wait twice; say so instead of silently piling up.
+            self.status_var.set("already processing -- wait for the current capture")
+            return
+        self._run_ocr_async(self.latest_frame, auto=False)
 
     def _run_ocr_async(self, frame, auto):
         self.ocr_busy = True
@@ -282,9 +506,24 @@ class BiosOcrApp:
                 self._on_ocr_done(result, frame, auto)
         except queue.Empty:
             pass
+
+        # A worker that dies takes the queue's only consumer with it. The
+        # UI would otherwise sit at "running OCR..." forever, with its
+        # busy flag stuck, ignoring the button and every later capture --
+        # looking like the OCR is merely slow.
+        if not self.worker.is_alive():
+            self.ocr_busy = False
+            self.status_var.set(
+                f"processing stopped (worker exited, code "
+                f"{self.worker.exitcode}) -- restart the app"
+            )
+
         self.root.after(200, self._drain_result_queue)
 
     def _on_ocr_done(self, result, frame, auto):
+        if result.get("mode") == "perception":
+            self._on_perception_done(result, frame, auto)
+            return
         send_result(result, image=frame, tag="auto" if auto else "manual")
         self.text_widget.delete("1.0", tk.END)
         self.text_widget.insert(tk.END, result["full_text"])
@@ -316,6 +555,87 @@ class BiosOcrApp:
         self.status_var.set(f"last OCR at {result['captured_at']} - {word_count} words")
         self.ocr_busy = False
 
+    def _on_perception_done(self, result, frame, auto):
+        if result.get("error"):
+            self.text_widget.delete("1.0", tk.END)
+            self.text_widget.insert(tk.END, "--- capture failed ---\n\n")
+            self.text_widget.insert(tk.END, result["error"])
+            self.status_var.set("capture failed -- details in the panel")
+            self.ocr_busy = False
+            return
+
+        try:
+            send_result(
+                {"captured_at": result["captured_at"], **result["contract"]},
+                image=frame,
+                tag="auto" if auto else "manual",
+            )
+        except Exception as exc:                              # noqa: BLE001
+            # Saving is a side errand; failing it must not cost the
+            # operator the reading they just waited for.
+            self.status_var.set(f"(could not save capture: {exc})")
+
+        counts = result["counts"]
+        surface = result["surface"]
+        text = self.text_widget
+        text.delete("1.0", tk.END)
+
+        text.insert(tk.END, "--- text read ---\n")
+        if result["lines"]:
+            for line in result["lines"]:
+                mark = ""
+                if line["state"]:
+                    mark = (
+                        f"   <<< {line['state'].upper()}"
+                        f" ({line['confidence']:.2f}"
+                        f", {','.join(line['channels'])})"
+                    )
+                    if line["hint"]:
+                        mark += f" [{line['hint']}]"
+                text.insert(tk.END, f"{line['text']}{mark}\n")
+        else:
+            text.insert(
+                tk.END,
+                "(nothing read -- fill the frame with the screen, check focus)\n",
+            )
+
+        states = [line for line in result["lines"] if line["state"]]
+        text.insert(tk.END, f"\n--- states ({len(states)}) ---\n")
+        for line in states:
+            text.insert(
+                tk.END,
+                f"{line['state']}: {line['text']}  "
+                f"conf={line['confidence']:.2f} [{line['hint']}]\n",
+            )
+        if not states:
+            text.insert(tk.END, "none detected\n")
+
+        # Abstentions are shown, not hidden: "could not tell" and "nothing
+        # is selected" are different answers and the operator needs to see
+        # which one this is.
+        if result["abstentions"]:
+            counted = {}
+            for abstention in result["abstentions"]:
+                key = f"{abstention['stage']} {abstention['reason']}"
+                counted[key] = counted.get(key, 0) + 1
+            text.insert(tk.END, f"\n--- did not decide ({len(result['abstentions'])}) ---\n")
+            for key in sorted(counted):
+                text.insert(tk.END, f"{counted[key]}x {key}\n")
+
+        text.insert(
+            tk.END,
+            f"\n--- objects ---\n"
+            f"{counts['primitives']} primitives, {counts['regions']} regions, "
+            f"{counts['groups']} groups, {counts['classes']} classes\n"
+            f"screen_id {result['screen_id']}\n",
+        )
+
+        self.status_var.set(
+            f"{result['captured_at']} - {surface['width']}x{surface['height']} - "
+            f"{counts['primitives']} read, {counts['states']} state(s)"
+        )
+        self.ocr_busy = False
+
     def _on_close(self):
         if self.cap is not None:
             self.cap.release()
@@ -336,15 +656,40 @@ def main():
     parser.add_argument("--change-threshold", type=float, default=10.0)
     parser.add_argument("--min-ocr-interval", type=float, default=5.0,
                          help="Minimum seconds between automatic OCR triggers")
+    parser.add_argument("--resolution", default=f"{REQUESTED_WIDTH}x{REQUESTED_HEIGHT}",
+                         help="Resolution to request from the camera, WxH. Higher is "
+                              "not automatically better: a camera's top mode is often "
+                              "interpolated and softer than its native one. Measure "
+                              "before raising this.")
+    parser.add_argument("--legacy", action="store_true",
+                         help="Use the original OCR + selection.py path instead of "
+                              "the perception engine. Kept because the two are not "
+                              "yet equivalent: the engine is better on the vertical-"
+                              "sidebar BIOS and worse on AMI body items -- see the "
+                              "measurements in ESTUDO_SELECAO.md and the specs.")
     parser.add_argument("--extract-fields", action="store_true",
-                         help="Also run OCR text through the local LLM (Lemonade/FastFlowLM) to extract label->value fields")
+                         help="Legacy path only: run OCR text through the local LLM "
+                              "(Lemonade/FastFlowLM) to extract label->value fields")
     parser.add_argument("--llm-host", default=DEFAULT_HOST)
     parser.add_argument("--llm-port", type=int, default=DEFAULT_PORT)
     parser.add_argument("--llm-model", default=DEFAULT_MODEL)
     args = parser.parse_args()
 
+    try:
+        resolution = tuple(int(v) for v in args.resolution.lower().split("x"))
+        if len(resolution) != 2:
+            raise ValueError
+    except ValueError:
+        parser.error(f"--resolution must look like 1280x720, got {args.resolution!r}")
+
     extract_cfg = None
     if args.extract_fields:
+        if not args.legacy:
+            parser.error(
+                "--extract-fields belongs to the legacy path; add --legacy to use it. "
+                "Field extraction is a cognition step and sits after perception, "
+                "not inside it."
+            )
         extract_cfg = {"host": args.llm_host, "port": args.llm_port, "model": args.llm_model}
 
     root = tk.Tk()
@@ -358,6 +703,8 @@ def main():
         engine=args.engine,
         lang=args.lang,
         extract_cfg=extract_cfg,
+        mode="legacy" if args.legacy else "perception",
+        resolution=resolution,
     )
     root.mainloop()
 

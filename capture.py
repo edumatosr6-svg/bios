@@ -69,8 +69,14 @@ def _windows_camera_names():
         result = subprocess.run(
             [
                 "powershell", "-NoProfile", "-Command",
+                # PNPClass 'Camera' only. 'Image' also matches scanners and
+                # multifunction printers, which never appear as OpenCV
+                # camera indices -- one networked scanner in the list was
+                # enough to make the count mismatch below discard every
+                # name, so the listing showed bare indices with no way to
+                # tell the webcam from the built-in one.
                 "Get-CimInstance Win32_PnPEntity | "
-                "Where-Object { $_.PNPClass -eq 'Camera' -or $_.PNPClass -eq 'Image' } | "
+                "Where-Object { $_.PNPClass -eq 'Camera' } | "
                 "Select-Object -ExpandProperty Name",
             ],
             capture_output=True, text=True, timeout=5,
