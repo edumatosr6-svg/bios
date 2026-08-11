@@ -6,16 +6,23 @@ __pycache__/
 build/
 dist/
 
-# Claude Code local environment state
-.claude/
+# Claude Code local environment state (settings, caches) -- but agent
+# definitions under .claude/agents/ are part of the project, keep those tracked
+.claude/*
+!.claude/agents/
+!.claude/agents/**
 
 # Captures folder is mostly ad-hoc test data from this session; keep only
 # the real BIOS photo fixtures that test_selection.py depends on
 # (AMI: 20260803-1543*, horizontal tab strip; Positivo: positivo_*, vertical
-# sidebar -- see ESTUDO_SELECAO.md for why both models are fixtures).
+# sidebar -- see ESTUDO_SELECAO.md for why both models are fixtures), plus
+# the frames the OCR engine benchmark reports numbers against: a study
+# whose evidence image is not in the repo cannot be re-run or checked
+# (see docs/studies/estudo-motores-ocr.md).
 captures/*
 !captures/20260803-1543*
 !captures/positivo_*
+!captures/*_bench_live.png
 
 # Ad-hoc debug output accumulated during development (logs, one-off dumps)
 *_log*.txt

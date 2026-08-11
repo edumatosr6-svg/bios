@@ -20,6 +20,8 @@ py -3.13 study_temporal.py
 | 3 fotos de BIOS AMI real | `captures/20260803-1543*` | Cor do texto (branco vs azul) |
 | ~240 capturas | Fotos diversas sem BIOS | Nenhuma — tudo marcado é falso positivo |
 
+> **Ressalva de reprodutibilidade (2026-08-10)**: o conjunto de ~240 capturas negativas **não existe mais** (dados de sessão, nunca versionados), e uma das 3 fotos AMI (`captures/20260803-154414`) nunca foi commitada. Todas as taxas de falso positivo deste estudo continuam sendo registro do que foi medido em 2026-08-04, mas não são reproduzíveis a partir de um clone nem comparáveis com medições novas. Ver `../specs/p-specs/fixture-de-teste-nunca-versionada.md`.
+
 ## Resultados
 
 | Método | Sintético (barra) | BIOS real (cor de texto) | Falsos positivos |

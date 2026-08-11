@@ -47,6 +47,19 @@ EDGE_PERCENTILE = 88.0          # relative to this surface's own gradients
 MIN_REGION_AREA_RATIO = 0.02
 MIN_PRIMITIVE_OVERLAP = 0.5     # of the primitive's own area
 
+# Frontier continuity test -- see _merge_continuous_contexts.
+#
+# The reach has to clear the widest thing that can be drawn *inside* a
+# context without ending it -- a selection bar. At WORK_WIDTH such a bar
+# is a handful of pixels across, so a reach of a few more than that
+# samples real background on both sides of one instead of landing inside
+# it. Reaching much further would start comparing genuinely distant
+# areas, which is what the adjacency requirement below is for.
+FRONTIER_REACH = 8              # work-scale px to look across a seam
+MIN_FRONTIER_PIXELS = 20        # below this the two barely face each other
+CONTINUITY_TOLERANCE = 3.0      # in units of the sampled strips' own dispersion
+CONTINUITY_FLOOR = 1.5          # colour units; below this a difference is sensor noise
+
 
 class Regionalisation:
     name = "E4.regionalisation"
@@ -165,18 +178,112 @@ def _segment_contexts(image: Any, edge_percentile: float) -> list[Geometry]:
     count, labels, stats, _ = cv2.connectedComponentsWithStats(interior, connectivity=4)
 
     small_area = float(interior.shape[0] * interior.shape[1])
+    kept = [
+        label for label in range(1, count)
+        if stats[label, cv2.CC_STAT_AREA] / small_area >= MIN_REGION_AREA_RATIO
+    ]
+
     boxes: list[Geometry] = []
-    for label in range(1, count):
-        area = stats[label, cv2.CC_STAT_AREA]
-        if area / small_area < MIN_REGION_AREA_RATIO:
-            continue
-        x = stats[label, cv2.CC_STAT_LEFT] / scale
-        y = stats[label, cv2.CC_STAT_TOP] / scale
-        bw = stats[label, cv2.CC_STAT_WIDTH] / scale
-        bh = stats[label, cv2.CC_STAT_HEIGHT] / scale
-        boxes.append(Geometry(int(x), int(y), int(bw), int(bh)))
+    for group in _merge_continuous_contexts(lab, labels, kept):
+        x0 = min(stats[label, cv2.CC_STAT_LEFT] for label in group)
+        y0 = min(stats[label, cv2.CC_STAT_TOP] for label in group)
+        x1 = max(stats[label, cv2.CC_STAT_LEFT] + stats[label, cv2.CC_STAT_WIDTH]
+                 for label in group)
+        y1 = max(stats[label, cv2.CC_STAT_TOP] + stats[label, cv2.CC_STAT_HEIGHT]
+                 for label in group)
+        boxes.append(Geometry(int(x0 / scale), int(y0 / scale),
+                              int((x1 - x0) / scale), int((y1 - y0) / scale)))
 
     return boxes if len(boxes) > 1 else []
+
+
+def _merge_continuous_contexts(
+    lab: Any, labels: Any, kept: list[int]
+) -> list[list[int]]:
+    """Rejoin what a marker split, as opposed to what a context change did.
+
+    A selection bar is a strong gradient discontinuity running the full
+    width of the column it sits in, so the edge test above cuts there:
+    the menu above the bar and the menu below it become two regions, and
+    the highlighted entry -- sitting inside the bar, straddling the seam
+    -- lands in neither. It is then compared against no peers at all,
+    which is exactly the comparison that would have identified it. The
+    highlight defeats its own detection, and the sharper the photo, the
+    more reliably it does so.
+
+    A marker and a boundary are told apart by looking at the surface, not
+    at the primitives -- deriving regions from primitive layout is the
+    circularity §E4 rules out. The question asked here is whether the
+    background *continues* across the frontier: two areas that differ in
+    context differ in appearance right where they meet, while a stripe
+    drawn inside one context has the same background on either side of
+    it. Sampling only next to the frontier is what keeps this compatible
+    with a region that varies smoothly across its extent -- a gradient
+    barely moves over the few pixels being compared, so the vertical
+    blue-to-white sidebar that motivated gradient-based segmentation in
+    the first place still reads as one context rather than two.
+
+    The tolerance is expressed in units of the sampled strips' own
+    dispersion, so nothing here is calibrated to a particular interface
+    (P1/P6).
+    """
+    parent = {label: label for label in kept}
+
+    def find(label: int) -> int:
+        while parent[label] != label:
+            parent[label] = parent[parent[label]]
+            label = parent[label]
+        return label
+
+    def union(a: int, b: int) -> None:
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[max(ra, rb)] = min(ra, rb)
+
+    kernel = cv2.getStructuringElement(
+        cv2.MORPH_RECT, (2 * FRONTIER_REACH + 1, 2 * FRONTIER_REACH + 1)
+    )
+    masks = {label: (labels == label).astype(np.uint8) for label in kept}
+    grown = {label: cv2.dilate(mask, kernel) for label, mask in masks.items()}
+
+    for i, a in enumerate(kept):
+        for b in kept[i + 1:]:
+            # The strip of each region that faces the other. Taking each
+            # side from its own region, rather than from the thin seam
+            # between them, is what survives a marker several pixels wide
+            # -- sampling the seam itself lands inside the marker and
+            # measures the marker's own colour twice.
+            side_a = lab[(masks[a] & grown[b]).astype(bool)]
+            side_b = lab[(masks[b] & grown[a]).astype(bool)]
+            # Doubles as the adjacency test: regions that do not face each
+            # other contribute no pixels here, however alike they look.
+            if len(side_a) < MIN_FRONTIER_PIXELS or len(side_b) < MIN_FRONTIER_PIXELS:
+                continue
+            if _same_background(side_a, side_b):
+                union(a, b)
+
+    groups: dict[int, list[int]] = {}
+    for label in kept:
+        groups.setdefault(find(label), []).append(label)
+    return list(groups.values())
+
+
+def _same_background(side_a: Any, side_b: Any) -> bool:
+    """Do these two samples describe one background or two?
+
+    Judged against the samples' own spread rather than a fixed colour
+    distance: a noisy photograph and a clean screenshot disagree about
+    what counts as "the same colour", and only the sample can say.
+    """
+    median_a = np.median(side_a, axis=0)
+    median_b = np.median(side_b, axis=0)
+    difference = float(np.linalg.norm(median_a - median_b))
+    spread = max(
+        float(np.median(np.abs(side_a - median_a), axis=0).mean()),
+        float(np.median(np.abs(side_b - median_b), axis=0).mean()),
+        CONTINUITY_FLOOR,
+    )
+    return difference <= CONTINUITY_TOLERANCE * spread
 
 
 def _best_region(g: Geometry, boxes: list[Geometry], ids: list[str]) -> str | None:

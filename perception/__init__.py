@@ -17,6 +17,8 @@ channels, structural types without behavioural claims. Deeper stages are
 substitutions, not rewrites -- each stage is defined by its contract
 (§8), so replacing one is a file swap.
 """
+from ocr import DEFAULT_ENGINE
+
 from .model import (
     Abstention,
     Descriptors,
@@ -83,7 +85,7 @@ __all__ = [
 
 def default_pipeline(
     frames,
-    engine: str = "paddleocr",
+    engine: str = DEFAULT_ENGINE,
     rectify: bool = True,
     view: str = "digest",
     captured_at: str | None = None,
@@ -106,7 +108,7 @@ def default_pipeline(
 
 def perceive(
     frames,
-    engine: str = "paddleocr",
+    engine: str = DEFAULT_ENGINE,
     rectify: bool = True,
     view: str = "digest",
     captured_at: str | None = None,

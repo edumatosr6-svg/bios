@@ -17,7 +17,7 @@ import cv2
 
 from capture import resolve_camera_source
 from extract import DEFAULT_HOST, DEFAULT_MODEL, DEFAULT_PORT, ExtractionError, extract_fields
-from ocr import create_ocr_engine
+from ocr import DEFAULT_ENGINE, ENGINE_CHOICES, create_ocr_engine
 from selection import annotate_selection
 from sender import send_result
 
@@ -32,7 +32,7 @@ def watch(
     stable_frames_required=8,
     poll_interval=0.3,
     change_threshold=8.0,
-    engine="paddleocr",
+    engine=DEFAULT_ENGINE,
     lang=None,
     extract=False,
     llm_host=DEFAULT_HOST,
@@ -120,7 +120,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Automatic BIOS screen watcher")
     parser.add_argument("--camera-source", default="0",
                          help="Webcam index (e.g. 0) or a stream URL (e.g. http://<ip>:8080/video)")
-    parser.add_argument("--engine", choices=["tesseract", "paddleocr"], default="paddleocr")
+    parser.add_argument("--engine", choices=ENGINE_CHOICES, default=DEFAULT_ENGINE)
     parser.add_argument("--lang", default=None, help="Language code (engine-specific default if omitted)")
     parser.add_argument("--stable-threshold", type=float, default=1.5)
     parser.add_argument("--stable-frames", type=int, default=8)

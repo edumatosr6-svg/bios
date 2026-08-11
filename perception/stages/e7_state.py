@@ -38,6 +38,27 @@ RUNNER_UP_RATIO = 1.8           # winner must clearly beat second place
 MIN_CONFIDENCE = 0.35
 EPS = 1e-6
 
+# Below this class size, one channel on its own is not enough.
+#
+# Every number here is a ratio against the class's own dispersion, and
+# leave-one-out estimates that dispersion from the *other* members. At
+# the minimum class size of 3 that is a median and a deviation over two
+# values -- an estimate with no power, which any photographic noise can
+# dominate. Measured on a live Positivo Boot screen: a class of three
+# identical "Enabled" dropdown values produced a "selected" at deviation
+# 6.16 against a runner-up of 3.15, clearing both thresholds with nothing
+# whatsoever to distinguish its members; a class of three dropdowns
+# elected the wrong one at 10.04. The genuine selection on the same
+# screen sat in a class of six and scored 31.07.
+#
+# The rule is about the reliability of the statistic, not about any
+# interface: when the reference population is that thin, a lone channel
+# is asserting more than it measured, and a second independent channel
+# has to agree before the engine will say it. Two channels agreeing was
+# already the engine's stated standard of better evidence (F4) -- this
+# makes it a requirement exactly where the evidence is thinnest.
+MIN_SIZE_FOR_SINGLE_CHANNEL = 4
+
 # Dispersion floor, in the units the descriptors are measured in.
 #
 # Scaling a deviation by the class's own spread is what makes the rule
@@ -134,6 +155,24 @@ class StateInference:
                     )
                 )
 
+            # A thin class cannot support a single channel's word for it.
+            if klass.size < MIN_SIZE_FOR_SINGLE_CHANNEL:
+                uncorroborated = [k for k, evidence in hits.items() if len(evidence) < 2]
+                for element_id, state_name in uncorroborated:
+                    abstentions.append(
+                        Abstention(
+                            stage=self.name, level="state", scope_id=klass.id,
+                            reason="single_channel_on_thin_class",
+                            detail={
+                                "element": element_id, "state": state_name,
+                                "size": klass.size,
+                                "minimum": MIN_SIZE_FOR_SINGLE_CHANNEL,
+                                "channels": [c for c, _ in hits[(element_id, state_name)]],
+                            },
+                        )
+                    )
+                hits = {k: v for k, v in hits.items() if len(v) >= 2}
+
             if not hits:
                 abstentions.append(
                     Abstention(
@@ -200,10 +239,21 @@ class StateInference:
         )
 
 
-def _evaluate(
+def measure(
     perception: Perception, klass, descriptor: str, direction: int
-) -> tuple[str, float] | None:
-    """Deviation of each member from the others, in dispersion units."""
+) -> tuple[dict[str, float], dict[str, Any], dict[str, float]]:
+    """Deviation of each member from the others, in dispersion units.
+
+    Kept separate from the decision below so that the explain view
+    (`perception.explain`) can report what *every* member measured, not
+    only the one that won. E7 otherwise discards the losers, which is
+    exactly the information needed to tell "this element stood out" from
+    "nothing stood out and the winner is noise" -- and an answer the
+    engine cannot justify is worth little more than no answer (§F4).
+
+    Both callers go through here so the explanation cannot drift away
+    from the decision it claims to explain.
+    """
     values: dict[str, Any] = {}
     for member_id in klass.member_ids:
         value = perception.desc(member_id).get(descriptor)
@@ -211,14 +261,16 @@ def _evaluate(
             values[member_id] = np.atleast_1d(np.asarray(value, dtype=float))
 
     if len(values) < 3:
-        return None
+        return {}, values, {}
 
     deviations: dict[str, float] = {}
+    spreads: dict[str, float] = {}
     for member_id, value in values.items():
         others = [v for mid, v in values.items() if mid != member_id]
         stack = np.vstack(others)
         centre = np.median(stack, axis=0)
-        spread = max(float(np.median(np.abs(stack - centre), axis=0).mean()), NOISE_FLOOR)
+        raw_spread = float(np.median(np.abs(stack - centre), axis=0).mean())
+        spread = max(raw_spread, NOISE_FLOOR)
         distance = float(np.linalg.norm(value - centre))
 
         if direction != 0:
@@ -229,7 +281,20 @@ def _evaluate(
                 continue
 
         deviations[member_id] = distance / spread
+        # The *measured* dispersion, before the floor is applied. When
+        # this sits under NOISE_FLOOR the class is uniform to within
+        # sensor noise, and every deviation computed from it is a ratio
+        # against a number the measurement cannot actually resolve.
+        spreads[member_id] = raw_spread
 
+    return deviations, values, spreads
+
+
+def _evaluate(
+    perception: Perception, klass, descriptor: str, direction: int
+) -> tuple[str, float] | None:
+    """The winner of a channel, if the class produced one at all."""
+    deviations, _, _ = measure(perception, klass, descriptor, direction)
     if len(deviations) < 2:
         return None
 

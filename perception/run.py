@@ -24,6 +24,8 @@ import cv2
 
 cv2.setLogLevel(0)
 
+from ocr import DEFAULT_ENGINE, ENGINE_CHOICES
+
 from . import describe_pipeline, default_pipeline, perceive
 
 
@@ -52,8 +54,9 @@ def parse_args():
                              "the engine actually looked at")
     parser.add_argument("--text", action="store_true",
                         help="print the text read from the screen, in reading order")
-    parser.add_argument("--engine", choices=["paddleocr", "tesseract"],
-                        default="paddleocr")
+    parser.add_argument("--engine", choices=ENGINE_CHOICES, default=DEFAULT_ENGINE,
+                        help="OCR engine (see study_ocr_engines.py for a measured "
+                             "speed comparison on this machine)")
     parser.add_argument("--no-rectify", action="store_true",
                         help="skip screen rectification (E1 identity pass-through)")
     parser.add_argument("--view", choices=["digest", "full", "both"], default="digest")
@@ -61,6 +64,11 @@ def parse_args():
     parser.add_argument("--trace", action="store_true", help="print per-stage counts")
     parser.add_argument("--summary", action="store_true",
                         help="human-readable summary instead of JSON")
+    parser.add_argument("--explain", action="store_true",
+                        help="show the decision chain -- regions, groups, classes "
+                             "and every channel's per-member measurement -- so a "
+                             "wrong answer can be read back to the stage that "
+                             "produced it")
     parser.add_argument("--describe", action="store_true",
                         help="print the stage/level table and exit")
     return parser.parse_args()
@@ -236,6 +244,12 @@ def main():
         view=args.view,
         trace=args.trace,
     )
+
+    if args.explain:
+        from .explain import explain
+
+        print(explain(result.perception))
+        return
 
     if args.text:
         print(read_text(result))

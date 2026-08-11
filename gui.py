@@ -42,6 +42,7 @@ from PIL import Image, ImageTk
 
 from capture import list_camera_devices, resolve_camera_source
 from extract import DEFAULT_HOST, DEFAULT_MODEL, DEFAULT_PORT, ExtractionError
+from ocr import DEFAULT_ENGINE, ENGINE_CHOICES
 from sender import send_result
 
 
@@ -238,7 +239,7 @@ def _ocr_worker_process(engine_name, lang, extract_cfg, in_queue, out_queue):
 class BiosOcrApp:
     def __init__(self, root, camera_source=0, stable_threshold=8.0,
                  stable_frames_required=6, change_threshold=10.0,
-                 min_ocr_interval=5.0, engine="paddleocr", lang=None,
+                 min_ocr_interval=5.0, engine=DEFAULT_ENGINE, lang=None,
                  extract_cfg=None, mode="perception",
                  resolution=(REQUESTED_WIDTH, REQUESTED_HEIGHT)):
         self.root = root
@@ -649,7 +650,9 @@ def main():
     parser = argparse.ArgumentParser(description="BIOS OCR live GUI")
     parser.add_argument("--camera-source", default="0",
                          help="Webcam index (e.g. 0) or a stream URL (e.g. http://<ip>:8080/video)")
-    parser.add_argument("--engine", choices=["tesseract", "paddleocr"], default="paddleocr")
+    parser.add_argument("--engine", choices=ENGINE_CHOICES, default=DEFAULT_ENGINE,
+                         help="OCR engine (see study_ocr_engines.py for a measured "
+                              "speed comparison on this machine)")
     parser.add_argument("--lang", default=None, help="Language code (engine-specific default if omitted)")
     parser.add_argument("--stable-threshold", type=float, default=8.0)
     parser.add_argument("--stable-frames", type=int, default=6)

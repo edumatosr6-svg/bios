@@ -2,6 +2,8 @@
 
 Pipeline fechado em 2026-08-03. Cobre da captura da câmera até a saída final; não inclui a arquitetura de múltiplas câmeras/múltiplos modelos de BIOS (deliberadamente deixada de fora por enquanto).
 
+**Este documento descreve só o caminho legado** (`selection.py` + OCR direto). A partir de 2026-08-06 existe um segundo motor, `perception/` (Motor de Percepção de Interface), com arquitetura própria — ver `../specs/f-specs/motor-percepcao-interface.md` e os documentos de arquitetura em `../architecture/`. Os dois caminhos coexistem hoje: `gui.py` roda o motor novo por padrão, com a flag `--legacy` voltando ao processo descrito abaixo. Nenhum dos dois substituiu o outro ainda — cada um tem casos em que é melhor (ver a F-spec do motor novo).
+
 ## Etapas
 
 1. **Captura contínua**
@@ -10,8 +12,8 @@ Pipeline fechado em 2026-08-03. Cobre da captura da câmera até a saída final;
 2. **Detecção automática de tela estável**
    O sistema compara frames consecutivos (diferença média de pixel). Quando a imagem para de mudar por N frames seguidos, considera que a tela "assentou" (ex: o menu da BIOS carregou por completo, não está mais em transição/animação). Um debounce evita reprocessar a mesma tela parada repetidamente.
 
-3. **OCR (PaddleOCR)**
-   Na tela estável, roda OCR e gera um JSON estruturado: texto completo + por palavra/linha/bloco, com bounding box e confiança. Esse é o `raw_ocr` — a fonte da verdade, nunca alterado depois.
+3. **OCR**
+   Na tela estável, roda OCR e gera um JSON estruturado: texto completo + por palavra/linha/bloco, com bounding box e confiança. Esse é o `raw_ocr` — a fonte da verdade, nunca alterado depois. O motor é escolhido por `--engine` entre os cinco de `ocr.py::ENGINE_CHOICES`; por omissão é `ocr.py::DEFAULT_ENGINE` (hoje `rapidocr-openvino`, desde 2026-08-07 — antes era `paddleocr`). Ver `../specs/f-specs/selecao-motor-ocr.md`.
 
 4. **Detecção de item selecionado/destacado**
    O OCR sozinho não vê qual item está selecionado — só lê caracteres. `selection.py` analisa as cores do frame original dentro das bounding boxes que o OCR já calculou.
@@ -24,7 +26,7 @@ Pipeline fechado em 2026-08-03. Cobre da captura da câmera até a saída final;
 
    Isso também permite **múltiplos níveis de seleção ao mesmo tempo**: a aba/item ativo no menu (`menu_strip`/`menu_column`) e o item focado no corpo — cada linha destacada carrega essa informação, e os níveis podem aparecer juntos na mesma tela (visto de verdade numa foto real: aba "Advanced" ativa + item "ACPI Configuration" focado, ao mesmo tempo).
 
-   Roda sempre (é só processamento de imagem, sem chamada de rede). Ver "Precisão da detecção" abaixo para como isso foi calibrado, e `ESTUDO_SELECAO.md` para o comparativo de métodos, a validação contra 2 modelos de BIOS reais, e as limitações conhecidas que restaram.
+   Roda sempre (é só processamento de imagem, sem chamada de rede). Ver "Precisão da detecção" abaixo para como isso foi calibrado, e `../studies/ESTUDO_SELECAO.md` para o comparativo de métodos, a validação contra 2 modelos de BIOS reais, e as limitações conhecidas que restaram. O motor `perception/` (ver nota no topo deste documento) resolve a mesma detecção por uma arquitetura diferente — comparação de resultados entre os dois em `../specs/f-specs/motor-percepcao-interface.md`.
 
 5. **Extração de campos via LLM local**
    O texto bruto do OCR vai pro modelo Qwen3 4B rodando na NPU da máquina da fábrica (Lemonade/FastFlowLM). Ele organiza o texto em pares `"BIOS Version": "F.31"`, etc., e pode limpar rótulos conhecidos com erro de OCR (ex: "Systym Date" → "System Date"). Ele **nunca** deve alterar o valor em si.
@@ -71,10 +73,12 @@ Resultado, medido por `test_selection.py` (2026-08-04, após validar contra o 2�
 |---|---|
 | Sintéticos (barra invertida, gabarito por construção) | 3/3 exatos |
 | Fotos de BIOS AMI real (menu horizontal) | 3/3 exatos |
-| Fotos de BIOS Positivo real (menu vertical) | 4/5 barra lateral, 1/4 item de submenu (limitações documentadas em `ESTUDO_SELECAO.md`) |
-| ~240 capturas sem seleção nenhuma | 2,0% falsos positivos (era 39,5% na primeira versão; 1,4% antes de generalizar pra menu vertical) |
+| Fotos de BIOS Positivo real (menu vertical) | 4/5 barra lateral, 1/4 item de submenu (limitações documentadas em `../studies/ESTUDO_SELECAO.md`) |
+| ~240 capturas sem seleção nenhuma | 2,0% falsos positivos (era 39,5% na primeira versão; 1,4% antes de generalizar pra menu vertical) — **não reproduzível hoje**, ver nota |
 
-Duas limitações conhecidas e não resolvidas às cegas, ambas documentadas com o número exato medido em `selection.py` e `ESTUDO_SELECAO.md`: (1) uma foto com sinal de cor mais fraco que o piso calibrado (ângulo/exposição variam de foto pra foto); (2) itens de submenu com uma linha de descrição colada embaixo, onde o vazamento de cor da barra de destaque na foto real deixa a descrição quase tão "suspeita" quanto o item de verdade.
+> **Nota (2026-08-10)**: o corpus de ~240 capturas negativas não existe mais — eram dados de sessão, nunca versionados. A taxa de 2,0% continua sendo o que foi medido em 2026-08-04, mas **não pode mais ser reconferida**, e nenhuma medição nova de falso positivo é comparável com ela (o gabarito negativo de hoje tem 1 imagem). Ver `../specs/p-specs/fixture-de-teste-nunca-versionada.md`. A suíte também não roda até o fim num clone limpo, por uma fixture AMI que nunca foi commitada — mesma P-spec.
+
+Duas limitações conhecidas e não resolvidas às cegas, ambas documentadas com o número exato medido em `selection.py` e `../studies/ESTUDO_SELECAO.md`: (1) uma foto com sinal de cor mais fraco que o piso calibrado (ângulo/exposição variam de foto pra foto); (2) itens de submenu com uma linha de descrição colada embaixo, onde o vazamento de cor da barra de destaque na foto real deixa a descrição quase tão "suspeita" quanto o item de verdade.
 
 Rodar após qualquer mudança:
 
@@ -87,11 +91,11 @@ py -3.13 test_selection.py
 | Arquivo | Papel |
 |---|---|
 | `capture.py` | Captura de câmera (índice ou URL), listagem de dispositivos |
-| `ocr.py` | Motores de OCR (Tesseract, PaddleOCR) atrás de uma interface comum |
+| `ocr.py` | Motores de OCR (rapidocr openvino/onnxruntime, PaddleOCR, winocr, Tesseract) atrás de uma interface comum, mais `ENGINE_CHOICES`/`DEFAULT_ENGINE` |
 | `selection.py` | Detecção de item destacado/selecionado por análise de cor |
 | `test_selection.py` | Mede a precisão da detecção de seleção contra gabarito |
 | `make_test_image.py` | Gera as telas de BIOS sintéticas de teste |
-| `study_selection_methods.py` | Compara 4 métodos de detecção (ver `ESTUDO_SELECAO.md`) |
+| `study_selection_methods.py` | Compara 4 métodos de detecção (ver `../studies/ESTUDO_SELECAO.md`) |
 | `study_temporal.py` | Estuda detecção por movimento entre frames |
 | `extract.py` | Chamada ao LLM local + verificação de valores |
 | `watcher.py` | Loop automático headless (linha de comando) |

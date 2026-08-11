@@ -25,6 +25,8 @@ from typing import Any, Callable
 import cv2
 import numpy as np
 
+from ocr import DEFAULT_ENGINE
+
 from ..model import Abstention, Geometry, Perception, Primitive, make_ids, sorted_by_position
 from ..pipeline import StageOutput
 
@@ -40,7 +42,7 @@ class Extraction:
     produces = "primitive"
     consumes = ("surface",)
 
-    def __init__(self, sources: list["Source"] | None = None, engine: str = "paddleocr"):
+    def __init__(self, sources: list["Source"] | None = None, engine: str = DEFAULT_ENGINE):
         self.sources = sources if sources is not None else default_sources(engine)
 
     def run(self, perception: Perception) -> StageOutput:
@@ -124,7 +126,7 @@ class SymbolicSource(Source):
     """
     kind = "symbolic"
 
-    def __init__(self, engine: str = "paddleocr", lang: str | None = None):
+    def __init__(self, engine: str = DEFAULT_ENGINE, lang: str | None = None):
         self.name = f"symbolic:{engine}"
         self._engine_name = engine
         self._lang = lang
@@ -274,5 +276,5 @@ def _drop_near_duplicates(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return kept
 
 
-def default_sources(engine: str = "paddleocr") -> list[Source]:
+def default_sources(engine: str = DEFAULT_ENGINE) -> list[Source]:
     return [SymbolicSource(engine=engine), RuleSource(), FilledRectSource()]

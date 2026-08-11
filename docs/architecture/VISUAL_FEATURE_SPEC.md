@@ -103,7 +103,7 @@ O caso da Positivo confirma: o motor atual não erra o cálculo de cor — ele a
 
 ### C7 — A dimensão temporal está ausente da especificação, e é o sinal mais invariante disponível
 
-O estudo já mediu (`ESTUDO_SELECAO.md`, método 5): diferença temporal acerta 5/5 em condição ideal e é o único sinal que **não depende de paleta, polaridade, layout ou fabricante**. Com câmera fixa em fixture industrial, é o candidato mais robusto que existe — e o pipeline atual descarta essa informação ao tratar cada captura como imagem única.
+O estudo já mediu (`../studies/ESTUDO_SELECAO.md`, método 5): diferença temporal acerta 5/5 em condição ideal e é o único sinal que **não depende de paleta, polaridade, layout ou fabricante**. Com câmera fixa em fixture industrial, é o candidato mais robusto que existe — e o pipeline atual descarta essa informação ao tratar cada captura como imagem única.
 
 Há ainda sinais temporais que nenhum método de quadro único alcança: **o caret piscando** (prova determinística de campo em edição) e **o painel de ajuda que muda junto com o foco** (corrobora qual item está focado, por conteúdo em vez de por cor).
 
@@ -130,6 +130,8 @@ Como arquiteto seria negligência não colocar isto na mesa: **boa parte de L0 e
 | **Câmera** (atual) | — | Máxima generalidade: funciona em qualquer máquina, sem depender de recurso do firmware. |
 
 Não é recomendação de trocar a câmera — a generalidade dela é um ativo real, e a fábrica pode ter máquinas sem alternativa. Mas se **algum** dos três modelos-alvo suportar HDMI ou serial, esse canal deveria ser usado ao menos como **fonte de verdade para calibrar e validar o motor visual** (§11.1), o que é muito mais barato que anotar tudo à mão.
+
+> **Alerta medido (2026-08-10), a ler antes de adotar captura HDMI/DP.** A tabela acima lista só o que a captura limpa *elimina*. Ela também **introduz** um problema: com bordas duras (imagem gerada por software, sem ruído de câmera), o detector de texto do OCR passa a englobar a barra de destaque dentro da caixa do item selecionado, contaminando os descritores do E3 e o agrupamento do E6, e o motor se abstém. Medido em imagem sintética — que é o análogo mais próximo de captura HDMI que o projeto tem hoje: razão de altura de caixa 1.64 contra 1.03-1.10 em foto real. Ver `../specs/p-specs/caixa-de-deteccao-engloba-barra-de-destaque.md`. Não invalida a recomendação; significa que trocar o canal de captura exige revalidar o motor contra o gabarito, não só assumir que entrada melhor dá resultado melhor.
 
 ---
 
@@ -530,9 +532,11 @@ Sem isto, a especificação não é falsificável (C9). O motor atual já tem o 
 |---|---|---|
 | Sintético (`make_test_image.py`) | Perfeita por construção | Regressão barata; permite degradação fotométrica controlada |
 | Fotos reais anotadas | Anotação manual | Realismo |
-| Negativo (~240 capturas sem seleção) | Nenhuma seleção | Mede falso positivo — já em uso |
+| Negativo (~240 capturas sem seleção) | Nenhuma seleção | Mede falso positivo — ~~já em uso~~ **o corpus não existe mais** (ver nota) |
 | **Degradado sintético** | Herdada do sintético | Sintético + perspectiva, reflexo, desfoco, moiré simulados. **Testa L0 diretamente** |
 | **Pareado HDMI/serial** (se disponível, C10) | Quase perfeita, automática | Verdade barata em escala, sem anotação manual |
+
+> **Nota (2026-08-10)**: o conjunto negativo de ~240 capturas **não existe mais** — eram dados de sessão, nunca versionados, e foram perdidos. Sobrou 1 negativo verdadeiro (`test_bios_noselect.png`). As taxas históricas de falso positivo (39,5% → 1,4% → 2,0%) citadas aqui, em `../reference/PROCESSO_OCR.md`, em `../studies/ESTUDO_SELECAO.md` e em `test_selection.py` continuam sendo registro do que foi medido, mas **não são mais reproduzíveis nem comparáveis com medições novas**. Ver `../specs/p-specs/fixture-de-teste-nunca-versionada.md`. Reconstituir um conjunto negativo é pré-requisito para que a métrica de falso positivo deste §11.1 volte a valer.
 
 ### 11.2 Métricas por camada
 
@@ -579,6 +583,7 @@ Calibrar em N−1 fabricantes, medir no N-ésimo **nunca visto durante a calibra
 | Firmware com UI gráfica moderna (mouse, animação) | Médio | Detecção de tela estável precisa de histerese; animação nunca é tela estável |
 | Confiança descalibrada | **Alto** — engana a cognição silenciosamente | Métrica de calibração obrigatória (§11.2) |
 | Explosão do `digest` em telas grandes | Baixo-médio | Projeção com orçamento; `full` fica em disco |
+| **Entrada mais limpa piora o resultado** — com bordas duras, a caixa do OCR engole a barra de destaque e contamina L1/L3 | Médio-alto, e **latente**: dorme enquanto a entrada for foto de câmera, ativa com HDMI/VM/screenshot | Nenhuma aplicada; motor abstém em vez de chutar. Medido em 2026-08-10, correção no agrupamento tentada e rejeitada — ver `../specs/p-specs/caixa-de-deteccao-engloba-barra-de-destaque.md` |
 
 ---
 
@@ -586,7 +591,7 @@ Calibrar em N−1 fabricantes, medir no N-ésimo **nunca visto durante a calibra
 
 Decisões que dependem de vocês e que mudam a especificação:
 
-1. **Algum dos três modelos-alvo expõe saída HDMI/DP utilizável durante o POST, ou console redirection por serial?** Muda o custo de L0 e resolve §11.1 quase de graça.
+1. **Algum dos três modelos-alvo expõe saída HDMI/DP utilizável durante o POST, ou console redirection por serial?** Muda o custo de L0 e resolve §11.1 quase de graça. *Ressalva de 2026-08-10: se a resposta for sim, a adoção exige revalidar o motor contra o gabarito — entrada de bordas duras arma um teto medido (§13, última linha).*
 2. **A câmera será rigidamente fixa em fixture?** Se sim, os canais temporais sobem de "corroborantes" para "primários" e vários riscos caem.
 3. **Universo de firmware é fechado (3 modelos) ou aberto?** Fechado favorece A; aberto justifica investir em B mais cedo.
 4. **Orçamento de latência por tela estável?** Define quanto de L1 estrutural cabe por quadro.

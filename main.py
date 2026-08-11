@@ -12,7 +12,7 @@ import sys
 
 from capture import capture_from_camera, load_from_file
 from extract import DEFAULT_HOST, DEFAULT_MODEL, DEFAULT_PORT, ExtractionError, extract_fields
-from ocr import create_ocr_engine
+from ocr import DEFAULT_ENGINE, ENGINE_CHOICES, create_ocr_engine
 from selection import annotate_selection
 
 
@@ -23,7 +23,7 @@ def parse_args():
     parser.add_argument("--camera-source", default="0",
                          help="Webcam index (e.g. 0) or a stream URL (e.g. http://<ip>:8080/video)")
     parser.add_argument("--output", help="Path to write JSON result (default: stdout)")
-    parser.add_argument("--engine", choices=["tesseract", "paddleocr"], default="paddleocr")
+    parser.add_argument("--engine", choices=ENGINE_CHOICES, default=DEFAULT_ENGINE)
     parser.add_argument("--lang", default=None, help="Language code (engine-specific default if omitted)")
     parser.add_argument("--upscale", type=float, default=2.0, help="Tesseract-only preprocessing upscale")
     parser.add_argument("--extract-fields", action="store_true",
