@@ -89,12 +89,13 @@ def default_pipeline(
     rectify: bool = True,
     view: str = "digest",
     captured_at: str | None = None,
+    ocr_votes: int = 1,
 ) -> list:
     """The eleven stages in order, at v1 depth."""
     return [
         Acquisition(frames=frames, captured_at=captured_at),
         Conditioning(rectify=rectify),
-        Extraction(engine=engine),
+        Extraction(engine=engine, ocr_votes=ocr_votes),
         Characterisation(),
         Regionalisation(),
         Grouping(),
@@ -113,15 +114,22 @@ def perceive(
     view: str = "digest",
     captured_at: str | None = None,
     trace: bool = False,
+    ocr_votes: int = 1,
 ) -> PipelineResult:
     """Run the default pipeline over one or more frames of a single view.
 
     More than one frame is normal, not special: §4 keeps temporal evidence
     strictly corroborating, so a bundle of one produces a valid result and
-    extra frames only raise confidence.
+    extra frames only raise confidence. `ocr_votes` is what actually spends
+    the extra frames on OCR: 1 reads only the representative frame (today's
+    behaviour, unchanged); >1 re-reads each detected text box from up to
+    `ocr_votes - 1` of the bundle's other frames and votes on content (see
+    `perception/stages/e2_extraction.py`). Needs `len(frames) >= ocr_votes`
+    to have full effect -- a shorter bundle just yields fewer votes, not an
+    error.
     """
     stages = default_pipeline(
         frames=frames, engine=engine, rectify=rectify, view=view,
-        captured_at=captured_at,
+        captured_at=captured_at, ocr_votes=ocr_votes,
     )
     return run_pipeline(stages, trace=trace)

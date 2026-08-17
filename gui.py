@@ -22,6 +22,7 @@ window always opens immediately; if no camera is connected the video
 panel just says so instead of the whole app hanging or refusing to
 start.
 """
+import collections
 import multiprocessing as mp
 import os
 import queue
@@ -92,7 +93,7 @@ def request_resolution(cap, width=REQUESTED_WIDTH, height=REQUESTED_HEIGHT):
     return got
 
 
-def _perception_worker_process(engine_name, lang, in_queue, out_queue):
+def _perception_worker_process(engine_name, lang, ocr_votes, in_queue, out_queue):
     """Runs the perception engine in a child process, model kept warm.
 
     Same process-isolation reason as the legacy worker below: OCR holds
@@ -102,6 +103,13 @@ def _perception_worker_process(engine_name, lang, in_queue, out_queue):
     is constructed once and reused, because the extraction stage owns the
     loaded OCR model -- rebuilding the pipeline wholesale would reload it
     on every capture and add seconds to each one.
+
+    `ocr_votes` > 1 needs more than the single settled frame acquisition
+    used to get -- see `BiosOcrApp`'s frame buffer, which now hands this
+    worker the whole run of frames the stability check already watched
+    settle, not just the last one. See
+    docs/specs/f-specs/corroboracao-ocr-multi-frame.md for what voting
+    buys and what it costs (measured live: ~2x the read time per capture).
     """
     from perception.model import Perception
     from perception.pipeline import run_pipeline
@@ -113,7 +121,7 @@ def _perception_worker_process(engine_name, lang, in_queue, out_queue):
 
     warm = [
         Conditioning(),
-        Extraction(engine=engine_name),
+        Extraction(engine=engine_name, ocr_votes=ocr_votes),
         Characterisation(),
         Regionalisation(),
         Grouping(),
@@ -128,11 +136,11 @@ def _perception_worker_process(engine_name, lang, in_queue, out_queue):
         item = in_queue.get()
         if item is None:
             break
-        frame, auto = item
+        frames, auto = item
 
         captured_at = time.strftime("%Y%m%d-%H%M%S")
         try:
-            stages = [Acquisition(frames=[frame], captured_at=captured_at)] + warm
+            stages = [Acquisition(frames=frames, captured_at=captured_at)] + warm
             result = run_pipeline(stages)
         except Exception:                                     # noqa: BLE001
             # A crash here used to kill the worker outright. The queue
@@ -196,7 +204,11 @@ def _perception_worker_process(engine_name, lang, in_queue, out_queue):
                     "rectified": perception.surface.rectified if perception.surface else False,
                 },
             },
-            frame,
+            # The frame the UI shows and `sender.py` saves beside the JSON:
+            # the representative one, matching what E1 actually read and
+            # what the contract's geometry refers to. The other frames of
+            # the burst only ever corroborated content.
+            frames[-1],
             auto,
         ))
 
@@ -206,6 +218,11 @@ def _ocr_worker_process(engine_name, lang, extract_cfg, in_queue, out_queue):
 
     Field extraction (the LLM call) also happens here, not on the main
     thread -- it's a multi-second network call, same freeze risk OCR had.
+
+    The legacy path has no vote to spend: `selection.py` reasons about a
+    single frame's colours, so this only ever reads the most recent one
+    even though the queue item now carries the same settled run of frames
+    the perception worker uses for corroboration.
     """
     from ocr import create_ocr_engine
 
@@ -216,7 +233,8 @@ def _ocr_worker_process(engine_name, lang, extract_cfg, in_queue, out_queue):
         item = in_queue.get()
         if item is None:  # sentinel: shut down
             break
-        frame, auto = item
+        frames, auto = item
+        frame = frames[-1]
         result = engine.read(frame)
         result["captured_at"] = time.strftime("%Y%m%d-%H%M%S")
         result["screen_bg_color"] = annotate_selection(frame, result["blocks"])
@@ -241,7 +259,8 @@ class BiosOcrApp:
                  stable_frames_required=6, change_threshold=10.0,
                  min_ocr_interval=5.0, engine=DEFAULT_ENGINE, lang=None,
                  extract_cfg=None, mode="perception",
-                 resolution=(REQUESTED_WIDTH, REQUESTED_HEIGHT)):
+                 resolution=(REQUESTED_WIDTH, REQUESTED_HEIGHT),
+                 ocr_votes=1):
         self.root = root
         self.mode = mode
         self.resolution = resolution
@@ -255,13 +274,19 @@ class BiosOcrApp:
         self.change_threshold = change_threshold
         self.min_ocr_interval = min_ocr_interval
         self.last_ocr_at = 0.0
+        # Every frame the stability check watches settle, kept around so a
+        # trigger can hand the worker that whole run instead of just the
+        # last frame -- the stability loop already paid for these frames;
+        # voting just stops throwing them away. Sized to cover whichever
+        # is larger: the settle window itself, or what ocr_votes asks for.
+        self.recent_frames = collections.deque(maxlen=max(stable_frames_required, ocr_votes, 1))
 
         self.in_queue = mp.Queue()
         self.out_queue = mp.Queue()
         if mode == "perception":
             target, args = (
                 _perception_worker_process,
-                (engine, lang, self.in_queue, self.out_queue),
+                (engine, lang, ocr_votes, self.in_queue, self.out_queue),
             )
         else:
             target, args = (
@@ -409,6 +434,7 @@ class BiosOcrApp:
             if ok:
                 self.read_failures = 0
                 self.latest_frame = frame
+                self.recent_frames.append(frame)
                 self._render_frame(frame)
                 self._check_stability(frame)
             else:
@@ -474,7 +500,9 @@ class BiosOcrApp:
                 )
                 if is_new_screen:
                     self.last_processed_gray = gray.copy()
-                    self._run_ocr_async(frame, auto=True)
+                    # The settled run itself, not just its last frame --
+                    # this is what actually feeds ocr_votes>1 corroboration.
+                    self._run_ocr_async(list(self.recent_frames), auto=True)
                 self.stable_count = 0
 
         self.prev_gray = gray
@@ -491,14 +519,17 @@ class BiosOcrApp:
             # the operator wait twice; say so instead of silently piling up.
             self.status_var.set("already processing -- wait for the current capture")
             return
-        self._run_ocr_async(self.latest_frame, auto=False)
+        # Manual trigger doesn't wait for the stability check, so whatever
+        # is in the buffer is whatever happened to be seen recently -- not
+        # guaranteed settled the way the automatic path's burst is.
+        self._run_ocr_async(list(self.recent_frames) or [self.latest_frame], auto=False)
 
-    def _run_ocr_async(self, frame, auto):
+    def _run_ocr_async(self, frames, auto):
         self.ocr_busy = True
         self.last_ocr_at = time.time()
         reason = "stable screen detected" if auto else "manual trigger"
         self.status_var.set(f"{reason}, running OCR (can take a few seconds)...")
-        self.in_queue.put((frame, auto))
+        self.in_queue.put((frames, auto))
 
     def _drain_result_queue(self):
         try:
@@ -659,6 +690,15 @@ def main():
     parser.add_argument("--change-threshold", type=float, default=10.0)
     parser.add_argument("--min-ocr-interval", type=float, default=5.0,
                          help="Minimum seconds between automatic OCR triggers")
+    parser.add_argument("--ocr-votes", type=int, default=3,
+                         help="Perception path only: re-read each detected text "
+                              "box from up to N-1 extra frames of the same "
+                              "settled screen and vote on content (1 = single "
+                              "read). Default 3 is the measured sweet spot -- "
+                              "see docs/studies/estudo-votacao-ocr-multi-frame.md: "
+                              "eliminated the corroborable errors in a live "
+                              "10-round test (5 was no better and slower), at "
+                              "~2x the read time per capture.")
     parser.add_argument("--resolution", default=f"{REQUESTED_WIDTH}x{REQUESTED_HEIGHT}",
                          help="Resolution to request from the camera, WxH. Higher is "
                               "not automatically better: a camera's top mode is often "
@@ -708,6 +748,7 @@ def main():
         extract_cfg=extract_cfg,
         mode="legacy" if args.legacy else "perception",
         resolution=resolution,
+        ocr_votes=args.ocr_votes,
     )
     root.mainloop()
 

@@ -37,6 +37,12 @@ def parse_args():
                         help="webcam index (e.g. 0) or stream URL")
     parser.add_argument("--frames", type=int, default=1,
                         help="frames to grab from the camera as one bundle")
+    parser.add_argument("--ocr-votes", type=int, default=1,
+                        help="re-read each detected text box from up to "
+                             "N-1 extra frames in the bundle and vote on "
+                             "content (1 = today's single-read behaviour). "
+                             "Needs --frames >= this to have full effect; "
+                             "see e2_extraction.py's corroboration docstring.")
     parser.add_argument("--warmup", type=int, default=8,
                         help="frames discarded before capture so auto-exposure "
                              "and autofocus can settle (camera only)")
@@ -243,6 +249,7 @@ def main():
         rectify=not args.no_rectify,
         view=args.view,
         trace=args.trace,
+        ocr_votes=args.ocr_votes,
     )
 
     if args.explain:

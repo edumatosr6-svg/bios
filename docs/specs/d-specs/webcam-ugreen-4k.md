@@ -23,6 +23,7 @@ Achado contraintuitivo: **resolução mais alta não é sempre melhor.** O modo 
 
 ## Limitações conhecidas
 - A medição 720p vs. 1080p é específica desta câmera (UGREEN 4K); não generaliza para outro hardware sem remedir.
+- **A listagem de câmeras pode mostrar o nome desta câmera ao lado do índice errado** — os nomes do Windows são casados com os índices do OpenCV por posição, e em 2026-08-14 `--list-cameras` rotulou esta câmera como índice 1 quando ela era o índice 0, fazendo abrir a webcam integrada no lugar dela. Ver `../p-specs/rotulo-de-camera-desalinhado-do-indice-opencv.md`.
 - Só os dois extremos de resolução disponíveis foram comparados — nenhuma resolução intermediária (ex.: 960x540) foi medida, então não se sabe se 720p é o ótimo ou só o melhor dos dois pontos testados.
 
 ## Status

@@ -134,3 +134,13 @@ A diferença era de natureza, não de grau: antes, "aguarda validação formal" 
 
 - Tesseract nunca entrou em nenhuma das duas metades — binário não instalado.
 - As imagens da metade de velocidade não existem mais (ver a ressalva de reprodutibilidade acima); a metade de acurácia roda sobre fixtures versionadas, exceto a AMI ausente.
+
+## Continuação (2026-08-14): erros de leitura em captura ao vivo real não são de motor
+
+Investigação sobre 5 capturas reais de 2026-08-12 (fora do gabarito formal deste estudo) confirmou a conclusão 2 acima na prática: os erros de OCR observados nessas fotos não vêm do motor. As causas são de captura/ambiente — glare e moiré (`../specs/p-specs/glare-moire-degradam-ocr-captura-ao-vivo.md`) e retificação de perspectiva estruturalmente inatingível com o enquadramento de câmera atual (`../specs/p-specs/retificacao-e1-inatingivel-sem-moldura-visivel.md`). Antes de mexer em motor de OCR ou thresholds do E1, a próxima ação é física: reenquadrar a câmera e atacar o glare.
+
+Enquanto a ação física não acontece, a mesma investigação motivou uma mitigação de software: votar o conteúdo de cada caixa de texto entre vários frames do mesmo estado de tela parado, em vez de confiar numa leitura só — `ocr_votes` em `../specs/f-specs/corroboracao-ocr-multi-frame.md`. Não substitui a correção física (não ajuda se o frame de detecção for o ruim, ver `../specs/p-specs/votacao-ocr-nao-protege-deteccao-do-frame-representante.md`, nem corrige degradação estável como texto cortado ou apagado por glare).
+
+Essa mitigação **foi medida no mesmo dia**, em estudo próprio: `estudo-votacao-ocr-multi-frame.md` — 10 rodadas ao vivo, gabarito de 32 strings, as duas configurações sobre a mesma rajada de frames. `ocr_votes=3` acertou **100% do teto atingível em 10 de 10 rodadas** (corrigindo 4 de 4 erros da leitura única), contra `ocr_votes=1` saindo com ao menos um erro em 40% das capturas.
+
+**O que isso devolve para este estudo é o requisito de tempo.** A votação custa **11.3s contra 5.9s** — ou seja, **estoura a meta de <8s por leitura** que este documento estabelece na "Pergunta" e usa como critério na conclusão 1. Não é uma contradição de medição, é uma troca nova posta na mesa: o motor escolhido aqui cabe na meta lendo uma vez, e não cabe lendo três. Nenhum default foi alterado — `ocr_votes=1` continua o padrão, e a decisão de adotar 3 fica explicitamente em aberto na F-spec da feature. Se a meta de <8s for revista algum dia, é este número que ela precisa acomodar.
