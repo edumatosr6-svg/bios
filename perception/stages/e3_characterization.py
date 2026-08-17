@@ -36,6 +36,15 @@ from ..pipeline import StageOutput
 MIN_INK_FRACTION = 0.02         # below this the "ink" is noise, not glyphs
 INK_PERCENTILE = 90
 
+# A focus ring is drawn *around* a control, not inside the OCR box that
+# hugs its glyphs -- everything else this stage measures samples inside
+# g, this alone has to sample outside it. Fixed surface-pixel padding,
+# same style of constant as E4's FRONTIER_REACH: tuned on this camera's
+# dropdown text height (~17-20px canonical), not scale-free across
+# capture resolutions -- revisit if that changes materially.
+BORDER_RING_PAD = 3
+MIN_BORDER_RING_PIXELS = 20
+
 
 class Characterisation:
     name = "E3.characterisation"
@@ -56,11 +65,14 @@ class Characterisation:
             )
 
         lab = cv2.cvtColor(surface.image, cv2.COLOR_BGR2LAB).astype(np.float32)
+        occupied = _occupancy_mask(lab.shape[:2], perception.primitives)
         out: dict[str, Descriptors] = {}
         abstentions: list[Abstention] = []
 
         for primitive in perception.primitives:
-            values, invalid, problem = _measure(lab, primitive.geometry, primitive.kind)
+            values, invalid, problem = _measure(
+                lab, primitive.geometry, primitive.kind, occupied
+            )
             out[primitive.id] = Descriptors(
                 primitive_id=primitive.id,
                 values=values,
@@ -82,7 +94,38 @@ class Characterisation:
         )
 
 
-def _measure(lab: Any, g: Geometry, kind: str) -> tuple[dict[str, Any], set[str], str | None]:
+def _occupancy_mask(shape: tuple[int, int], primitives: Any) -> Any:
+    """Where every *symbolic* primitive already is, on the surface.
+
+    What `border_strength` (below) needs to tell apart is "free field
+    around this control" from "the next line of body text starts right
+    here" -- and only the primitive list can say which pixels are
+    already claimed by *readable text*. Built once per surface, not per
+    primitive: it is the same mask for everyone being measured.
+
+    Structural primitives (rules, filled rects) are deliberately left
+    out of this mask, unlike every other detected thing. A strong focus
+    ring is exactly the kind of shape `structural:filled_rects` and
+    `structural:rules` already catch on their own -- excluding them here
+    would black out the one place a real border shows up, mistaking the
+    signal for the noise it exists to filter out.
+    """
+    mask = np.zeros(shape, dtype=bool)
+    h, w = shape
+    for primitive in primitives:
+        if primitive.kind != "symbolic":
+            continue
+        g = primitive.geometry
+        x0, y0 = max(0, g.x), max(0, g.y)
+        x1, y1 = min(w, g.right), min(h, g.bottom)
+        if x1 > x0 and y1 > y0:
+            mask[y0:y1, x0:x1] = True
+    return mask
+
+
+def _measure(
+    lab: Any, g: Geometry, kind: str, occupied: Any
+) -> tuple[dict[str, Any], set[str], str | None]:
     h, w = lab.shape[:2]
     x0, y0 = max(0, g.x), max(0, g.y)
     x1, y1 = min(w, g.right), min(h, g.bottom)
@@ -118,6 +161,15 @@ def _measure(lab: Any, g: Geometry, kind: str) -> tuple[dict[str, Any], set[str]
             values["fill_uniformity"] = float(interior.reshape(-1, 3).std(axis=0).mean())
         return values, invalid, None
 
+    # Independent of whether ink was found below -- a focus ring exists
+    # or not regardless of glyph legibility, so this is not gated by the
+    # ink-fraction bailout the way ink_color etc. are.
+    ring = _border_ring(lab, g, occupied)
+    if ring is not None and len(ring) >= MIN_BORDER_RING_PIXELS:
+        values["border_strength"] = float(ring[:, 0].std())
+    else:
+        invalid.add("border_strength")
+
     if ink_fraction < MIN_INK_FRACTION or not len(ink_pixels):
         invalid.update({"ink_color", "contrast_polarity", "contrast_magnitude",
                         "visual_weight"})
@@ -142,6 +194,40 @@ def _measure(lab: Any, g: Geometry, kind: str) -> tuple[dict[str, Any], set[str]
     values["visual_weight"] = strong / float(len(flat))
 
     return values, invalid, None
+
+
+def _border_ring(lab: Any, g: Geometry, occupied: Any) -> Any | None:
+    """Pixels in a thin band just outside the primitive's own bbox --
+    and outside every *other* primitive's bbox too.
+
+    A real focus ring shows up here as high dispersion -- part of the
+    band sits on the bright/dark ring itself, part on the plain field
+    beside it. An unfocused control has one flat colour on both sides,
+    so the same band reads as low dispersion. `border_strength` (the
+    caller) is deliberately the ring's own std, not a distance to
+    anything, so an unusually flat surrounding is not mistaken for a
+    border by whatever compares it later -- see S6_border in
+    perception/stages/e7_state.py, which only counts an *increase*.
+
+    The `occupied` exclusion is what keeps that reasoning honest on body
+    text: a paragraph's first line sits a few px above its own wrapped
+    continuation, with near-zero gap. Without excluding neighbouring
+    primitives, the ring samples *their* glyphs, not free field, and
+    "densely packed text" reads as a dispersion spike indistinguishable
+    from a real border -- measured on a live capture, that false ring
+    beat its class by 3.5x. Free field is specifically "nothing else the
+    engine has already found here", not merely "outside my own box".
+    """
+    h, w = lab.shape[:2]
+    pad = BORDER_RING_PAD
+    xo0, yo0 = max(0, g.x - pad), max(0, g.y - pad)
+    xo1, yo1 = min(w, g.right + pad), min(h, g.bottom + pad)
+    outer = lab[yo0:yo1, xo0:xo1]
+    if outer.size == 0:
+        return None
+    mask = ~occupied[yo0:yo1, xo0:xo1]
+    ring = outer.reshape(-1, 3)[mask.reshape(-1)]
+    return ring if ring.size else None
 
 
 def _perimeter(crop: Any, ring: int = 2) -> Any:

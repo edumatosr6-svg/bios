@@ -77,13 +77,57 @@ MIN_SIZE_FOR_SINGLE_CHANNEL = 4
 # calibration.
 NOISE_FLOOR = 1.5
 
-# name -> (descriptor, direction, state it indicates)
+# name -> (descriptor, direction, state it indicates, isolation ratio)
 #   direction +1 = only an increase counts, -1 = only a decrease, 0 = either
-CHANNELS: tuple[tuple[str, str, int, str], ...] = (
-    ("S1_background", "bg_local", 0, "selected"),
-    ("S2_chroma", "ink_chroma", 0, "selected"),
-    ("S3_polarity", "contrast_polarity", 0, "selected"),
+#   isolation ratio: None = use RUNNER_UP_RATIO, same as every other
+#   channel. A channel can instead declare its own, stricter bar -- see
+#   S6_border below for why one needs to.
+CHANNELS: tuple[tuple[str, str, int, str, float | None], ...] = (
+    ("S1_background", "bg_local", 0, "selected", None),
+    ("S2_chroma", "ink_chroma", 0, "selected", None),
+    ("S3_polarity", "contrast_polarity", 0, "selected", None),
+    ("S6_border", "border_strength", 1, "focused", 4.0),
 )
+
+# S6, not S4 -- docs/architecture/VISUAL_FEATURE_SPEC.md §7.2 reserves S4
+# for stroke weight and S6 for "Moldura" (border_box unique to one
+# element -> focused). Follows the doc's numbering rather than
+# introducing a new one.
+#
+# `direction=1`: only a *more* dispersed ring than the class's own
+# counts. A flatter-than-peers ring is not evidence of anything -- it
+# would just be a different draw of the same sensor noise the class-size
+# rule below already exists to survive -- so this is thrown out exactly
+# like contrast_polarity's sign check, not a new idea.
+#
+# State name is `focused`, not `selected`: a keyboard-focused dropdown
+# and a highlighted menu entry are different things, and the vocabulary
+# already distinguishes them (docs/architecture/VISUAL_FEATURE_SPEC.md
+# §7.4). Nothing downstream treats state names as a closed set.
+#
+# **Why this channel gets its own, higher bar (4.0x, not RUNNER_UP_RATIO
+# 1.8x).** S1-S3 read the *interior* of a primitive's own box, which
+# E3's occupancy mask already keeps clean of every other detected
+# primitive. This channel reads a thin band *outside* the box, on
+# purpose -- a real border sits there -- which means it is exposed to
+# whatever is nearby that the engine did *not* detect as its own
+# primitive: JPEG blur, anti-aliasing halos, a neighbour's descender.
+# Measured on live captures, three cases with no real border at all
+# still cleared RUNNER_UP_RATIO: a 3-member class of identical "Enabled"
+# values scored 1.97x, a line of dense body text wrapped tight against
+# its own continuation scored 1.91x, a warning banner packed against the
+# item below it scored 2.77x -- the last of those in a class of 9, so
+# MIN_SIZE_FOR_SINGLE_CHANNEL did not even apply. The one genuine focus
+# ring measured, on a live Boot screen's settings_list, scored 5.38x.
+# 4.0 sits in the gap between the worst false positive and the one true
+# positive, with margin on both sides.
+#
+# Clearing 4.0x is also what exempts this channel from the thin-class
+# corroboration rule below, in place of a second, separately-tuned
+# constant fit to a single data point: S1-S3 need a *population*
+# (MIN_SIZE_FOR_SINGLE_CHANNEL) plus a second channel to be trusted
+# alone in a small class; this channel substitutes a bar high enough
+# that clearing it is itself the corroboration.
 
 # S5 (dimming -> `disabled`) is deliberately NOT in the v1 channel set.
 #
@@ -138,12 +182,15 @@ class StateInference:
                 continue
 
             hits: dict[str, list[tuple[str, float]]] = {}
-            for channel, descriptor, direction, state_name in CHANNELS:
-                winner = _evaluate(perception, klass, descriptor, direction)
+            self_corroborating: set[tuple[str, str]] = set()
+            for channel, descriptor, direction, state_name, isolation_ratio in CHANNELS:
+                winner = _evaluate(perception, klass, descriptor, direction, isolation_ratio)
                 if winner is None:
                     continue
                 element_id, deviation = winner
                 hits.setdefault((element_id, state_name), []).append((channel, deviation))
+                if isolation_ratio is not None:
+                    self_corroborating.add((element_id, state_name))
 
             hits, contradictions = _drop_contradictions(hits)
             for element_id, names in contradictions:
@@ -155,9 +202,15 @@ class StateInference:
                     )
                 )
 
-            # A thin class cannot support a single channel's word for it.
+            # A thin class cannot support a single channel's word for it --
+            # unless that channel already cleared its own, stricter
+            # isolation bar, which stands in for corroboration (see
+            # S6_border's comment on CHANNELS above).
             if klass.size < MIN_SIZE_FOR_SINGLE_CHANNEL:
-                uncorroborated = [k for k, evidence in hits.items() if len(evidence) < 2]
+                uncorroborated = [
+                    k for k, evidence in hits.items()
+                    if len(evidence) < 2 and k not in self_corroborating
+                ]
                 for element_id, state_name in uncorroborated:
                     abstentions.append(
                         Abstention(
@@ -171,7 +224,8 @@ class StateInference:
                             },
                         )
                     )
-                hits = {k: v for k, v in hits.items() if len(v) >= 2}
+                hits = {k: v for k, v in hits.items()
+                       if len(v) >= 2 or k in self_corroborating}
 
             if not hits:
                 abstentions.append(
@@ -291,19 +345,68 @@ def measure(
 
 
 def _evaluate(
-    perception: Perception, klass, descriptor: str, direction: int
+    perception: Perception, klass, descriptor: str, direction: int,
+    isolation_ratio: float | None = None,
 ) -> tuple[str, float] | None:
-    """The winner of a channel, if the class produced one at all."""
-    deviations, _, _ = measure(perception, klass, descriptor, direction)
-    if len(deviations) < 2:
+    """The winner of a channel, if the class produced one at all.
+
+    `isolation_ratio` overrides RUNNER_UP_RATIO for channels that declare
+    their own, stricter bar in CHANNELS -- see S6_border there for why.
+
+    Needing a runner-up at all, not just `deviations` being non-empty, is
+    right for a two-sided channel (S1-S3): `measure()` already requires
+    3+ members with a value, and nothing there filters any of them out,
+    so a runner-up always exists if a winner does. It is wrong for a
+    directional one (`direction != 0`): filtering to "only members that
+    moved the *right* way" is exactly what leaves a single genuine
+    outlier standing alone, which is the strongest case there is, not a
+    degenerate one.
+
+    A lone survivor still needs a runner-up to be *scale-free* against,
+    though -- without one, `ratio * max(runner_up_dev, EPS)` collapses to
+    a number near zero and the whole isolation bar stops discriminating
+    anything, which measured false positive on a synthetic fixture's
+    footer text at deviation 4.50: comfortably over MIN_DEVIATION alone,
+    nowhere near the 4.0x this channel is supposed to require. NOISE_FLOOR
+    is what this codebase already uses elsewhere as "the dispersion below
+    which nothing is trusted as real" (see its own docstring above), so a
+    missing runner-up is treated as sitting exactly there -- not as zero,
+    which would mean "infinitely more remarkable than nothing", and not
+    as a second real value, which does not exist to compare against.
+
+    **A channel with its own isolation_ratio also requires genuine
+    dispersion, not just a floored one.** On a synthetic screenshot --
+    pixel-perfect rendering, none of a camera's sensor noise or JPEG
+    blur -- a class's *raw* spread (before NOISE_FLOOR clamps it) is
+    often exactly 0.0: every member really is pixel-identical apart from
+    the one thing being measured. Dividing by the floor at that point
+    does not measure deviation from real-world variation, because there
+    was none to begin with; it measures the winner's raw distance
+    against an arbitrary constant, and any two members that merely
+    differ in text length clear it. Measured on synthetic fixtures: a
+    footer line scored deviation 59.05 this way, another scored 9.19 --
+    both from raw spread of 0.0, neither a real border. The one genuine
+    border measured (a live camera photo) had raw spread 3.70, well
+    above the floor: real sensor noise is never exactly zero. S1-S3 do
+    not need this guard -- they are not the channel that is fragile
+    enough to require its own stricter isolation_ratio in the first
+    place, and they have a track record of firing correctly on floored
+    dispersion (a live "Boot" menu scored 31.07 off a floored 0.67).
+    """
+    deviations, _, spreads = measure(perception, klass, descriptor, direction)
+    if not deviations:
         return None
 
     ranked = sorted(deviations.items(), key=lambda kv: (-kv[1], kv[0]))
-    (winner_id, winner_dev), (_, runner_up_dev) = ranked[0], ranked[1]
+    winner_id, winner_dev = ranked[0]
+    runner_up_dev = ranked[1][1] if len(ranked) > 1 else NOISE_FLOOR
+    ratio = isolation_ratio if isolation_ratio is not None else RUNNER_UP_RATIO
 
+    if isolation_ratio is not None and spreads.get(winner_id, 0.0) <= EPS:
+        return None
     if winner_dev < MIN_DEVIATION:
         return None
-    if winner_dev < RUNNER_UP_RATIO * max(runner_up_dev, EPS):
+    if winner_dev < ratio * max(runner_up_dev, EPS):
         return None
     return winner_id, winner_dev
 

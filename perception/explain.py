@@ -85,7 +85,7 @@ def explain(perception: Any) -> str:
             continue
         lines.append("")
         lines.append(f"  {klass.id} ({klass.role}, {klass.size} members)")
-        for channel, descriptor, direction, state_name in CHANNELS:
+        for channel, descriptor, direction, state_name, isolation_ratio in CHANNELS:
             deviations, values, spreads = measure(perception, klass, descriptor, direction)
             if not deviations:
                 missing = klass.size - len(values)
@@ -94,20 +94,32 @@ def explain(perception: Any) -> str:
                 lines.append(f"    {channel:<16} -- not evaluated ({why})")
                 continue
 
+            required_ratio = isolation_ratio if isolation_ratio is not None else RUNNER_UP_RATIO
             ranked = sorted(deviations.items(), key=lambda kv: (-kv[1], kv[0]))
             best_id, best = ranked[0]
-            runner_up = ranked[1][1] if len(ranked) > 1 else 0.0
+            # Mirrors _evaluate()'s own fallback exactly -- see its
+            # docstring for why a missing runner-up is NOISE_FLOOR, not 0.
+            runner_up = ranked[1][1] if len(ranked) > 1 else NOISE_FLOOR
             ratio = best / max(runner_up, EPS)
 
+            # Mirrors _evaluate()'s own guard -- see its docstring for why
+            # an isolation_ratio channel also needs genuine (non-floored)
+            # raw dispersion, not just a winner that clears the ratio.
+            genuinely_dispersed = (
+                isolation_ratio is None or spreads.get(best_id, 0.0) > EPS
+            )
             passed_floor = best >= MIN_DEVIATION
-            passed_ratio = best >= RUNNER_UP_RATIO * max(runner_up, EPS)
-            if passed_floor and passed_ratio:
+            passed_ratio = best >= required_ratio * max(runner_up, EPS)
+            if not genuinely_dispersed:
+                verdict = ("-> nothing (raw dispersion is exactly 0 -- synthetic "
+                           "image, no real variation to measure a deviation from)")
+            elif passed_floor and passed_ratio:
                 verdict = f"-> {state_name.upper()}: {label(best_id)!r}"
             elif not passed_floor:
                 verdict = f"-> nothing (top deviation {best:.2f} < {MIN_DEVIATION})"
             else:
                 verdict = (f"-> nothing (winner only {ratio:.2f}x the runner-up, "
-                           f"needs {RUNNER_UP_RATIO}x)")
+                           f"needs {required_ratio}x)")
 
             typical = min(spreads.values()) if spreads else 0.0
             floored = (" (FLOORED -- class uniform to within sensor noise)"
