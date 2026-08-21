@@ -14,9 +14,10 @@ que estiver la e deixa a diferenca visivel.
 pagina exibida a direita. Nao ha nada para abrir com ENTER, e apertar
 ENTER aqui entraria num item da pagina em vez de ficar nela.
 
-focus_key="left": arrow keys sao escopados a regiao que tem o foco do
-teclado, que por padrao e o painel de conteudo, nao a barra lateral --
-ver Step.focus_key para a medicao ao vivo que forcou isso (2026-08-21).
+A rota (hint="nav_menu") passa por navigate.enter_main_menu_screen, que
+entrega o foco do teclado a barra lateral (focus_key="left" -- ver seu
+docstring para a medicao ao vivo que forcou isso, 2026-08-21) e tenta um
+fallback de cor quando o detector de destaque abstem por ambiguidade.
 """
 from ..registry import AllFields, Step, Tool, register
 
@@ -24,8 +25,7 @@ MAIN_INFO = register(Tool(
     name="main_info",
     question="Quais informacoes a tela Main mostra (versao da BIOS, etc.)?",
     route=[
-        Step(to="main", hint="nav_menu", key="down", activate=False,
-             focus_key="left"),
+        Step(to="main", hint="nav_menu", key="down", activate=False),
     ],
     reader=AllFields(),
 ))

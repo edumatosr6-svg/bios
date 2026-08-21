@@ -17,7 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from . import labels, screen
-from .navigate import activate, move_to, walk_group
+from .navigate import activate, enter_main_menu_screen, move_to, walk_group
 
 # Keys a read-only tool is allowed to send. Navigation and escape only --
 # no '+'/'-'/F10/'y', which change or commit BIOS settings. This first
@@ -372,6 +372,32 @@ class Tool:
 
         try:
             for leg in self.route:
+                # A sidebar leg (hint="nav_menu") always goes through the
+                # one shared building block for reaching a top-level
+                # screen, instead of each tool re-declaring the same
+                # focus_key="left" recipe by hand -- that repetition is
+                # exactly how cpu_temperature's route first shipped
+                # without it. It also carries the colour-ambiguity
+                # fallback (see enter_main_menu_screen's docstring), so a
+                # fix there reaches every tool that navigates the sidebar,
+                # not just whichever one triggered it.
+                if leg.hint == "nav_menu":
+                    outcome, reading = enter_main_menu_screen(
+                        session, leg.to,
+                        activate_key="enter" if leg.activate else None,
+                        max_steps=leg.max_steps,
+                    )
+                    steps += outcome.steps
+                    if not outcome.ok:
+                        return ToolResult(
+                            tool=self.name, ok=False, steps=steps,
+                            error=f"nao cheguei em {leg.to!r}: {outcome.reason}"
+                                  + (f" ({outcome.detail})" if outcome.detail else ""),
+                        )
+                    if leg.activate:
+                        opened += 1
+                    continue
+
                 outcome = move_to(session, leg.spellings, hint=leg.hint,
                                   key=leg.key, max_steps=leg.max_steps,
                                   focus_key=leg.focus_key)

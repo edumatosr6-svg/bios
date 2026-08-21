@@ -6,9 +6,10 @@ diferenca entre `main_info` (o que existe, sem saber os nomes) e esta
 tool (concept conhecido, resposta nomeada). Ambas convivem: uma nao
 substitui a outra.
 
-focus_key="left": arrow keys sao escopados a regiao que tem o foco do
-teclado, que por padrao e o painel de conteudo, nao a barra lateral --
-ver Step.focus_key para a medicao ao vivo que forcou isso (2026-08-21).
+A rota (hint="nav_menu") passa por navigate.enter_main_menu_screen, que
+entrega o foco do teclado a barra lateral (focus_key="left" -- ver seu
+docstring para a medicao ao vivo que forcou isso, 2026-08-21) e tenta um
+fallback de cor quando o detector de destaque abstem por ambiguidade.
 """
 from ..registry import Field, Fields, Step, Tool, register
 
@@ -16,8 +17,7 @@ BIOS_INFO = register(Tool(
     name="bios_info",
     question="Qual a versao, data de build e tipo de plataforma da BIOS?",
     route=[
-        Step(to="main", hint="nav_menu", key="down", activate=False,
-             focus_key="left"),
+        Step(to="main", hint="nav_menu", key="down", activate=False),
     ],
     reader=Fields([
         Field("bios_version"),

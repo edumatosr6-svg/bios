@@ -21,8 +21,10 @@ up. Cycle detection notices after exactly one lap.
 """
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass, field
 
+from . import labels
 from .screen import (
     find_group, group_views, legacy_cursor, match_score, normalize,
 )
@@ -143,6 +145,95 @@ def activate(session, key="enter"):
     """Open whatever the cursor is on, and return the screen it landed on."""
     session.press(key)
     return session.read_stable()
+
+
+# How far right of the screen edge the sidebar column extends. Measured on
+# the live Positivo capture: sidebar entries sit at x=120, the "Setup"
+# label/icon up to x~250; content starts at x~428. 300 clears both with
+# margin without reaching into content.
+SIDEBAR_MAX_X = 300
+
+
+def _sidebar_colour_fallback(reading, target):
+    """Last resort when selection.py's own detector abstains entirely on
+    the sidebar (`legacy_cursor` finds nothing marked at all).
+
+    Confirmed live 2026-08-21 (Positivo BIOS): the sidebar's un-marked
+    entries render white text on a shared light-grey background; the
+    *currently displayed page* and the *keyboard cursor position* both
+    render darker text instead of the background colour changing -- and
+    when those two differ (cursor sits on an entry that isn't the
+    displayed page), that is TWO simultaneously odd-coloured lines.
+    selection.py's own MAX_TEXT_COLOR_OUTLIERS=1 cap then abstains by
+    design: a BIOS shows exactly one selection, so more than one
+    odd-coloured line normally means "no selection is being shown", not
+    "which one do I pick". That reasoning is right when the cap is
+    guarding against an ambiguous *single* signal -- it is wrong here,
+    where the two colours carry two *different*, already-understood
+    meanings, and this function already knows which specific entry it is
+    looking for. So it checks only `target`'s own text colour against the
+    sidebar's own white baseline -- it never picks among unrelated
+    candidates the way selection.py's population statistics do, which is
+    what keeps this from re-opening the false-positive risk the cap
+    exists to prevent.
+    """
+    lines = [line for block in reading.get("blocks", ())
+             for line in block.get("lines", ())]
+    sidebar = [line for line in lines if line["bbox"]["left"] < SIDEBAR_MAX_X]
+    colours = [tuple(line["fg_color"]) for line in sidebar if line.get("fg_color")]
+    if len(colours) < 3:
+        return None  # too few entries read to trust a baseline
+
+    baseline = Counter(colours).most_common(1)[0][0]
+    for line in sidebar:
+        if not match_score(target, line["text"]):
+            continue
+        fg = line.get("fg_color")
+        if fg and tuple(fg) != baseline:
+            return line
+    return None
+
+
+def enter_main_menu_screen(session, screen, activate_key=None, max_steps=20):
+    """Get to a top-level sidebar screen (Main/Advanced/Security/...), from
+    wherever the BIOS currently is, and open it.
+
+    The one building block every tool needing a specific top-level page
+    should call, instead of hand-declaring a `nav_menu` Step -- centralised
+    after `cpu_temperature`'s route shipped with the sidebar leg missing
+    `focus_key="left"` (arrow keys are scoped to whichever region has
+    keyboard focus, default content, see `move_to`'s docstring) and, once
+    fixed, its sibling tools (`bios_info`/`main_info`) turned out to hit a
+    second, different failure the same day -- the colour-ambiguity case
+    `_sidebar_colour_fallback` exists for. One shared function means a fix
+    to either problem reaches every tool that navigates the sidebar,
+    instead of needing to be copied into each tool's own route.
+
+    `screen` is a canonical name from `labels.SCREENS`. Moving the cursor
+    to a sidebar entry already switches the displayed page on this BIOS,
+    so `activate_key` defaults to None (nothing to press); pass "enter"
+    for a BIOS where the sidebar needs an explicit open.
+    """
+    target = labels.screen(screen)
+    outcome = move_to(session, target, hint="nav_menu", key="down",
+                      focus_key="left", max_steps=max_steps)
+
+    if not outcome.ok and outcome.reason == BLIND:
+        marked = _sidebar_colour_fallback(outcome.reading, target)
+        if marked is not None:
+            outcome = NavigationResult(
+                ok=True, reason=ARRIVED, steps=outcome.steps,
+                cursor=marked["text"], visited=outcome.visited,
+                reading=outcome.reading,
+            )
+
+    if outcome.ok and activate_key:
+        return outcome, activate(session, activate_key)
+    # `outcome.reading` is the legacy cursor dict move_to reads with, not
+    # a perception Reading -- callers that go on to read a field/value
+    # need the contract (`.full`), so re-read through the normal path
+    # once navigation is confirmed, same as every other leg does.
+    return outcome, (session.read_stable() if outcome.ok else outcome.reading)
 
 
 OPPOSITE = {"down": "up", "up": "down", "right": "left", "left": "right"}
