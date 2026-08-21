@@ -1,12 +1,21 @@
-"""CLI: run one tool by name and print its answer.
+"""CLI: run one tool by name, or ask a free-text question, and print the answer.
 
     py -3.13 -m biostools --list
     py -3.13 -m biostools cpu-temperature --serial-port COM3
     py -3.13 -m biostools cpu-temperature --serial-port COM3 --text
+    py -3.13 -m biostools --ask "qual a temperatura da cpu?" --serial-port COM3 --text
 
 JSON by default because the caller today may be a script or another tool;
 `--text` is for an operator reading it directly. Exit status is 1 when no
 answer was produced, so a shell script can branch on it.
+
+`--ask` goes through `assistant.ask()`: an LLM call picks the tool, the
+tool runs exactly as it would from the CLI directly, and a second LLM
+call phrases the result -- verified to contain the tool's value verbatim
+before being shown (see assistant.py's docstring for why that second
+call is the dangerous one). Needs --llm-host/--llm-port reachable; the
+CLI's own resolution/frames/engine flags apply to whichever tool gets
+picked, same as if it had been named directly.
 """
 import argparse
 import json
@@ -30,6 +39,7 @@ for _noisy in ("rapidocr", "onnxruntime", "openvino"):
     logging.getLogger(_noisy).setLevel(logging.ERROR)
 
 from actuator import CableNotResponding, list_serial_ports
+from extract import DEFAULT_HOST, DEFAULT_MODEL, DEFAULT_PORT
 from ocr import DEFAULT_ENGINE, ENGINE_CHOICES
 
 from . import BiosSession, list_tools
@@ -53,6 +63,12 @@ def parse_args():
                         help="Tool name, e.g. cpu-temperature (see --list)")
     parser.add_argument("--list", action="store_true",
                         help="List available tools and exit")
+    parser.add_argument("--ask",
+                        help="Free-text question instead of a tool name -- an LLM "
+                             "picks the tool and phrases the answer. See --llm-*.")
+    parser.add_argument("--llm-host", default=DEFAULT_HOST)
+    parser.add_argument("--llm-port", type=int, default=DEFAULT_PORT)
+    parser.add_argument("--llm-model", default=DEFAULT_MODEL)
     parser.add_argument("--camera-source", default="0",
                         help="Camera index or stream URL showing the BIOS screen")
     parser.add_argument("--serial-port",
@@ -73,7 +89,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    if args.list or not args.tool:
+    if args.list or not (args.tool or args.ask):
         for name, question in list_tools().items():
             print(f"  {name.replace('_', '-'):24s} {question}")
         return 0 if args.list else 1
@@ -85,22 +101,28 @@ def main():
     except ValueError:
         sys.exit(f"--resolution must look like 1280x720, got {args.resolution!r}")
 
-    # Resolve the tool before touching hardware, so an unknown name or a
-    # missing cable fails instantly instead of after the camera opens and
-    # an OCR model loads.
-    try:
-        tool = get_tool(args.tool)
-    except UnknownTool as e:
-        sys.exit(str(e))
+    # `--ask` does not know which tool it needs until the LLM routes it, so
+    # the "route needs the cable" check below only applies to a tool named
+    # directly. An --ask session opens without a cable and simply fails
+    # later, through the same ActuatorUnavailable handling, if the tool it
+    # picked turns out to need one.
+    tool = None
+    if args.tool:
+        # Resolved before touching hardware, so an unknown name fails
+        # instantly instead of after the camera opens and a model loads.
+        try:
+            tool = get_tool(args.tool)
+        except UnknownTool as e:
+            sys.exit(str(e))
 
-    if tool.route and not args.serial_port:
-        sys.exit(
-            f"{args.tool} has to move the cursor to reach its screen, so it needs "
-            f"the USB-KM232 cable: pass --serial-port (e.g. --serial-port COM3). "
-            f"Available ports: "
-            + (", ".join(f"{dev} ({desc})" for dev, desc in list_serial_ports())
-               or "none detected")
-        )
+        if tool.route and not args.serial_port:
+            sys.exit(
+                f"{args.tool} has to move the cursor to reach its screen, so it needs "
+                f"the USB-KM232 cable: pass --serial-port (e.g. --serial-port COM3). "
+                f"Available ports: "
+                + (", ".join(f"{dev} ({desc})" for dev, desc in list_serial_ports())
+                   or "none detected")
+            )
 
     session = None
 
@@ -126,6 +148,24 @@ def main():
             ocr_votes=args.ocr_votes,
         )
         with session:
+            if args.ask:
+                from . import assistant
+
+                answer = assistant.ask(
+                    args.ask, session,
+                    host=args.llm_host, port=args.llm_port, model=args.llm_model,
+                )
+                print(answer.answer if args.text
+                      else json.dumps(answer.as_dict(), indent=2, ensure_ascii=False))
+                # A question with zero tool calls (the model declined
+                # outright, e.g. "não sei responder isso") is still a
+                # valid conversational answer, not a technical failure --
+                # only an endpoint error or every call failing counts.
+                failed = bool(answer.error) or (
+                    answer.calls and not any(c.result and c.result.ok for c in answer.calls)
+                )
+                return 1 if failed else 0
+
             result = tool.run(session)
     except CameraUnavailable as e:
         sys.exit(f"camera: {e}")

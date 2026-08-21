@@ -15,10 +15,12 @@ import copy
 import json
 import os
 import sys
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import cv2
 
-from biostools import navigate, run_tool, screen
+from biostools import assistant, navigate, run_tool, screen
 from biostools.session import Reading
 
 CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".biostools_cache")
@@ -226,6 +228,176 @@ def test_field_reading(readings):
           {"CPU Temperature": "61C", "CPU Fan Speed": "3098 RPM"})
 
 
+class _FakeLLM:
+    """A Lemonade-shaped server that plays back scripted `message` dicts in
+    order (the same shape `choices[0].message` has on the real endpoint --
+    either `{"tool_calls": [...]}` or `{"content": "..."}`), so a test
+    controls exactly what "the model" does across a multi-round tool-calling
+    conversation without needing the real NPU box or a network round trip.
+    """
+
+    def __init__(self, script, port):
+        self.calls = []
+        script_ = script
+
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *a):
+                pass
+
+            def do_POST(self):
+                length = int(self.headers.get("Content-Length", 0))
+                self.rfile.read(length)
+                message = script_[min(len(self._server_calls()), len(script_) - 1)]
+                self._server_calls().append(message)
+                payload = json.dumps({"choices": [{"message": message}]}).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(payload)
+
+            def _server_calls(self):
+                return outer.calls
+
+        outer = self
+        self._httpd = HTTPServer(("127.0.0.1", port), Handler)
+        self._thread = threading.Thread(target=self._httpd.serve_forever, daemon=True)
+        self._thread.start()
+        self.port = port
+
+    def close(self):
+        self._httpd.shutdown()
+
+
+def _tool_call_message(call_id, name):
+    return {"tool_calls": [{"id": call_id, "type": "function",
+                            "function": {"name": name, "arguments": "{}"}}]}
+
+
+def _content_message(text):
+    return {"content": text}
+
+
+def test_assistant_catches_a_hallucinated_value(menu, readings):
+    print("\nassistente: chama tools, narra, e pega o modelo mentindo o valor")
+
+    # Cenario 1: uma tool, narracao fiel -- a frase do modelo deve ser
+    # usada como esta, porque contem o valor verbatim.
+    llm = _FakeLLM([
+        _tool_call_message("call_1", "cpu_temperature"),
+        _content_message("A temperatura da CPU esta em 61C no momento."),
+    ], port=18101)
+    try:
+        bios = FakeBios(menu, opens_to=readings)
+        r = assistant.ask("qual a temperatura da cpu?", bios, port=18101)
+        check("uma tool chamada, a certa", [c.tool for c in r.calls], ["cpu_temperature"])
+        check("narracao fiel foi aceita", r.narrated, True)
+        check_that("resposta contem o valor real", "61C" in r.answer, r.answer)
+    finally:
+        llm.close()
+
+    # Cenario 2: o CASO QUE IMPORTA. O modelo troca 61C por 65C ao narrar
+    # -- o mesmo tipo de distorcao medido de verdade contra o modelo real
+    # (61C -> 65C num teste ao vivo desta sessao; extract.py mediu 2026 ->
+    # 20026 antes). Isto tem que ser pego e descartado, nao mostrado ao
+    # usuario como se fosse a leitura real.
+    llm = _FakeLLM([
+        _tool_call_message("call_1", "cpu_temperature"),
+        _content_message("A temperatura da CPU esta em 65C, um pouco alta."),
+    ], port=18102)
+    try:
+        bios = FakeBios(menu, opens_to=readings)
+        r = assistant.ask("qual a temperatura da cpu?", bios, port=18102)
+        check("narracao alterada foi REJEITADA", r.narrated, False)
+        check_that("caiu para o valor verificado (61C)", "61C" in r.answer, r.answer)
+        check_that("o valor inventado NAO aparece na resposta",
+                   "65C" not in r.answer, r.answer)
+    finally:
+        llm.close()
+
+    # Cenario 3: nenhuma tool cobre a pergunta -- o modelo responde direto,
+    # sem chamar nada. Vazio-verdadeiro na verificacao (nao ha valor a
+    # conferir), entao a frase do modelo passa como esta.
+    llm = _FakeLLM([_content_message(
+        "Nao tenho como responder isso com as informacoes da BIOS."
+    )], port=18103)
+    try:
+        bios = FakeBios(menu, opens_to=readings)
+        r = assistant.ask("qual a cor do gabinete?", bios, port=18103)
+        check("nenhuma tool foi chamada", r.calls, [])
+        check_that("resposta de recusa foi repassada", "responder" in r.answer, r.answer)
+    finally:
+        llm.close()
+
+    # Cenario 4: o modelo pede uma tool que nao existe -- tem que ficar
+    # registrado como erro daquela chamada, distinto de "a BIOS nao tinha
+    # a resposta", e o loop continua (o modelo ve o erro e pode desistir).
+    llm = _FakeLLM([
+        _tool_call_message("call_1", "temperatura_do_processador"),
+        _content_message("Nao consegui obter essa informacao."),
+    ], port=18104)
+    try:
+        bios = FakeBios(menu, opens_to=readings)
+        r = assistant.ask("qual a temperatura da cpu?", bios, port=18104)
+        check_that("chamada de tool inexistente registrada com erro",
+                   len(r.calls) == 1 and r.calls[0].error is not None,
+                   f"calls={r.calls}")
+    finally:
+        llm.close()
+
+    # Cenarios 5-7 testam a verificacao multi-valor (assistant._finish)
+    # diretamente, com ToolResult sinteticos, em vez de passar por
+    # navegacao simulada -- bios_info precisa da tela "main", que este
+    # FakeBios (montado sobre a tela Advanced) nao alcanca, e o que
+    # importa aqui e a matematica da verificacao, nao a navegacao dela
+    # (ja coberta em test_bios_info). Confirmado antes de escrever assim:
+    # rodar bios_info contra este FakeBios de fato falha em navegar
+    # (not_found_after_full_cycle) -- ir por ask() faria estes cenarios
+    # testarem sem querer "bios_info falhou" em vez de "dois valores".
+    from biostools.assistant import ToolCall, _finish
+    from biostools.registry import ToolResult
+
+    cpu_call = ToolCall(tool="cpu_temperature", result=ToolResult(
+        tool="cpu_temperature", ok=True, kind="field",
+        label="CPU Temperature", value="61C",
+    ))
+    bios_call = ToolCall(tool="bios_info", result=ToolResult(
+        tool="bios_info", ok=True, kind="fields",
+        values={"BIOS Version": "7.2.4.XD22CPG7.I219V.P",
+                "Platform BIOS Type": "RaptorLake P I219-V"},
+    ))
+
+    # Cenario 5: os dois valores aparecem na frase -> aceita.
+    r = _finish("qual a temperatura da cpu e a versao da bios?", [cpu_call, bios_call],
+                "A CPU esta a 61C, a BIOS Version e 7.2.4.XD22CPG7.I219V.P "
+                "e a plataforma e RaptorLake P I219-V.")
+    check("narracao com os tres valores foi aceita", r.narrated, True)
+
+    # Cenario 6: um valor fica de fora -- tem que cair para o texto
+    # deterministico, mesmo os outros estando certos.
+    r = _finish("qual a temperatura da cpu e a versao da bios?", [cpu_call, bios_call],
+                "A CPU esta a 61C e a BIOS Version e 7.2.4.XD22CPG7.I219V.P.")
+    check("narracao parcial (faltando 1 de 3 valores) foi REJEITADA", r.narrated, False)
+    check_that("fallback traz os tres valores",
+               all(v in r.answer for v in
+                   ("61C", "7.2.4.XD22CPG7.I219V.P", "RaptorLake P I219-V")),
+               r.answer)
+
+    # Cenario 7: uma listagem de menu nunca e narrada pela LLM, mesmo com
+    # todo o texto do modelo batendo -- nao ha um "valor" unico contra o
+    # qual conferir uma lista parafraseada, entao a LLM poderia inventar
+    # ou esquecer uma opcao sem nada aqui para pegar.
+    entries_call = ToolCall(tool="main_menu", result=ToolResult(
+        tool="main_menu", ok=True, kind="entries",
+        entries=["Main", "Advanced", "Security", "Boot", "Save & Exit", "Event Log"],
+    ))
+    r = _finish("quais opcoes tem no menu?", [entries_call],
+                "O menu principal tem: Main, Advanced, Security, Boot, "
+                "Save & Exit, Event Log.")
+    check("listagem de menu nunca e narrada pela LLM, mesmo perfeita", r.narrated, False)
+    check_that("fallback usa a lista verificada pela caminhada",
+               "Event Log" in r.answer, r.answer)
+
+
 def test_label_aliases():
     print("\nrotulos canonicos: conceito separado da grafia da tela")
     from biostools import labels
@@ -288,6 +460,29 @@ def test_main_info(main):
     bios_fields = [k for k in pairs if "BIOS" in k or "EC " in k]
     check_that("achou os campos de versao sem ter que nomea-los",
                len(bios_fields) >= 5, f"campos: {bios_fields}")
+
+
+def test_bios_info(main):
+    print("\ntool bios_info: versao, build date e plataforma nomeados")
+    full = main["full"]
+    from biostools import labels
+
+    version = screen.field_value(full, labels.field("bios_version"))
+    check("versao da BIOS", version.value, "7.2.4.XD22CPG7.I219V.P")
+
+    build_date = screen.field_value(full, labels.field("bios_build_date"))
+    check("data de build", build_date.value, "06/26/2026 16:01:12")
+
+    platform = screen.field_value(full, labels.field("platform_type"))
+    check("tipo de plataforma", platform.value, "RaptorLake P I219-V")
+
+    # Regressao: sem os filtros de regiao/distancia que field_pairs ja
+    # tinha, field_value juntava a caixa de icones da direita ('Previous
+    # Values') ao valor da linha 'BIOS Version', porque ela cai dentro da
+    # tolerancia vertical da linha. Trava as duas metades: o valor certo
+    # (acima) e a poluicao ausente (aqui).
+    check_that("caixa de icones da direita nao contamina o valor",
+               "Previous" not in version.value, version.value)
 
 
 def test_cpu_temperature(menu, readings):
@@ -360,7 +555,9 @@ def main():
     test_label_aliases()
     test_field_reading(readings)
     test_main_info(main)
+    test_bios_info(main)
     test_cpu_temperature(menu, readings)
+    test_assistant_catches_a_hallucinated_value(menu, readings)
     test_menu_walk(menu)
     test_walk_survives_stuck_cursor(menu)
     test_safety_guards(menu)
