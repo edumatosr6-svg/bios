@@ -35,6 +35,15 @@ from dataclasses import dataclass, field
 # (bios_navigate_demo.py), where it paired real BIOS rows correctly.
 ROW_TOLERANCE = 0.6
 
+# How far right of a label's edge a value may sit, as a fraction of screen
+# width, before it counts as unrelated content instead of the value.
+# Measured on captures/positivo_advanced_cpu-overheat.jpg (3840 wide): the
+# real pairs 'CPU Temperature'->'61C' and 'CPU Fan Speed'->'3098 RPM' span
+# 15% and 17% of the width, while the help box on the right edge
+# ('Previous') sits 34% away from the submenu entry it was wrongly being
+# paired with. 25% separates them with margin on both sides.
+MAX_PAIR_GAP_RATIO = 0.25
+
 # State names, kept as constants because the difference between them is the
 # single most load-bearing distinction in this module (see module docstring).
 FOCUSED = "focused"
@@ -309,7 +318,8 @@ class FieldRead:
     row: str
 
 
-def field_value(full, label, pattern=None, tolerance=ROW_TOLERANCE):
+def field_value(full, label, pattern=None, tolerance=ROW_TOLERANCE,
+                max_gap_ratio=MAX_PAIR_GAP_RATIO, same_region=True):
     """Read the value of a labelled field, e.g. 'CPU Temperature' -> '61C'.
 
     `label` may be a list of accepted spellings, which is how one tool
@@ -330,6 +340,14 @@ def field_value(full, label, pattern=None, tolerance=ROW_TOLERANCE):
     from the label drops it without needing a tolerance so tight it would
     start missing genuine values.
 
+    Same two filters as `field_pairs`, for the same reason -- this
+    function has the identical failure mode, just one label at a time
+    instead of every row at once. Measured live on the Main screen: 'BIOS
+    Version' -> '7.2.4.XD22CPG7.I219V.P Previous', the 'Previous' pulled
+    in from the right-hand icon strip ('Previous Values'), which sits far
+    enough right (`max_gap_ratio`) and outside the content panel's region
+    (`same_region`) that either filter alone would have dropped it.
+
     Returns None when the label itself is not on screen -- distinct from a
     FieldRead whose `value` is None, which means the label was found but
     nothing followed it.
@@ -342,10 +360,19 @@ def field_value(full, label, pattern=None, tolerance=ROW_TOLERANCE):
     height = element.geometry.get("h") or 1
     centre = element.geometry["y"] + height / 2
 
+    width = (full.get("surface") or {}).get("width") or 0
+    max_gap = width * max_gap_ratio if width else None
+    regions = region_of(full) if same_region else {}
+    region = regions.get(element.id) if same_region else None
+
     right = []
     for prim in symbolic_primitives(full):
         geom = prim["geometry"]
         if geom["x"] < label_right:
+            continue
+        if max_gap is not None and geom["x"] - label_right > max_gap:
+            continue
+        if same_region and regions.get(prim["id"]) != region:
             continue
         prim_centre = geom["y"] + (geom.get("h") or 1) / 2
         if abs(prim_centre - centre) <= height * tolerance:
@@ -401,15 +428,6 @@ def cluster_rows(full, tolerance=ROW_TOLERANCE, items=None):
         row["items"].sort(key=lambda p: p["geometry"]["x"])
     rows.sort(key=lambda r: r["centre"])
     return [row["items"] for row in rows]
-
-
-# A value sits beside its label, not on the far side of the screen.
-# Measured on captures/positivo_advanced_cpu-overheat.jpg (3840 wide):
-# the real pairs 'CPU Temperature'->'61C' and 'CPU Fan Speed'->'3098 RPM'
-# span 15% and 17% of the width, while the help box on the right edge
-# ('Previous') sits 34% away from the submenu entry it was wrongly being
-# paired with. 25% separates them with margin on both sides.
-MAX_PAIR_GAP_RATIO = 0.25
 
 
 def region_of(full):
