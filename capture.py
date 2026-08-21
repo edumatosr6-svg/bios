@@ -1,5 +1,31 @@
 """Image acquisition: from a live camera or from a test file on disk."""
+import sys
+
 import cv2
+
+
+def open_camera(source):
+    """Open a camera device, preferring the backend that does not stall.
+
+    On Windows OpenCV defaults to MSMF, whose cold start on this hardware
+    was measured at **25-27 seconds** for a single device -- and
+    `list_camera_devices` pays it once per probed index. DirectShow opens
+    the same device in **0.2s** and, measured on the HDMI capture card at
+    1280x720, returns a *sharper* frame (Laplacian variance 654 vs 535).
+    Faster and better, so there is no trade-off to weigh here.
+
+    Only device indices get the backend hint: a URL source (an MJPEG
+    stream) is handled by a different backend entirely, and passing
+    CAP_DSHOW with one just fails. If DirectShow cannot open the device
+    -- some virtual cameras are MSMF-only -- the plain call is retried, so
+    the worst case is the old behaviour rather than a failure.
+    """
+    if isinstance(source, int) and sys.platform == "win32":
+        cap = cv2.VideoCapture(source, cv2.CAP_DSHOW)
+        if cap.isOpened():
+            return cap
+        cap.release()
+    return cv2.VideoCapture(source)
 
 
 def resolve_camera_source(value):
@@ -22,7 +48,7 @@ def capture_from_camera(camera_source=0, warmup_frames=5):
     so auto-exposure/auto-focus can settle before the real capture.
     """
     camera_source = resolve_camera_source(camera_source)
-    cap = cv2.VideoCapture(camera_source)
+    cap = open_camera(camera_source)
     if not cap.isOpened():
         raise RuntimeError(f"Could not open camera source {camera_source}")
 
@@ -45,7 +71,7 @@ def list_camera_devices(max_index=6):
     """
     working = []
     for i in range(max_index):
-        cap = cv2.VideoCapture(i)
+        cap = open_camera(i)
         if cap.isOpened():
             ok, _ = cap.read()
             if ok:
