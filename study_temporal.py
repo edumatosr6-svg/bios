@@ -19,7 +19,7 @@ import cv2
 import numpy as np
 
 from make_test_image import ROWS, build
-from ocr import create_ocr_engine
+from ocr import DEFAULT_ENGINE, create_ocr_engine
 from selection import _color_distance, _foreground_color, _perimeter_pixels
 from study_selection_methods import RING, _geometry
 
@@ -106,7 +106,7 @@ def _run_sequence(engine, conditions, rng):
 
 
 def main():
-    engine = create_ocr_engine("paddleocr")
+    engine = create_ocr_engine(DEFAULT_ENGINE)
     rng = np.random.default_rng(0)
 
     #        label                       noise  shift  brightness

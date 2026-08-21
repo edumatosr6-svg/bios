@@ -97,9 +97,9 @@ def _image_path(base):
 
 
 def score_synthetic():
-    from ocr import create_ocr_engine
+    from ocr import DEFAULT_ENGINE, create_ocr_engine
 
-    engine = create_ocr_engine("paddleocr")
+    engine = create_ocr_engine(DEFAULT_ENGINE)
     all_ok = True
 
     for name, expected in TEST_CASES.items():

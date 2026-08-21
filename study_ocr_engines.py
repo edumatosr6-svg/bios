@@ -3,7 +3,7 @@
     py -3.13 study_ocr_engines.py                 # both halves
     py -3.13 study_ocr_engines.py --speed         # how fast
     py -3.13 study_ocr_engines.py --accuracy      # how correct
-    py -3.13 study_ocr_engines.py --engines rapidocr-openvino paddleocr
+    py -3.13 study_ocr_engines.py --engines rapidocr-openvino tesseract
 
 Two halves, in one file because they are one decision and answering only
 half of it picks the wrong engine: the fastest engine measured here

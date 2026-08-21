@@ -108,103 +108,6 @@ class TesseractOCR(OCREngine):
         }
 
 
-class PaddleOCREngine(OCREngine):
-    """Deep-learning OCR (PP-OCR), noticeably more accurate than Tesseract
-    on real screen photos (varied lighting/angle) while keeping the same
-    word/line/block + bbox schema.
-
-    Model preprocessing steps we don't need for a flat, upright screen
-    photo (document unwarping, page/textline orientation) are disabled
-    for speed. `enable_mkldnn=False` works around a PaddlePaddle 3.3.1
-    oneDNN/PIR crash (ConvertPirAttribute2RuntimeAttribute) -- confirmed
-    still present on 3.3.1 (the latest release) and independent of model
-    choice: PP-OCRv6 and PP-OCRv4 both hit it identically, immediately,
-    on the first `predict()` call.
-
-    `ocr_version="PP-OCRv4"` pins the older, smaller "mobile" det+rec
-    pair instead of leaving PaddleOCR to pick its own default for
-    lang="en", which is the PP-OCRv6 "medium" pair. That default matters
-    a lot without mkldnn: measured on this machine, just *constructing*
-    the v6 medium pair took over 7 minutes of continuous 8-core CPU work
-    without finishing a single `predict()` call. Pinned to v4 mobile,
-    construction is ~3-9s (cached vs. cold) and a full perception-engine
-    run against a 1280x720 capture is ~31s end to end. Same non-mkldnn
-    fallback path either way -- the smaller graph is what makes the
-    difference between unusable and usable. Revisit the version pin
-    together with `enable_mkldnn` if a PaddlePaddle release ever fixes
-    the oneDNN/PIR crash upstream.
-    """
-
-    def __init__(self, lang="en", min_confidence=0):
-        from paddleocr import PaddleOCR as _PaddleOCR
-
-        self.min_confidence = min_confidence
-        self._engine = _PaddleOCR(
-            lang=lang,
-            ocr_version="PP-OCRv4",
-            use_doc_orientation_classify=False,
-            use_doc_unwarping=False,
-            use_textline_orientation=False,
-            enable_mkldnn=False,
-        )
-
-    def read(self, image):
-        height, width = image.shape[:2]
-        results = self._engine.predict(image, return_word_box=True)
-        page = results[0] if results else {}
-
-        rec_texts = page.get("rec_texts", [])
-        rec_scores = page.get("rec_scores", [])
-        rec_boxes = page.get("rec_boxes", [])
-        text_word = page.get("text_word", [])
-        text_word_boxes = page.get("text_word_boxes", [])
-
-        lines = []
-        full_text_parts = []
-        for i, line_text in enumerate(rec_texts):
-            if not line_text.strip():
-                continue
-            confidence = round(float(rec_scores[i]) * 100, 2) if i < len(rec_scores) else -1.0
-            if confidence < self.min_confidence:
-                continue
-
-            line_bbox = _box_to_bbox(rec_boxes[i]) if i < len(rec_boxes) else None
-
-            words = []
-            tokens = text_word[i] if i < len(text_word) else [line_text]
-            token_boxes = text_word_boxes[i] if i < len(text_word_boxes) else []
-            for j, token in enumerate(tokens):
-                token = token.strip()
-                if not token:
-                    continue
-                bbox = _box_to_bbox(token_boxes[j]) if j < len(token_boxes) else line_bbox
-                words.append({"text": token, "confidence": confidence, "bbox": bbox})
-            if not words:
-                words = [{"text": line_text, "confidence": confidence, "bbox": line_bbox}]
-
-            lines.append({
-                "line_num": i,
-                "text": line_text,
-                "bbox": line_bbox,
-                "words": words,
-            })
-            full_text_parts.append(line_text)
-
-        blocks = [{"block_num": 0, "lines": lines}] if lines else []
-
-        return {
-            "engine": "paddleocr",
-            "image_size": {"width": width, "height": height},
-            "full_text": "\n".join(full_text_parts),
-            "blocks": blocks,
-        }
-
-
-def _box_to_bbox(box):
-    x0, y0, x1, y1 = (int(v) for v in box)
-    return {"left": x0, "top": y0, "width": x1 - x0, "height": y1 - y0}
-
-
 class RapidOCREngine(OCREngine):
     """The same PP-OCR model lineage as PaddleOCREngine, but run through
     RapidOCR's own ONNX/OpenVINO export instead of paddlex. That matters
@@ -344,32 +247,25 @@ class WinOCREngine(OCREngine):
 ENGINE_CHOICES = [
     "rapidocr-openvino",
     "rapidocr-onnxruntime",
-    "paddleocr",
     "winocr",
     "tesseract",
 ]
 
 # Measured on this machine against a live UGREEN capture of a Positivo
-# BIOS screen (docs/studies/estudo-motores-ocr.md): 4.5s to read, against
-# paddleocr's 44.1s on the same frame, and the perception engine reached
-# the same conclusion from it (the selected tab, two channels agreeing).
-# PaddleOCR is not slow by nature here -- it is slow because this machine
-# has no NVIDIA GPU and PaddlePaddle 3.3.1's oneDNN path crashes, so it
-# runs unaccelerated (docs/specs/p-specs/paddleocr-cpu-lento-sem-mkldnn.md).
-# Revisit if that changes: same models, different executor.
+# BIOS screen (docs/studies/estudo-motores-ocr.md): 4.5s to read, and the
+# perception engine reached the right conclusion from it (the selected
+# tab, two channels agreeing).
 DEFAULT_ENGINE = "rapidocr-openvino"
 
 
 def create_ocr_engine(name, lang=None, upscale=2.0):
     """lang=None picks each engine's natural default -- Tesseract uses
-    ISO 639-2 codes ("eng"), PaddleOCR uses its own short codes ("en"),
-    winocr uses BCP-47 tags ("en-US"). `upscale` only applies to
-    Tesseract; the others do their own internal preprocessing.
+    ISO 639-2 codes ("eng"), RapidOCR its own short codes, winocr BCP-47
+    tags ("en-US"). `upscale` only applies to Tesseract; the others do
+    their own internal preprocessing.
     """
     if name == "tesseract":
         return TesseractOCR(lang=lang or "eng", upscale=upscale)
-    if name == "paddleocr":
-        return PaddleOCREngine(lang=lang or "en")
     if name == "rapidocr-onnxruntime":
         return RapidOCREngine(backend="onnxruntime")
     if name == "rapidocr-openvino":

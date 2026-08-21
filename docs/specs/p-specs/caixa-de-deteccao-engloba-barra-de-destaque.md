@@ -100,3 +100,34 @@ Consequência prática já registrada nos outros dois: o motivo de abstenção n
 ## Status
 
 **Aceito como limite permanente enquanto a entrada for foto de câmera — 2026-08-10.** Investigado até a causa raiz, com a correção óbvia (E6) tentada, medida e **rejeitada por piorar o gabarito**. Não corrigido por decisão fundamentada, não por falta de investigação. Reavaliar obrigatoriamente se o projeto ganhar um caminho de entrada de imagem sem ruído de câmera.
+
+### CONFIRMADO ao vivo — 2026-08-20
+
+**Não é mais risco latente: o teto se manifestou em produção, medido, com a correção prescrita funcionando.**
+
+Tela real da BIOS Positivo, página Advanced, capturada por HDMI a 1280x720. A olho nu a barra de destaque está claramente visível atrás de `» Trusted Computing`, e `Advanced` está destacado na barra lateral. Mesmo assim:
+
+| Motor | Resultado | Tempo por leitura |
+|---|---|---|
+| `rapidocr-openvino` (default) | **abstém** — `no_channel_singled_out_a_member`, cursor indeterminado | ~0.6s |
+| `paddleocr` | **acerta** — navegou 3 passos e leu `CPU Temperature: 64 C` | ~13s |
+
+A leitura do paddleocr foi conferida contra a tela: `64 C` e `3098 RPM` conferem com o que o monitor mostrava. O `rapidocr` não errou a resposta — ele **se absteve**, que é a degradação correta pela §E10, e a camada de tools por sua vez recusou apertar tecla sem saber onde o cursor estava. Nada aconteceu de errado; simplesmente não houve resposta.
+
+O que isso fecha e o que não fecha:
+- **Fecha** a dúvida sobre se o teto ativaria com entrada de borda dura: ativa, e com a fonte que o projeto passou a usar.
+- **Não fecha** a causa: a cadeia de falha medida em 2026-08-10 foi sobre imagem sintética. Que a falha ao vivo tenha exatamente a mesma raiz (caixa de detecção englobando a barra) é a hipótese mais provável, dada a coincidência de motor, de sintoma e de tipo de borda — mas não foi verificada com `--explain` neste caso.
+
+**Desfecho (2026-08-20, no mesmo dia): a mitigação adotada não foi trocar de motor.** A camada de tools passou a ler o cursor pelo `selection.py`, que mede cor de outro jeito e enxerga o destaque com o motor rápido — 0.66s por leitura, contra 13s do paddleocr e contra o rapidocr+E7 que não vê nada (`../f-specs/camada-de-tools-consulta-bios.md`). O **`paddleocr` foi removido do projeto** logo depois, então a comparação A/B recomendada abaixo **não é mais executável num checkout limpo**; ela fica como registro. Este teto continua aberto no motor de percepção — o que mudou é que a camada de tools deixou de depender dele.
+
+O custo da mitigação por troca de motor era real e não pequeno: com `--engine paddleocr` a mesma tool levou **63.5s** fim a fim (55s só de navegação, que faz uma leitura por tecla) contra os ~2s de partida e 0.6s por leitura do default. Trocar de motor resolve a correção às custas de sair da meta de <8s por leitura que motivou a adoção do rapidocr em primeiro lugar (`../../studies/estudo-motores-ocr.md`).
+
+### O gatilho previsto aconteceu — 2026-08-20
+
+**A condição que esta P-spec mandava vigiar está satisfeita.** O projeto passou a capturar a tela por **capture card USB-HDMI** em vez de câmera apontada para o monitor: sinal digital direto, sem reflexo, sem ângulo, sem desfoque óptico — ou seja, exatamente a classe de **bordas duras** que a seção "Como evitar / mitigar" nomeia como gatilho ("no dia em que entrar captura HDMI, VM ou screenshot direto (...) este teto deixa de ser hipotético").
+
+O que **não** foi feito: nenhuma medição do teto sob HDMI. Não há evidência ainda de que ele se manifeste na prática — a mudança de entrada é recente e ainda não foi rodada contra o gabarito. O status permanece *aceito*, mas a justificativa que o sustentava ("enquanto a entrada for foto de câmera") **não vale mais**, e a reavaliação obrigatória prevista acima está pendente.
+
+Duas coisas herdam esse risco e devem ser conferidas primeiro se algo falhar de forma estranha:
+- a camada de tools nova ([`../f-specs/camada-de-tools-consulta-bios.md`](../f-specs/camada-de-tools-consulta-bios.md)), cuja navegação depende de detecção de estado correta a cada tecla;
+- o default `rapidocr-openvino` ([`../d-specs/rapidocr.md`](../d-specs/rapidocr.md)), que é o motor onde o caso foi medido perder. O primeiro teste a fazer é o A/B já indicado: comparar contra `--engine paddleocr`, que mede 1.06 no mesmo caso.
