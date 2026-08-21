@@ -1,0 +1,340 @@
+"""Offline checks for the tools layer, driven by real capture fixtures.
+
+Runs with no camera and no cable: a `FakeBios` stands in for the machine
+under test, serving real perception contracts and moving a simulated
+cursor when a key is "pressed". That is enough to exercise everything
+that is not the hardware itself -- cursor resolution, label/value
+pairing, the menu walk, and the two safety guards.
+
+    py -3.13 test_biostools.py
+
+Contracts are produced once from the fixtures in `captures/` and cached
+next to this file, because each one costs a full OCR pass.
+"""
+import copy
+import json
+import os
+import sys
+
+import cv2
+
+from biostools import navigate, run_tool, screen
+from biostools.session import Reading
+
+CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".biostools_cache")
+
+# The Advanced page's entry list, with 'Hardware Monitor' under the cursor.
+MENU_SCREEN = "positivo_advanced_hardware-monitor"
+# The Hardware Monitor page itself, with the sensor readings.
+READINGS_SCREEN = "positivo_advanced_cpu-overheat"
+# The Main page, captured live off the HDMI card at 1280x720 -- unlike the
+# two above, which are 4K photographs of a monitor. Keeping both input
+# kinds in the suite is deliberate: hard-edged digital capture and soft
+# camera photos stress the geometry differently.
+MAIN_SCREEN = "positivo_main_live"
+
+# What a person sees in the Positivo sidebar. 'POSITIVO' and 'Setup' are
+# the logo: OCR puts them in the same column and the engine groups them
+# with the menu, but the cursor never lands on them.
+#
+# Spelled as MENU_SCREEN's OCR read it. The other fixture reads the same
+# entry as 'Securlty' -- the two captures disagree, which is exactly why
+# text matching is normalised and fuzzy rather than exact.
+NAV_ENTRIES = ["Main", "Advanced", "Security", "Boot", "Save & Exit", "Event Log"]
+
+_failures = []
+
+
+def check(label, got, want):
+    ok = got == want
+    print(f"  {'ok  ' if ok else 'FAIL'} {label}")
+    if not ok:
+        print(f"       esperado: {want!r}")
+        print(f"       obtido  : {got!r}")
+        _failures.append(label)
+    return ok
+
+
+def check_that(label, condition, detail=""):
+    print(f"  {'ok  ' if condition else 'FAIL'} {label}")
+    if not condition:
+        if detail:
+            print(f"       {detail}")
+        _failures.append(label)
+    return condition
+
+
+def contract_for(stem):
+    """Perceive a fixture once, then reuse the cached contract."""
+    os.makedirs(CACHE, exist_ok=True)
+    cached = os.path.join(CACHE, f"{stem}.json")
+    if os.path.exists(cached):
+        with open(cached, encoding="utf-8") as f:
+            return json.load(f)
+
+    image = path = None
+    for ext in (".jpg", ".png"):
+        path = os.path.join("captures", stem + ext)
+        image = cv2.imread(path)
+        if image is not None:
+            break
+    if image is None:
+        sys.exit(f"fixture ausente: captures/{stem}.[jpg|png]")
+
+    from perception import perceive
+
+    print(f"  (percebendo {stem} pela primeira vez, leva alguns segundos...)")
+    contract = perceive(frames=[image], view="both").contract
+    with open(cached, "w", encoding="utf-8") as f:
+        json.dump(contract, f)
+    return contract
+
+
+class FakeBios:
+    """A stand-in for the machine: serves contracts, moves a cursor.
+
+    The cursor is simulated by rewriting the contract's `states` so the
+    entry it sits on carries `focused` -- the same shape E7 emits from the
+    S6_border channel. `wrap` chooses between a menu that cycles round and
+    one that stops at its ends; both exist in real BIOSes and the walk has
+    to handle each.
+    """
+
+    def __init__(self, contract, entries=NAV_ENTRIES, index=1, wrap=True,
+                 opens_to=None, frozen=False, simulate_nav=False):
+        self.contract = contract
+        self.entries = entries
+        self.index = index
+        self.wrap = wrap
+        self.opens_to = opens_to
+        self.frozen = frozen  # cursor never moves, whatever is pressed
+        # Off by default so the fixture's own measured states are served
+        # untouched. Turned on only to exercise the sidebar walk, where a
+        # moving cursor is the whole point.
+        self.simulate_nav = simulate_nav
+        self.keys = []
+        self.opened = False
+
+    def _ids_by_text(self, full):
+        return {p["content"]: p["id"] for p in full.get("primitives", ())
+                if p.get("content")}
+
+    def read_stable(self, timeout=None):
+        contract = self.opens_to if (self.opened and self.opens_to) else self.contract
+        full = copy.deepcopy(contract["full"])
+        if self.simulate_nav and not self.opened:
+            ids = self._ids_by_text(full)
+            target = ids.get(self.entries[self.index])
+            full["states"] = [{
+                "element_id": target, "class_id": "cFAKE", "name": "focused",
+                "channels": ["S6_border"], "magnitude": 9.0, "confidence": 0.9,
+                "evidence": {},
+            }] if target else []
+        return Reading(full=full, digest=contract["digest"], frame=None,
+                       captured_at="test")
+
+    def read_cursor(self, timeout=None):
+        """The legacy-shaped result navigation reads.
+
+        Synthesised from the same contract `read_stable` serves, so the
+        simulated cursor cannot drift between the two views. Marks
+        `highlighted` exactly where the contract (or the simulation) says
+        the cursor is -- which is what `selection.py` would have produced
+        on the real frame.
+        """
+        reading = self.read_stable()
+        full = reading.full
+        marked = {s["element_id"] for s in full.get("states", ())
+                  if s["name"] in ("focused", "selected")}
+        lines = []
+        for prim in full.get("primitives", ()):
+            if not prim.get("content"):
+                continue
+            g = prim["geometry"]
+            lines.append({
+                "text": prim["content"],
+                "bbox": {"left": g["x"], "top": g["y"],
+                         "width": g["w"], "height": g["h"]},
+                "highlighted": prim["id"] in marked,
+                "region": "menu_column",
+            })
+        lines.sort(key=lambda l: (l["bbox"]["top"], l["bbox"]["left"]))
+        return {"blocks": [{"block_num": 0, "lines": lines}]}
+
+    def press(self, key):
+        self.keys.append(key)
+        if key == "enter":
+            self.opened = True
+            return
+        if self.frozen:
+            return
+        delta = {"down": 1, "up": -1}.get(key, 0)
+        if not delta:
+            return
+        nxt = self.index + delta
+        if self.wrap:
+            self.index = nxt % len(self.entries)
+        else:
+            self.index = max(0, min(len(self.entries) - 1, nxt))
+
+
+def test_cursor_resolution(menu):
+    print("\nresolucao de cursor (o que fact_summary nao ve)")
+    views = {v.group_id: v for v in screen.group_views(menu["full"])}
+
+    nav = [v for v in views.values() if v.hint == "nav_menu"]
+    check("existe exatamente um nav_menu", len(nav), 1)
+    check("aba ativa no nav_menu", nav[0].selected.text if nav[0].selected else None,
+          "Advanced")
+
+    focused = [v for v in views.values()
+               if v.hint == "settings_list" and v.focused]
+    check_that("item focado achado no settings_list", len(focused) == 1,
+               f"grupos com foco: {[v.group_id for v in focused]}")
+    if focused:
+        check("item focado", focused[0].focused.text, "Hardware Monitor")
+
+    undetermined = [v for v in views.values() if v.status == "undetermined"]
+    check_that("abstencao E7 elevada ate o grupo dono", len(undetermined) == 1,
+               f"grupos indeterminados: {[v.group_id for v in undetermined]}")
+
+    # The distinction the architecture spec calls the most dangerous to
+    # lose: "nothing is marked" and "could not tell" must not collapse.
+    statuses = {v.status for v in views.values()}
+    check_that("os tres estados coexistem numa tela so",
+               {"focused", "undetermined"} <= statuses, f"status: {statuses}")
+
+
+def test_field_reading(readings):
+    print("\nleitura de campo rotulado")
+    full = readings["full"]
+
+    temp = screen.field_value(full, "CPU Temperature",
+                              pattern=r"-?\d+(?:\.\d+)?\s*(?:°|deg)?\s*[cf]\b")
+    check("valor da temperatura", temp.parsed, "61C")
+    check_that("linha crua preservada para auditoria", "CPU Temperature" in temp.row,
+               temp.row)
+
+    fan = screen.field_value(full, "CPU Fan Speed", pattern=r"\d+\s*RPM")
+    check("valor da rotacao", fan.parsed, "3098 RPM")
+
+    check("rotulo inexistente devolve None",
+          screen.field_value(full, "Nao Existe"), None)
+
+    pairs = screen.field_pairs(full, exclude_ids=screen.nav_element_ids(full))
+    check("pares rotulo/valor da tela", pairs,
+          {"CPU Temperature": "61C", "CPU Fan Speed": "3098 RPM"})
+
+
+def test_main_info(main):
+    print("\ntool main_info: pares da tela Main")
+    full = main["full"]
+    pairs = screen.field_pairs(full, exclude_ids=screen.nav_element_ids(full))
+
+    check("versao da BIOS", pairs.get("BIOS Version"), "7.2.4.XD22CPG7.I219V.P")
+    check("versao do EC", pairs.get("EC FW Version"), "01.22")
+    check("data de build", pairs.get("BIOS Build Date (MM/DD/YYYY)"),
+          "06/26/2026 16:01:12")
+    check("nivel de acesso", pairs.get("Access Level"), "Administrator")
+    check("total de campos", len(pairs), 11)
+
+    # The three ways the surrounding chrome used to leak in, each now
+    # blocked by a different filter -- see field_pairs' docstring.
+    check_that("barra lateral fora dos rotulos",
+               not {"Main", "Advanced", "Setup", "Security"} & set(pairs),
+               f"rotulos: {sorted(pairs)}")
+    check_that("caixa de ajuda da direita fora dos valores",
+               not any(v in ("Previous", "Optimized", "Back")
+                       for v in pairs.values()),
+               f"valores: {sorted(pairs.values())}")
+
+    # The whole point of reading every pair instead of a fixed label list.
+    bios_fields = [k for k in pairs if "BIOS" in k or "EC " in k]
+    check_that("achou os campos de versao sem ter que nomea-los",
+               len(bios_fields) >= 5, f"campos: {bios_fields}")
+
+
+def test_cpu_temperature(menu, readings):
+    print("\ntool cpu_temperature, fim a fim")
+    bios = FakeBios(menu, opens_to=readings)
+    result = run_tool("cpu_temperature", bios)
+    check("resposta", result.value, "61C")
+    check("cursor ja estava no alvo, nenhuma seta gasta",
+          [k for k in bios.keys if k in ("up", "down", "left", "right")], [])
+    check("abriu com enter", bios.keys.count("enter"), 1)
+    # Without this the tool is single-use: it would leave the BIOS inside
+    # the submenu, where the entry it navigates to no longer exists.
+    check("fechou o que abriu (repetivel)", bios.keys.count("esc"), 1)
+    check("esc veio depois do enter", bios.keys[-1], "esc")
+
+
+def test_menu_walk(menu):
+    print("\ntool main_menu: caminhada pelo menu")
+    for wrap in (True, False):
+        rotulo = "menu que da a volta" if wrap else "menu que para nas pontas"
+        bios = FakeBios(menu, index=3, wrap=wrap, simulate_nav=True)
+        result = run_tool("main_menu", bios)
+        check(f"{rotulo}: todas as opcoes achadas",
+              sorted(result.entries), sorted(NAV_ENTRIES))
+        check_that(f"{rotulo}: logo excluido",
+                   not any(t in result.entries for t in ("POSITIVO", "Setup")),
+                   f"entradas: {result.entries}")
+        check_that(f"{rotulo}: logo reportado como nao-opcao",
+                   any("POSITIVO" in n for n in result.notes),
+                   f"notas: {result.notes}")
+
+
+def test_walk_survives_stuck_cursor(menu):
+    print("\ntool main_menu: cursor que nao anda")
+    bios = FakeBios(menu, frozen=True, simulate_nav=True)
+    result = run_tool("main_menu", bios)
+    check_that("ainda responde com o que a tela mostra", result.ok,
+               f"erro: {result.error}")
+    check_that("marca a lista como nao confirmada",
+               any("sem confirmacao" in n for n in result.notes),
+               f"notas: {result.notes}")
+
+
+def test_safety_guards(menu):
+    print("\nguardas de seguranca")
+    bios = FakeBios(menu, frozen=True, simulate_nav=True)
+    outcome = navigate.move_to(bios, "Nao Existe Este Menu",
+                               hint="nav_menu", max_steps=20)
+    check("alvo inexistente para por ciclo", outcome.reason, navigate.CYCLED)
+    check_that("para em ~1 tecla, nao no teto de 20", len(bios.keys) <= 2,
+               f"teclas enviadas: {bios.keys}")
+
+    blind = copy.deepcopy(menu)
+    blind["full"]["states"] = []
+    quiet = FakeBios(blind)
+    quiet.read_stable = lambda timeout=None: Reading(
+        full=blind["full"], digest=blind["digest"], frame=None, captured_at="t")
+    outcome = navigate.move_to(quiet, "Main", hint="nav_menu")
+    check("cursor indeterminado e reportado", outcome.reason, navigate.BLIND)
+    check("nenhuma tecla enviada as cegas", quiet.keys, [])
+
+
+def main():
+    print("carregando fixtures...")
+    menu = contract_for(MENU_SCREEN)
+    readings = contract_for(READINGS_SCREEN)
+    main = contract_for(MAIN_SCREEN)
+
+    test_cursor_resolution(menu)
+    test_field_reading(readings)
+    test_main_info(main)
+    test_cpu_temperature(menu, readings)
+    test_menu_walk(menu)
+    test_walk_survives_stuck_cursor(menu)
+    test_safety_guards(menu)
+
+    print()
+    if _failures:
+        print(f"{len(_failures)} falha(s): {', '.join(_failures)}")
+        return 1
+    print("tudo passou")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

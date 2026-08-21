@@ -34,3 +34,6 @@ ocr_check*.json
 ocr_with_selection.json
 final_check.json
 out.json
+
+# Perception contracts cached by test_biostools.py (regenerated on demand)
+.biostools_cache/
