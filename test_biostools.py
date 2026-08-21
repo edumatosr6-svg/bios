@@ -226,6 +226,42 @@ def test_field_reading(readings):
           {"CPU Temperature": "61C", "CPU Fan Speed": "3098 RPM"})
 
 
+def test_label_aliases():
+    print("\nrotulos canonicos: conceito separado da grafia da tela")
+    from biostools import labels
+
+    ROTULOS = labels.field("cpu_temperature")
+
+    # Um conceito que nao existe tem que estourar na declaracao da tool,
+    # em tempo de import -- nao no meio de uma navegacao numa maquina real.
+    for kind, bad in ((labels.field, "temperatura_da_cpu"),
+                      (labels.screen, "hardwaremonitor")):
+        try:
+            kind(bad)
+            check_that(f"canonico invalido {bad!r} recusado", False)
+        except labels.UnknownLabel:
+            check_that(f"canonico invalido {bad!r} recusado", True)
+
+    for spelling in ("CPU Temperature", "� CPU Temperature", "CPU  Temperature",
+                     "CPU Temp", "CPU Temp.", "Processor Temperature",
+                     "CPU Package Temperature"):
+        check_that(f"casa {ascii(spelling)}", screen.match_score(ROTULOS, spelling) > 0)
+
+    # A metade que protege contra erro silencioso: um campo vizinho na
+    # mesma tela nunca pode passar por temperatura da CPU. Reportar a
+    # temperatura do sistema como sendo a da CPU e um erro que um operador
+    # age em cima; "nao achei" e barulhento e inofensivo.
+    for other in ("System Temperature", "CPU Fan Speed", "PCH Temperature",
+                  "Memory Temperature"):
+        check_that(f"NAO casa {ascii(other)}", screen.match_score(ROTULOS, other) == 0)
+
+    # O usuario pergunta em portugues; a tela da BIOS e em ingles. Traduzir
+    # a pergunta e trabalho da camada de tool-calling, nao do matcher --
+    # aceitar PT-BR aqui so criaria falso casamento sem servir para nada.
+    check_that("nao tenta casar a pergunta do usuario com a tela",
+               screen.match_score(ROTULOS, "Temperatura da CPU") == 0)
+
+
 def test_main_info(main):
     print("\ntool main_info: pares da tela Main")
     full = main["full"]
@@ -321,6 +357,7 @@ def main():
     main = contract_for(MAIN_SCREEN)
 
     test_cursor_resolution(menu)
+    test_label_aliases()
     test_field_reading(readings)
     test_main_info(main)
     test_cpu_temperature(menu, readings)

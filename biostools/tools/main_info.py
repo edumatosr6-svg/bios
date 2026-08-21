@@ -20,7 +20,7 @@ MAIN_INFO = register(Tool(
     name="main_info",
     question="Quais informacoes a tela Main mostra (versao da BIOS, etc.)?",
     route=[
-        Step(to="Main", hint="nav_menu", key="down", activate=False),
+        Step(to="main", hint="nav_menu", key="down", activate=False),
     ],
     reader=AllFields(),
 ))

@@ -64,7 +64,16 @@ def match_score(target, text):
     Containment alone is too loose for short BIOS labels -- normalised
     'main' is a substring of 'domain' -- so callers rank candidates and
     prefer an exact hit rather than taking the first containment.
+
+    `target` may be a list of accepted spellings; the best-scoring one
+    wins. Normalisation absorbs how a screen is *drawn* (the submenu
+    chevron, double spaces, OCR punctuation noise) but deliberately not
+    how it is *worded*: 'CPU Temp' and 'Processor Temperature' do not
+    match 'CPU Temperature' and must be declared. See the note on
+    `field_value` for why guessing is the wrong trade here.
     """
+    if isinstance(target, (list, tuple, set)):
+        return max((match_score(t, text) for t in target), default=0)
     a, b = normalize(target), normalize(text)
     if not a or not b:
         return 0
@@ -302,6 +311,16 @@ class FieldRead:
 
 def field_value(full, label, pattern=None, tolerance=ROW_TOLERANCE):
     """Read the value of a labelled field, e.g. 'CPU Temperature' -> '61C'.
+
+    `label` may be a list of accepted spellings, which is how one tool
+    serves BIOS models that word the same field differently ('CPU Temp',
+    'Processor Temperature'). They have to be **declared**, not guessed:
+    in a factory reading system a wrong match is far worse than no match
+    -- reporting the system temperature as the CPU's is a silent error an
+    operator would act on, while "não achei o rótulo" is loud and
+    harmless. `FieldRead.label` reports the text as it appeared on
+    screen, not the alias that matched it, so which spelling this machine
+    actually uses stays auditable.
 
     Only primitives starting to the RIGHT of the label's right edge count
     as the value. Vertical proximity alone is not enough: on the real

@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from . import screen
+from . import labels, screen
 from .navigate import activate, move_to, walk_group
 
 # Keys a read-only tool is allowed to send. Navigation and escape only --
@@ -40,12 +40,22 @@ class UnknownTool(KeyError):
 
 @dataclass
 class Step:
-    """One leg of the route: put the cursor on `to`, then open it."""
+    """One leg of the route: put the cursor on `to`, then open it.
+
+    `to` is a **canonical screen name** from `labels.SCREENS`, not the
+    text a BIOS draws -- see that module for why the two are separate.
+    Resolved eagerly in __post_init__ so a typo fails when the tool is
+    declared, at import time, instead of halfway through driving a real
+    machine.
+    """
     to: str
     hint: str | None = None
     key: str = "down"
     activate: bool = True
     max_steps: int = 20
+
+    def __post_init__(self):
+        self.spellings = labels.screen(self.to)
 
 
 @dataclass
@@ -106,9 +116,16 @@ class ToolResult:
 
 @dataclass
 class Field:
-    """One labelled value to read, with an optional shape for it."""
+    """One value to read, named by concept rather than by screen text.
+
+    `label` is a canonical name from `labels.FIELDS`. Resolved eagerly so
+    an unknown concept is caught at import, not on the factory floor.
+    """
     label: str
     pattern: str | None = None
+
+    def __post_init__(self):
+        self.spellings = labels.field(self.label)
 
 
 @dataclass
@@ -133,9 +150,10 @@ class Fields:
         single = None
 
         for spec in self.specs:
-            found = screen.field_value(full, spec.label, pattern=spec.pattern)
+            found = screen.field_value(full, spec.spellings, pattern=spec.pattern)
             if found is None:
-                notes.append(f"rotulo {spec.label!r} nao esta nesta tela")
+                notes.append(f"rotulo {spec.label!r} nao esta nesta tela "
+                             f"(grafias tentadas: {spec.spellings})")
                 continue
             if not found.value:
                 notes.append(f"achei {found.label!r} mas nada a direita dele")
@@ -339,8 +357,8 @@ class Tool:
 
         try:
             for leg in self.route:
-                outcome = move_to(session, leg.to, hint=leg.hint, key=leg.key,
-                                  max_steps=leg.max_steps)
+                outcome = move_to(session, leg.spellings, hint=leg.hint,
+                                  key=leg.key, max_steps=leg.max_steps)
                 steps += outcome.steps
                 if not outcome.ok:
                     return ToolResult(

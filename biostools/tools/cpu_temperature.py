@@ -2,11 +2,13 @@
 
 A rota reproduz o que foi percorrido a mao contra a maquina real em
 2026-08-20: a partir da lista de itens da pagina Advanced, levar o cursor
-ate "Hardware Monitor", abrir, e ler o valor ao lado de "CPU Temperature".
+ate a tela de monitoramento, abrir, e ler o valor ao lado do rotulo de
+temperatura da CPU.
 
-So a declaracao mora aqui. Navegacao, verificacao e leitura sao
-`registry.Tool.run` -- a proxima tool e outro arquivo desta forma, nao
-outro loop.
+Nenhum texto de tela aparece aqui -- so conceitos. Como cada modelo de
+BIOS escreve "hardware_monitor" e "cpu_temperature" mora em
+../labels.py, que e o unico arquivo a mudar quando um quarto modelo
+entrar.
 """
 from ..registry import Field, Fields, Step, Tool, register
 
@@ -19,7 +21,7 @@ CPU_TEMPERATURE = register(Tool(
     name="cpu_temperature",
     question="Qual a temperatura da CPU?",
     route=[
-        Step(to="Hardware Monitor", hint="settings_list", key="down"),
+        Step(to="hardware_monitor", hint="settings_list", key="down"),
     ],
-    reader=Fields([Field("CPU Temperature", TEMPERATURE)]),
+    reader=Fields([Field("cpu_temperature", TEMPERATURE)]),
 ))
