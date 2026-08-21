@@ -38,6 +38,43 @@ class ExtractionError(Exception):
     pass
 
 
+def _chat_completion(messages, host=DEFAULT_HOST, port=DEFAULT_PORT,
+                      model=DEFAULT_MODEL, temperature=0, timeout=30):
+    """POST one chat-completions request and return the assistant's text.
+
+    Shared low-level plumbing for every caller that talks to the local LLM
+    (field extraction here, contract narration in cognition.py): the
+    endpoint, request shape and error translation are identical, only the
+    messages and what's done with the answer differ.
+
+    Raises ExtractionError on any failure, so callers across the codebase
+    keep catching one exception type regardless of which LLM-backed
+    feature failed.
+    """
+    payload = {
+        "model": model,
+        "messages": messages,
+        "temperature": temperature,
+    }
+    url = f"http://{host}:{port}/api/v1/chat/completions"
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+    except (urllib.error.URLError, TimeoutError, OSError) as e:
+        raise ExtractionError(f"could not reach LLM endpoint at {url}: {e}") from e
+
+    try:
+        return body["choices"][0]["message"]["content"]
+    except (KeyError, IndexError) as e:
+        raise ExtractionError(f"unexpected LLM response shape: {body}") from e
+
+
 def extract_fields(ocr_result, host=DEFAULT_HOST, port=DEFAULT_PORT,
                     model=DEFAULT_MODEL, timeout=30):
     """Call the local LLM to turn raw OCR text into label->value fields.
@@ -59,31 +96,13 @@ def extract_fields(ocr_result, host=DEFAULT_HOST, port=DEFAULT_PORT,
     if not text:
         return {}, {}
 
-    payload = {
-        "model": model,
-        "messages": [
+    content = _chat_completion(
+        messages=[
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": text},
         ],
-        "temperature": 0,
-    }
-    url = f"http://{host}:{port}/api/v1/chat/completions"
-    req = urllib.request.Request(
-        url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
+        host=host, port=port, model=model, timeout=timeout,
     )
-
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            body = json.loads(resp.read().decode("utf-8"))
-    except (urllib.error.URLError, TimeoutError, OSError) as e:
-        raise ExtractionError(f"could not reach LLM endpoint at {url}: {e}") from e
-
-    try:
-        content = body["choices"][0]["message"]["content"]
-    except (KeyError, IndexError) as e:
-        raise ExtractionError(f"unexpected LLM response shape: {body}") from e
 
     parsed = _parse_json_response(content)
     raw_fields = parsed.get("fields")

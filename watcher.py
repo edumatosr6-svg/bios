@@ -35,6 +35,8 @@ def watch(
     engine=DEFAULT_ENGINE,
     lang=None,
     extract=False,
+    perception=False,
+    narrate=False,
     llm_host=DEFAULT_HOST,
     llm_port=DEFAULT_PORT,
     llm_model=DEFAULT_MODEL,
@@ -64,7 +66,33 @@ def watch(
     signal.signal(signal.SIGTERM, _graceful_exit)
     signal.signal(signal.SIGINT, _graceful_exit)
 
-    engine = create_ocr_engine(engine, lang=lang)
+    if perception:
+        # Build the stages once, outside the loop. The high-level
+        # perception.perceive() wrapper rebuilds Extraction on every call,
+        # which reloads the OCR model -- fine for a single shot (main.py),
+        # unacceptable in a loop that runs indefinitely.
+        from perception.pipeline import run_pipeline
+        from perception.stages import (
+            Acquisition, Characterisation, Conditioning, Equivalence, Extraction,
+            Grouping, Identity, Regionalisation, Serialisation, StateInference,
+            Typing,
+        )
+
+        warm = [
+            Conditioning(),
+            Extraction(engine=engine),
+            Characterisation(),
+            Regionalisation(),
+            Grouping(),
+            Equivalence(),
+            StateInference(),
+            Typing(),
+            Identity(),
+            Serialisation(view="both"),
+        ]
+    else:
+        engine = create_ocr_engine(engine, lang=lang)
+
     prev_gray = None
     last_processed_gray = None
     stable_count = 0
@@ -90,22 +118,52 @@ def watch(
                         or frame_diff_score(last_processed_gray, gray) > change_threshold
                     )
                     if is_new_screen:
-                        print("[watcher] stable screen detected, running OCR...")
-                        result = engine.read(frame)
-                        result["captured_at"] = time.strftime("%Y%m%d-%H%M%S")
-                        result["screen_bg_color"] = annotate_selection(frame, result["blocks"])
-                        if extract:
-                            try:
-                                fields, unverified = extract_fields(
-                                    result, host=llm_host, port=llm_port, model=llm_model
-                                )
-                                result["fields"] = fields
-                                result["fields_unverified"] = unverified
-                            except ExtractionError as e:
-                                print(f"[watcher] field extraction failed, keeping raw OCR only: {e}")
-                                result["fields"] = None
-                                result["fields_unverified"] = None
-                                result["fields_error"] = str(e)
+                        captured_at = time.strftime("%Y%m%d-%H%M%S")
+                        if perception:
+                            print("[watcher] stable screen detected, running perception...")
+                            perceived = run_pipeline(
+                                [Acquisition(frames=[frame], captured_at=captured_at)] + warm
+                            )
+                            result = {"captured_at": captured_at,
+                                      **perceived.contract["full"]}
+                            if narrate:
+                                from cognition import fact_summary, narrate_contract
+
+                                fact_check = fact_summary(perceived.contract["full"])
+                                print(f"[watcher] {fact_check}")
+                                try:
+                                    narration = narrate_contract(
+                                        perceived.contract,
+                                        host=llm_host, port=llm_port, model=llm_model,
+                                    )
+                                    print(f"[watcher] LLM description: {narration}")
+                                    result["cognition"] = {
+                                        "narration": narration, "error": None,
+                                        "fact_check": fact_check,
+                                    }
+                                except ExtractionError as e:
+                                    print(f"[watcher] narration failed, keeping the contract only: {e}")
+                                    result["cognition"] = {
+                                        "narration": None, "error": str(e),
+                                        "fact_check": fact_check,
+                                    }
+                        else:
+                            print("[watcher] stable screen detected, running OCR...")
+                            result = engine.read(frame)
+                            result["captured_at"] = captured_at
+                            result["screen_bg_color"] = annotate_selection(frame, result["blocks"])
+                            if extract:
+                                try:
+                                    fields, unverified = extract_fields(
+                                        result, host=llm_host, port=llm_port, model=llm_model
+                                    )
+                                    result["fields"] = fields
+                                    result["fields_unverified"] = unverified
+                                except ExtractionError as e:
+                                    print(f"[watcher] field extraction failed, keeping raw OCR only: {e}")
+                                    result["fields"] = None
+                                    result["fields_unverified"] = None
+                                    result["fields_error"] = str(e)
                         send_result(result, image=frame)
                         last_processed_gray = gray.copy()
                     stable_count = 0
@@ -128,10 +186,26 @@ def parse_args():
     parser.add_argument("--change-threshold", type=float, default=8.0)
     parser.add_argument("--extract-fields", action="store_true",
                          help="Also run OCR text through the local LLM (Lemonade/FastFlowLM) to extract label->value fields")
+    parser.add_argument("--perception", action="store_true",
+                         help="Use the perception engine (perception/) instead of the "
+                              "OCR + selection.py path. Off by default here so existing "
+                              "automation keeps today's output shape; gui.py runs the "
+                              "engine by default and uses --legacy as the opposite switch.")
+    parser.add_argument("--narrate", action="store_true",
+                         help="Requires --perception. Send the digest contract to the "
+                              "local LLM, print its free-text description of what it "
+                              "understood, and save it under a 'cognition' key. "
+                              "Exploratory: kept as-is for a human to judge, unchecked.")
     parser.add_argument("--llm-host", default=DEFAULT_HOST)
     parser.add_argument("--llm-port", type=int, default=DEFAULT_PORT)
     parser.add_argument("--llm-model", default=DEFAULT_MODEL)
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.narrate and not args.perception:
+        parser.error(
+            "--narrate requires --perception: cognition consumes the perception "
+            "digest contract, which the legacy path never produces."
+        )
+    return args
 
 
 if __name__ == "__main__":
@@ -145,6 +219,8 @@ if __name__ == "__main__":
         engine=args.engine,
         lang=args.lang,
         extract=args.extract_fields,
+        perception=args.perception,
+        narrate=args.narrate,
         llm_host=args.llm_host,
         llm_port=args.llm_port,
         llm_model=args.llm_model,

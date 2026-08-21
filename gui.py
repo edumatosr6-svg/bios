@@ -93,7 +93,7 @@ def request_resolution(cap, width=REQUESTED_WIDTH, height=REQUESTED_HEIGHT):
     return got
 
 
-def _perception_worker_process(engine_name, lang, ocr_votes, in_queue, out_queue):
+def _perception_worker_process(engine_name, lang, ocr_votes, narrate_cfg, in_queue, out_queue):
     """Runs the perception engine in a child process, model kept warm.
 
     Same process-isolation reason as the legacy worker below: OCR holds
@@ -110,6 +110,12 @@ def _perception_worker_process(engine_name, lang, ocr_votes, in_queue, out_queue
     settle, not just the last one. See
     docs/specs/f-specs/corroboracao-ocr-multi-frame.md for what voting
     buys and what it costs (measured live: ~2x the read time per capture).
+
+    With `narrate_cfg`, the digest contract also goes to the local LLM for
+    a free-text description (see cognition.py). That is a second
+    multi-second wait stacked on top of perception's own, so the worker
+    emits a status message before starting it -- otherwise the window sits
+    silent long enough to look hung.
     """
     from perception.model import Perception
     from perception.pipeline import run_pipeline
@@ -129,7 +135,10 @@ def _perception_worker_process(engine_name, lang, ocr_votes, in_queue, out_queue
         StateInference(),
         Typing(),
         Identity(),
-        Serialisation(view="full"),
+        # "both", not "full": the UI and the saved capture keep using the
+        # full contract exactly as before, while cognition gets the digest
+        # -- the only view it is allowed to see.
+        Serialisation(view="both"),
     ]
 
     while True:
@@ -183,34 +192,55 @@ def _perception_worker_process(engine_name, lang, ocr_votes, in_queue, out_queue
                 "hint": typing.semantic_hint if typing else None,
             })
 
-        out_queue.put((
-            {
-                "mode": "perception",
-                "captured_at": captured_at,
-                "contract": result.contract,
-                "lines": lines,
-                "counts": {
-                    "primitives": len(perception.primitives),
-                    "regions": len(perception.regions),
-                    "groups": len(perception.groups),
-                    "classes": len(perception.classes),
-                    "states": len(perception.states),
-                },
-                "abstentions": [a.as_dict() for a in perception.abstentions],
-                "screen_id": perception.identity.screen_id if perception.identity else None,
-                "surface": {
-                    "width": perception.surface.width if perception.surface else 0,
-                    "height": perception.surface.height if perception.surface else 0,
-                    "rectified": perception.surface.rectified if perception.surface else False,
-                },
+        narration = narration_error = fact_check = None
+        if narrate_cfg is not None:
+            from cognition import fact_summary, narrate_contract
+
+            # Cheap and local -- computed before the LLM call, not gated on
+            # it succeeding, so a slow/failed narration still ships a
+            # ground-truth anchor.
+            fact_check = fact_summary(result.contract["full"])
+
+            out_queue.put((
+                {"mode": "status", "text": "perception done -- asking the LLM to describe the screen..."},
+                None,
+                auto,
+            ))
+            try:
+                narration = narrate_contract(result.contract, **narrate_cfg)
+            except ExtractionError as e:
+                narration_error = str(e)
+
+        payload = {
+            "mode": "perception",
+            "captured_at": captured_at,
+            "contract": result.contract["full"],
+            "lines": lines,
+            "counts": {
+                "primitives": len(perception.primitives),
+                "regions": len(perception.regions),
+                "groups": len(perception.groups),
+                "classes": len(perception.classes),
+                "states": len(perception.states),
             },
-            # The frame the UI shows and `sender.py` saves beside the JSON:
-            # the representative one, matching what E1 actually read and
-            # what the contract's geometry refers to. The other frames of
-            # the burst only ever corroborated content.
-            frames[-1],
-            auto,
-        ))
+            "abstentions": [a.as_dict() for a in perception.abstentions],
+            "screen_id": perception.identity.screen_id if perception.identity else None,
+            "surface": {
+                "width": perception.surface.width if perception.surface else 0,
+                "height": perception.surface.height if perception.surface else 0,
+                "rectified": perception.surface.rectified if perception.surface else False,
+            },
+        }
+        if narrate_cfg is not None:
+            payload["narration"] = narration
+            payload["narration_error"] = narration_error
+            payload["fact_check"] = fact_check
+
+        # The frame the UI shows and `sender.py` saves beside the JSON:
+        # the representative one, matching what E1 actually read and
+        # what the contract's geometry refers to. The other frames of
+        # the burst only ever corroborated content.
+        out_queue.put((payload, frames[-1], auto))
 
 
 def _ocr_worker_process(engine_name, lang, extract_cfg, in_queue, out_queue):
@@ -258,7 +288,7 @@ class BiosOcrApp:
     def __init__(self, root, camera_source=0, stable_threshold=8.0,
                  stable_frames_required=6, change_threshold=10.0,
                  min_ocr_interval=5.0, engine=DEFAULT_ENGINE, lang=None,
-                 extract_cfg=None, mode="perception",
+                 extract_cfg=None, narrate_cfg=None, mode="perception",
                  resolution=(REQUESTED_WIDTH, REQUESTED_HEIGHT),
                  ocr_votes=1):
         self.root = root
@@ -286,7 +316,7 @@ class BiosOcrApp:
         if mode == "perception":
             target, args = (
                 _perception_worker_process,
-                (engine, lang, ocr_votes, self.in_queue, self.out_queue),
+                (engine, lang, ocr_votes, narrate_cfg, self.in_queue, self.out_queue),
             )
         else:
             target, args = (
@@ -553,6 +583,11 @@ class BiosOcrApp:
         self.root.after(200, self._drain_result_queue)
 
     def _on_ocr_done(self, result, frame, auto):
+        # Progress, not a finished capture: the worker is still busy, so
+        # this only updates the status line and leaves ocr_busy alone.
+        if result.get("mode") == "status":
+            self.status_var.set(result.get("text", ""))
+            return
         if result.get("mode") == "perception":
             self._on_perception_done(result, frame, auto)
             return
@@ -596,12 +631,18 @@ class BiosOcrApp:
             self.ocr_busy = False
             return
 
+        saved = {"captured_at": result["captured_at"], **result["contract"]}
+        if "narration" in result:
+            # Nested, so it can never collide with a contract key -- and so
+            # the LLM's prose stays visibly separate from what the engine
+            # itself measured.
+            saved["cognition"] = {
+                "narration": result["narration"],
+                "error": result["narration_error"],
+                "fact_check": result["fact_check"],
+            }
         try:
-            send_result(
-                {"captured_at": result["captured_at"], **result["contract"]},
-                image=frame,
-                tag="auto" if auto else "manual",
-            )
+            send_result(saved, image=frame, tag="auto" if auto else "manual")
         except Exception as exc:                              # noqa: BLE001
             # Saving is a side errand; failing it must not cost the
             # operator the reading they just waited for.
@@ -653,6 +694,18 @@ class BiosOcrApp:
             text.insert(tk.END, f"\n--- did not decide ({len(result['abstentions'])}) ---\n")
             for key in sorted(counted):
                 text.insert(tk.END, f"{counted[key]}x {key}\n")
+
+        if "narration" in result:
+            # Fact check first, on purpose: read the ground truth before
+            # the prose below, so a mismatch jumps out instead of needing
+            # to be hunted for.
+            if result.get("fact_check"):
+                text.insert(tk.END, "\n" + result["fact_check"] + "\n")
+            text.insert(tk.END, "\n--- LLM description ---\n")
+            if result["narration"]:
+                text.insert(tk.END, result["narration"] + "\n")
+            if result["narration_error"]:
+                text.insert(tk.END, f"(description failed: {result['narration_error']})\n")
 
         text.insert(
             tk.END,
@@ -713,6 +766,13 @@ def main():
     parser.add_argument("--extract-fields", action="store_true",
                          help="Legacy path only: run OCR text through the local LLM "
                               "(Lemonade/FastFlowLM) to extract label->value fields")
+    parser.add_argument("--narrate", action="store_true",
+                         help="Perception path only: send the digest contract to the "
+                              "local LLM and show its free-text description of what it "
+                              "understood -- which screen, what is selected, what it is "
+                              "unsure about. Exploratory: the answer is shown as-is for "
+                              "a human to judge, with no correctness check. See "
+                              "cognition.py.")
     parser.add_argument("--llm-host", default=DEFAULT_HOST)
     parser.add_argument("--llm-port", type=int, default=DEFAULT_PORT)
     parser.add_argument("--llm-model", default=DEFAULT_MODEL)
@@ -735,6 +795,16 @@ def main():
             )
         extract_cfg = {"host": args.llm_host, "port": args.llm_port, "model": args.llm_model}
 
+    narrate_cfg = None
+    if args.narrate:
+        if args.legacy:
+            parser.error(
+                "--narrate belongs to the perception path; drop --legacy to use it "
+                "(perception is already the default). Cognition consumes the "
+                "perception digest contract, which the legacy path never produces."
+            )
+        narrate_cfg = {"host": args.llm_host, "port": args.llm_port, "model": args.llm_model}
+
     root = tk.Tk()
     BiosOcrApp(
         root,
@@ -746,6 +816,7 @@ def main():
         engine=args.engine,
         lang=args.lang,
         extract_cfg=extract_cfg,
+        narrate_cfg=narrate_cfg,
         mode="legacy" if args.legacy else "perception",
         resolution=resolution,
         ocr_votes=args.ocr_votes,

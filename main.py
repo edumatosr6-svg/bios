@@ -28,10 +28,26 @@ def parse_args():
     parser.add_argument("--upscale", type=float, default=2.0, help="Tesseract-only preprocessing upscale")
     parser.add_argument("--extract-fields", action="store_true",
                          help="Also run OCR text through the local LLM (Lemonade/FastFlowLM) to extract label->value fields")
+    parser.add_argument("--perception", action="store_true",
+                         help="Use the perception engine (perception/) instead of the "
+                              "OCR + selection.py path. Off by default here so existing "
+                              "automation keeps today's output shape; gui.py runs the "
+                              "engine by default and uses --legacy as the opposite switch.")
+    parser.add_argument("--narrate", action="store_true",
+                         help="Requires --perception. Send the digest contract to the "
+                              "local LLM and save its free-text description of what it "
+                              "understood under a 'cognition' key. Exploratory: the "
+                              "answer is kept as-is for a human to judge, unchecked.")
     parser.add_argument("--llm-host", default=DEFAULT_HOST)
     parser.add_argument("--llm-port", type=int, default=DEFAULT_PORT)
     parser.add_argument("--llm-model", default=DEFAULT_MODEL)
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.narrate and not args.perception:
+        parser.error(
+            "--narrate requires --perception: cognition consumes the perception "
+            "digest contract, which the legacy path never produces."
+        )
+    return args
 
 
 def main():
@@ -45,22 +61,49 @@ def main():
     else:
         image = capture_from_camera(camera_source=args.camera_source)
 
-    engine = create_ocr_engine(args.engine, lang=args.lang, upscale=args.upscale)
-    result = engine.read(image)
-    result["screen_bg_color"] = annotate_selection(image, result["blocks"])
+    if args.perception:
+        # Single shot, so the high-level wrapper is fine -- there is no
+        # loop to amortise the OCR model load across (watcher.py builds
+        # the stages itself for exactly that reason). Note --upscale and
+        # --lang are legacy/Tesseract options and have no effect here.
+        from perception import perceive
 
-    if args.extract_fields:
-        try:
-            fields, unverified = extract_fields(
-                result, host=args.llm_host, port=args.llm_port, model=args.llm_model
-            )
-            result["fields"] = fields
-            result["fields_unverified"] = unverified
-        except ExtractionError as e:
-            print(f"[main] field extraction failed, keeping raw OCR only: {e}", file=sys.stderr)
-            result["fields"] = None
-            result["fields_unverified"] = None
-            result["fields_error"] = str(e)
+        perceived = perceive(frames=[image], engine=args.engine, view="both")
+        result = dict(perceived.contract["full"])
+
+        if args.narrate:
+            from cognition import fact_summary, narrate_contract
+
+            fact_check = fact_summary(perceived.contract["full"])
+            try:
+                result["cognition"] = {
+                    "narration": narrate_contract(
+                        perceived.contract, host=args.llm_host,
+                        port=args.llm_port, model=args.llm_model,
+                    ),
+                    "error": None,
+                    "fact_check": fact_check,
+                }
+            except ExtractionError as e:
+                print(f"[main] narration failed, keeping the contract only: {e}", file=sys.stderr)
+                result["cognition"] = {"narration": None, "error": str(e), "fact_check": fact_check}
+    else:
+        engine = create_ocr_engine(args.engine, lang=args.lang, upscale=args.upscale)
+        result = engine.read(image)
+        result["screen_bg_color"] = annotate_selection(image, result["blocks"])
+
+        if args.extract_fields:
+            try:
+                fields, unverified = extract_fields(
+                    result, host=args.llm_host, port=args.llm_port, model=args.llm_model
+                )
+                result["fields"] = fields
+                result["fields_unverified"] = unverified
+            except ExtractionError as e:
+                print(f"[main] field extraction failed, keeping raw OCR only: {e}", file=sys.stderr)
+                result["fields"] = None
+                result["fields_unverified"] = None
+                result["fields_error"] = str(e)
 
     payload = json.dumps(result, indent=2, ensure_ascii=False)
     if args.output:
