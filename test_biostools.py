@@ -490,8 +490,15 @@ def test_cpu_temperature(menu, readings):
     bios = FakeBios(menu, opens_to=readings)
     result = run_tool("cpu_temperature", bios)
     check("resposta", result.value, "61C")
-    check("cursor ja estava no alvo, nenhuma seta gasta",
-          [k for k in bios.keys if k in ("up", "down", "left", "right")], [])
+    # "left"/"right" sao sempre pressionados uma vez por perna com
+    # focus_key (entregam o foco do teclado a sidebar/conteudo antes de
+    # andar -- ver Step.focus_key), mesmo quando o cursor ja estava no
+    # alvo; so as setas de navegacao propriamente ditas (up/down) devem
+    # ficar a zero aqui.
+    check("cursor ja estava no alvo, nenhuma navegacao gasta",
+          [k for k in bios.keys if k in ("up", "down")], [])
+    check("focus_key (left) da perna 1 foi pressionado", bios.keys.count("left"), 1)
+    check("focus_key (right) da perna 2 foi pressionado", bios.keys.count("right"), 1)
     check("abriu com enter", bios.keys.count("enter"), 1)
     # Without this the tool is single-use: it would leave the BIOS inside
     # the submenu, where the entry it navigates to no longer exists.

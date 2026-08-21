@@ -47,12 +47,25 @@ class Step:
     Resolved eagerly in __post_init__ so a typo fails when the tool is
     declared, at import time, instead of halfway through driving a real
     machine.
+
+    `focus_key`, pressed once before this leg's walk starts, exists
+    because arrow keys are scoped to whichever of the screen's regions
+    currently holds keyboard focus -- confirmed live on the Positivo BIOS
+    (2026-08-21): with focus in the content panel, "down" scrolls through
+    that panel's own fields (observed: eight presses walked CPU cache
+    figures, never touched the sidebar) and the sidebar's active-tab
+    indicator sits still throughout, which reads exactly like a stuck
+    detector until you notice nothing else moved either. "left" is what
+    hands focus to the sidebar; a small icon beside the on-screen "Setup"
+    label changes state when it does, which is how the user watching the
+    physical monitor caught what no OCR-based reading here was catching.
     """
     to: str
     hint: str | None = None
     key: str = "down"
     activate: bool = True
     max_steps: int = 20
+    focus_key: str | None = None
 
     def __post_init__(self):
         self.spellings = labels.screen(self.to)
@@ -312,6 +325,8 @@ class Tool:
             keys.append(step.key)
             if step.activate:
                 keys.append("enter")
+            if step.focus_key:
+                keys.append(step.focus_key)
         focus = getattr(self.reader, "focus_key", None)
         if focus:
             keys.append(focus)
@@ -358,7 +373,8 @@ class Tool:
         try:
             for leg in self.route:
                 outcome = move_to(session, leg.spellings, hint=leg.hint,
-                                  key=leg.key, max_steps=leg.max_steps)
+                                  key=leg.key, max_steps=leg.max_steps,
+                                  focus_key=leg.focus_key)
                 steps += outcome.steps
                 if not outcome.ok:
                     return ToolResult(

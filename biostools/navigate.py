@@ -68,7 +68,7 @@ def cursor_group(full, hint=None, target=None):
 
 
 def move_to(session, target, hint=None, key="down", max_steps=20,
-            blind_retries=2, on_step=None):
+            blind_retries=2, on_step=None, focus_key=None):
     """Press `key` until `target` is the entry under the cursor.
 
     `blind_retries` re-reads (without pressing) when the engine cannot
@@ -77,7 +77,19 @@ def move_to(session, target, hint=None, key="down", max_steps=20,
     (docs/specs/p-specs/campo-focado-por-borda-sem-canal-no-e7.md), so a
     single abstention is worth re-reading; it is never worth pressing a
     key blindly, which would lose track of where the cursor is.
+
+    `focus_key`, pressed once before the walk starts, hands keyboard
+    focus to the region `target` actually lives in. Confirmed necessary
+    live (2026-08-21, Positivo BIOS): with focus left in the content
+    panel, `key="down"` scrolls that panel's own fields and never touches
+    the sidebar at all -- eight presses walked through CPU cache figures
+    without the sidebar's active tab changing once. That looks exactly
+    like a stuck cursor detector from the outside (the same highlighted
+    line keeps being reported) but the real cause is that focus was never
+    where the walk assumed it was.
     """
+    if focus_key:
+        session.press(focus_key)
     reading = session.read_cursor()
     visited = []
     blind = 0

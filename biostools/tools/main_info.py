@@ -13,6 +13,10 @@ que estiver la e deixa a diferenca visivel.
 `activate=False`: no menu lateral, mover o cursor ate "Main" ja troca a
 pagina exibida a direita. Nao ha nada para abrir com ENTER, e apertar
 ENTER aqui entraria num item da pagina em vez de ficar nela.
+
+focus_key="left": arrow keys sao escopados a regiao que tem o foco do
+teclado, que por padrao e o painel de conteudo, nao a barra lateral --
+ver Step.focus_key para a medicao ao vivo que forcou isso (2026-08-21).
 """
 from ..registry import AllFields, Step, Tool, register
 
@@ -20,7 +24,8 @@ MAIN_INFO = register(Tool(
     name="main_info",
     question="Quais informacoes a tela Main mostra (versao da BIOS, etc.)?",
     route=[
-        Step(to="main", hint="nav_menu", key="down", activate=False),
+        Step(to="main", hint="nav_menu", key="down", activate=False,
+             focus_key="left"),
     ],
     reader=AllFields(),
 ))
