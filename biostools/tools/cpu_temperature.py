@@ -31,15 +31,23 @@ CPU_TEMPERATURE = register(Tool(
     name="cpu_temperature",
     question="Qual a temperatura da CPU?",
     route=[
-        Step(to="advanced", hint="nav_menu", key="down", activate=False),
-        # focus_key="right": enter_main_menu_screen (leg above) hands
-        # keyboard focus to the sidebar and leaves it there -- "down" here
-        # would otherwise walk sidebar tabs instead of Advanced's own
-        # content list. "right" is the sidebar's own return path
-        # (confirmed live 2026-08-21), handing focus back to content
-        # before this leg starts walking it.
-        Step(to="hardware_monitor", hint="settings_list", key="down",
-             focus_key="right"),
+        # activate=True (o padrao): sem o ENTER o cursor chega em
+        # "Advanced" na barra lateral mas a pagina exibida continua sendo a
+        # anterior -- e a perna 2 entao procura "Hardware Monitor" dentro
+        # do conteudo da tela errada. Foi exatamente essa a falha relatada
+        # ("estou na Main e nao consigo ir para a Advanced"), fotografada
+        # em captures/handshake/ e corrigida em 2026-08-24. Ver
+        # navigate.enter_main_menu_screen.
+        Step(to="advanced", hint="nav_menu", key="down"),
+        # Sem focus_key. O "right" que estava aqui vinha de quando a perna
+        # 1 nao apertava ENTER e deixava o foco preso na barra lateral.
+        # Agora que ela abre a pagina de verdade, o ENTER ja entrega o foco
+        # ao conteudo -- medido 2026-08-24: logo apos abrir a Advanced o
+        # cursor esta em "MAC Address Pass-Through (MAPT)", o primeiro item
+        # da lista. Um "right" aqui tiraria o foco do conteudo e o mandaria
+        # para a coluna de icones da direita (Previous Values / Optimized
+        # Defaults / Back), e a caminhada nunca acharia nada.
+        Step(to="hardware_monitor", hint="settings_list", key="down"),
     ],
     reader=Fields([Field("cpu_temperature", TEMPERATURE)]),
 ))

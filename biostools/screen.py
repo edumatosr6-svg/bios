@@ -544,7 +544,7 @@ def nav_element_ids(full):
 # goes through the contract, where it was validated.
 
 
-def legacy_cursor(ocr_result, prefer_target=None):
+def legacy_cursor(ocr_result, prefer_target=None, ignore_texts=()):
     """The cursor, read from a `selection.py`-annotated OCR result.
 
     More than one line can be highlighted at once -- on the Positivo BIOS
@@ -560,10 +560,30 @@ def legacy_cursor(ocr_result, prefer_target=None):
     marked = [line for line in lines if line.get("highlighted")]
     if not marked:
         return None
+
+    # Drop marks the caller already knows are not the cursor. The sidebar
+    # draws the *displayed page* and the *cursor* with near-identical dark
+    # bars (photographed 2026-08-24), so with the cursor anywhere but the
+    # current page there are two, and nothing in a single frame separates
+    # them. A caller that noted which page was active before moving focus
+    # into the sidebar can say so here, which turns an unresolvable tie
+    # into a single unambiguous mark. Never drops the last mark: if that
+    # is all there is, it is still the best answer available.
+    if ignore_texts:
+        kept = [line for line in marked
+                if not any(match_score(t, line["text"]) for t in ignore_texts)]
+        if kept:
+            marked = kept
+
     if len(marked) == 1:
         return marked[0]
 
     if prefer_target:
+        # The target being marked *is* arrival -- no need to reason about
+        # which of several marks is the cursor.
+        for line in marked:
+            if match_score(prefer_target, line["text"]):
+                return line
         for line in lines:
             if match_score(prefer_target, line["text"]):
                 column = line["bbox"]["left"]

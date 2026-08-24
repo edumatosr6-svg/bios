@@ -1,15 +1,18 @@
 """Tool 4: versao, data de build e tipo de plataforma da BIOS.
 
-Mesma rota do `main_info` (entrar em "Main" move o cursor, nao abre
-nada), mas le so os tres campos pedidos em vez da tela inteira -- a
-diferenca entre `main_info` (o que existe, sem saber os nomes) e esta
-tool (concept conhecido, resposta nomeada). Ambas convivem: uma nao
-substitui a outra.
+Mesma rota do `main_info` (entrar em "Main"), mas le so os tres campos
+pedidos em vez da tela inteira -- a diferenca entre `main_info` (o que
+existe, sem saber os nomes) e esta tool (concept conhecido, resposta
+nomeada). Ambas convivem: uma nao substitui a outra.
 
 A rota (hint="nav_menu") passa por navigate.enter_main_menu_screen, que
-entrega o foco do teclado a barra lateral (focus_key="left" -- ver seu
-docstring para a medicao ao vivo que forcou isso, 2026-08-21) e tenta um
-fallback de cor quando o detector de destaque abstem por ambiguidade.
+ancora o cursor na seta "Setup" do topo da barra lateral, conta ate
+"Main" e so entao aperta ENTER -- ver
+docs/specs/f-specs/navegacao-ancorada-barra-lateral.md. `activate` fica
+no padrao True: sem ENTER o cursor chega em "Main" na barra mas a pagina
+exibida continua sendo a anterior, e os tres campos abaixo seriam lidos
+da tela errada -- foi exatamente esse bug que a tool herdou por copiar a
+rota original de cpu_temperature (corrigido 2026-08-24).
 """
 from ..registry import Field, Fields, Step, Tool, register
 
@@ -17,7 +20,7 @@ BIOS_INFO = register(Tool(
     name="bios_info",
     question="Qual a versao, data de build e tipo de plataforma da BIOS?",
     route=[
-        Step(to="main", hint="nav_menu", key="down", activate=False),
+        Step(to="main", hint="nav_menu", key="down"),
     ],
     reader=Fields([
         Field("bios_version"),

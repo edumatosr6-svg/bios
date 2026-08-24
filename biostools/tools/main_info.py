@@ -10,14 +10,14 @@ pode escrever os seus de forma diferente. Uma lista fixa devolveria
 silenciosamente menos quando um rotulo nao casasse; ler tudo devolve o
 que estiver la e deixa a diferenca visivel.
 
-`activate=False`: no menu lateral, mover o cursor ate "Main" ja troca a
-pagina exibida a direita. Nao ha nada para abrir com ENTER, e apertar
-ENTER aqui entraria num item da pagina em vez de ficar nela.
-
 A rota (hint="nav_menu") passa por navigate.enter_main_menu_screen, que
-entrega o foco do teclado a barra lateral (focus_key="left" -- ver seu
-docstring para a medicao ao vivo que forcou isso, 2026-08-21) e tenta um
-fallback de cor quando o detector de destaque abstem por ambiguidade.
+ancora o cursor na seta "Setup" do topo da barra lateral, conta ate
+"Main" e so entao aperta ENTER -- ver
+docs/specs/f-specs/navegacao-ancorada-barra-lateral.md. `activate` fica
+no padrao True: mover o cursor ate "Main" NAO troca a pagina exibida
+nesta BIOS -- medido ao vivo 2026-08-24, contrariando o que este
+docstring afirmava antes (a suposicao nunca tinha sido testada partindo
+de outra pagina). Sem o ENTER a tool lia os campos da pagina anterior.
 """
 from ..registry import AllFields, Step, Tool, register
 
@@ -25,7 +25,7 @@ MAIN_INFO = register(Tool(
     name="main_info",
     question="Quais informacoes a tela Main mostra (versao da BIOS, etc.)?",
     route=[
-        Step(to="main", hint="nav_menu", key="down", activate=False),
+        Step(to="main", hint="nav_menu", key="down"),
     ],
     reader=AllFields(),
 ))

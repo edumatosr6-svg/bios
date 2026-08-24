@@ -17,7 +17,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from . import labels, screen
-from .navigate import activate, enter_main_menu_screen, move_to, walk_group
+from .navigate import (
+    activate, enter_main_menu_screen, looks_like_dialog, move_to, walk_group,
+)
 
 # Keys a read-only tool is allowed to send. Navigation and escape only --
 # no '+'/'-'/F10/'y', which change or commit BIOS settings. This first
@@ -305,6 +307,31 @@ class Entries:
         )
 
 
+def _close_opened(session, opened):
+    """Send one ESC per level opened -- **looking between each one**.
+
+    The version this replaces sent them back to back without ever
+    re-reading the screen. That is unsafe on this BIOS, where ESC at the
+    top level does not go up a level but opens 'Discard Changes and Exit'
+    with Ok and Cancel. It happened for real twice on 2026-08-24: a tool
+    failed mid-route, its cleanup fired, and the machine was left sitting
+    on that dialog. Had the loop had one more ENTER to send, it would have
+    answered it.
+
+    So: after each ESC, look. If a dialog appeared, send one more ESC to
+    dismiss it (confirmed to work on this BIOS) and stop -- never keep
+    pressing into a dialog, and never press ENTER to resolve one. A tool
+    left one level too deep is a small, self-correcting problem; a tool
+    that confirms an exit is not.
+    """
+    for _ in range(opened):
+        session.press("esc")
+        if looks_like_dialog(session.read_cursor()):
+            session.press("esc")
+            return False
+    return True
+
+
 @dataclass
 class Tool:
     """A named question about the BIOS screen.
@@ -382,7 +409,7 @@ class Tool:
                 # fix there reaches every tool that navigates the sidebar,
                 # not just whichever one triggered it.
                 if leg.hint == "nav_menu":
-                    outcome, reading = enter_main_menu_screen(
+                    outcome, _ = enter_main_menu_screen(
                         session, leg.to,
                         activate_key="enter" if leg.activate else None,
                         max_steps=leg.max_steps,
@@ -396,6 +423,20 @@ class Tool:
                         )
                     if leg.activate:
                         opened += 1
+                    # Discarded on purpose, not captured into `reading`:
+                    # what `enter_main_menu_screen` hands back is the cheap
+                    # legacy cursor-shaped dict it already needed for its
+                    # own arrival check, not a perception contract, and it
+                    # would be silently wrong to hand to a `Reader`
+                    # expecting `.full`. Measured 2026-08-24: fetching a
+                    # real contract here too (`session.read_stable()`) cost
+                    # an extra ~1.4-1.8s -- pure waste on every leg but the
+                    # last, since the next leg (nav_menu or not) always
+                    # overwrites `reading` before anything reads it. Left
+                    # as None; the fallback below pays for the one real
+                    # contract read exactly once, only if this ends up
+                    # being the last leg in the route.
+                    reading = None
                     continue
 
                 outcome = move_to(session, leg.spellings, hint=leg.hint,
@@ -428,8 +469,7 @@ class Tool:
             # a tool that gave up halfway must not leave the machine a
             # level deeper than it found it.
             if self.restore:
-                for _ in range(opened):
-                    session.press("esc")
+                _close_opened(session, opened)
 
 
 _REGISTRY = {}

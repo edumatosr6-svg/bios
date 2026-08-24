@@ -70,7 +70,7 @@ def cursor_group(full, hint=None, target=None):
 
 
 def move_to(session, target, hint=None, key="down", max_steps=20,
-            blind_retries=2, on_step=None, focus_key=None):
+            blind_retries=2, on_step=None, focus_key=None, ignore_texts=()):
     """Press `key` until `target` is the entry under the cursor.
 
     `blind_retries` re-reads (without pressing) when the engine cannot
@@ -96,8 +96,20 @@ def move_to(session, target, hint=None, key="down", max_steps=20,
     visited = []
     blind = 0
 
+    # Walking anything other than the sidebar: the sidebar's own mark (the
+    # displayed page) is always on screen and is never the cursor being
+    # walked, so it must not be mistaken for it. Measured 2026-08-24 while
+    # walking Advanced's list: on one step the content's highlight bar went
+    # undetected and `legacy_cursor` fell back to reporting 'Advanced' --
+    # the sidebar page. Two of those in a row look like the cursor sitting
+    # still, and the cycle guard ends the walk one entry short of the
+    # target.
+    if hint and hint != "nav_menu" and not ignore_texts:
+        ignore_texts = [text for _, text in sidebar_entries(reading)]
+
     for step in range(max_steps + 1):
-        marked = legacy_cursor(reading, prefer_target=target)
+        marked = legacy_cursor(reading, prefer_target=target,
+                               ignore_texts=ignore_texts)
 
         if marked is None:
             if blind < blind_retries:
@@ -153,6 +165,31 @@ def activate(session, key="enter"):
 # margin without reaching into content.
 SIDEBAR_MAX_X = 300
 
+# The same limit as a fraction of frame width. SIDEBAR_MAX_X above was
+# measured on the live 1280x720 HDMI feed, and using it as an absolute
+# pixel count silently breaks on any other capture size -- on the 3840-wide
+# photographs in `captures/` the whole sidebar sits far to the right of
+# 300px, so every sidebar query came back empty. Scaling keeps one
+# calibration valid for both input kinds.
+SIDEBAR_MAX_X_RATIO = SIDEBAR_MAX_X / 1280
+
+
+def sidebar_limit(reading):
+    """The x below which a line belongs to the sidebar, for this reading.
+
+    Width is taken from the frame when there is one, else from the
+    rightmost text on screen, so this works on a reading that carries no
+    image (a fixture-driven test) as well as on a live capture.
+    """
+    frame = reading.get("frame")
+    if frame is not None and getattr(frame, "size", 0):
+        width = frame.shape[1]
+    else:
+        width = max((line["bbox"]["left"] + line["bbox"]["width"]
+                     for block in reading.get("blocks", ())
+                     for line in block.get("lines", ())), default=0)
+    return width * SIDEBAR_MAX_X_RATIO if width else SIDEBAR_MAX_X
+
 
 def _sidebar_colour_fallback(reading, target):
     """Last resort when selection.py's own detector abstains entirely on
@@ -179,7 +216,8 @@ def _sidebar_colour_fallback(reading, target):
     """
     lines = [line for block in reading.get("blocks", ())
              for line in block.get("lines", ())]
-    sidebar = [line for line in lines if line["bbox"]["left"] < SIDEBAR_MAX_X]
+    sidebar = [line for line in lines
+               if line["bbox"]["left"] < sidebar_limit(reading)]
     colours = [tuple(line["fg_color"]) for line in sidebar if line.get("fg_color")]
     if len(colours) < 3:
         return None  # too few entries read to trust a baseline
@@ -194,7 +232,217 @@ def _sidebar_colour_fallback(reading, target):
     return None
 
 
-def enter_main_menu_screen(session, screen, activate_key=None, max_steps=20):
+# Where the circular "back" icon beside the sidebar's "Setup" label sits,
+# as fractions of the frame so a different capture resolution still lands
+# on it. Measured on the live 1280x720 HDMI feed: x 18..56, y 78..115.
+_SETUP_ICON_BOX = (18 / 1280, 78 / 720, 56 / 1280, 115 / 720)
+
+# Fraction of that box's pixels that are near-white. The icon is drawn as
+# an OUTLINE ring when the cursor is elsewhere and as a FILLED disc when
+# the cursor is on it, so the filled state simply has more white. Measured
+# 2026-08-24 across twelve real frames: 0.2496 with the cursor elsewhere
+# -- bit-identical across eight different screens, i.e. pure rendering,
+# not noise -- against 0.4260 with the cursor parked on it. The midpoint
+# is nowhere near either value.
+_ICON_FILLED_MIN = 0.33
+# Above this the whole box is white, which does not happen for either
+# icon state: it means something is covering the sidebar (a modal dialog
+# dims the page behind it). Measured 1.0 on exactly the dialog frames.
+_ICON_OBSCURED_MIN = 0.90
+
+
+def setup_icon_focused(frame):
+    """True when the sidebar's top "Setup" back-arrow holds the cursor.
+
+    The anchor that makes counted sidebar navigation safe rather than
+    hopeful. **The signal is not in any text**, which is why every
+    OCR-driven attempt at this missed it: `selection.py` only samples
+    colours inside OCR bounding boxes, and this is an icon. Measured
+    directly, the word "Setup" renders bit-identically whether or not the
+    cursor is on it -- fg [255,255,255], bg [253,220,178], both states --
+    while the icon beside it switches between a ring and a filled disc.
+
+    Returns None when the reading cannot be trusted (no frame, or the
+    sidebar is covered by a dialog) so a caller can tell "not anchored"
+    apart from "could not tell", which are different answers here: the
+    first justifies pressing more keys, the second does not.
+    """
+    if frame is None or getattr(frame, "size", 0) == 0:
+        return None
+    height, width = frame.shape[:2]
+    fx0, fy0, fx1, fy1 = _SETUP_ICON_BOX
+    box = frame[int(fy0 * height):int(fy1 * height),
+                int(fx0 * width):int(fx1 * width)]
+    if box.size == 0:
+        return None
+
+    white = float((box.min(axis=2) > 235).mean())
+    if white >= _ICON_OBSCURED_MIN:
+        return None
+    return white >= _ICON_FILLED_MIN
+
+
+# Canonical screens that are top-level sidebar entries, so a reading can
+# be filtered down to just the menu. Order is NOT taken from here -- it is
+# read off the screen -- because a BIOS model may list them differently.
+_SIDEBAR_SCREENS = ("main", "advanced", "security", "boot",
+                    "save_and_exit", "event_log")
+
+
+def sidebar_entries(reading):
+    """The sidebar's menu entries, top to bottom, as drawn.
+
+    Filtered to entries this project has declared spellings for, which
+    drops the 'POSITIVO'/'Setup' logo sitting in the same column without
+    hardcoding those two strings: anything that is not a menu entry we
+    know how to navigate to is not something we can count our way to
+    either.
+    """
+    lines = [line for block in reading.get("blocks", ())
+             for line in block.get("lines", ())
+             if line["bbox"]["left"] < sidebar_limit(reading)]
+    lines.sort(key=lambda l: l["bbox"]["top"])
+
+    entries = []
+    for line in lines:
+        for canonical in _SIDEBAR_SCREENS:
+            if match_score(labels.screen(canonical), line["text"]):
+                entries.append((canonical, line["text"]))
+                break
+    return entries
+
+
+def sidebar_active(reading):
+    """The marked entry **inside the sidebar**, or None.
+
+    Not `legacy_cursor`, which searches the whole screen and therefore
+    answers with the content panel's own cursor whenever both are marked
+    -- the usual case right after opening a page. Verifying arrival needs
+    the sidebar's mark specifically, so it has to be selected by geometry
+    before any of that tie-breaking runs.
+    """
+    limit = sidebar_limit(reading)
+    marked = [line for block in reading.get("blocks", ())
+              for line in block.get("lines", ())
+              if line["bbox"]["left"] < limit and line.get("highlighted")]
+    return marked[0] if len(marked) == 1 else None
+
+
+def enter_main_menu_screen_by_count(session, screen, activate_key="enter"):
+    """Reach a top-level page by COUNTING, not by watching the cursor.
+
+    This is the reliable path, and it exists because the thing it avoids
+    is broken: with focus in the sidebar there are two near-identical dark
+    bars (the displayed page and the cursor) and `selection.py` only ever
+    reports the page one -- so a walk that re-reads the cursor after each
+    press sees the same entry forever and gives up after one step.
+
+    What is reliable instead:
+
+    * the entry TEXTS and their order, read straight off the screen;
+    * **the list does not wrap**, so pressing `up` more times than it has
+      entries parks the cursor on the top element, wherever it started.
+      That gives a known anchor without needing to see the cursor at all;
+    * **the top element is the circular "Setup" back arrow, NOT the first
+      menu entry** -- so entry *i* is `i + 1` presses of `down` below the
+      anchor. Calibrated on real hardware 2026-08-24: anchored at the top,
+      a single `down` then ENTER opens Main, the first entry.
+    * after ENTER the ambiguity is gone -- the cursor and the displayed
+      page are the same entry, leaving exactly one dark bar, which is the
+      case `selection.py` reads correctly. That is what verifies arrival.
+
+    **Why anchoring, and not just counting from where the cursor is:** an
+    earlier version assumed the cursor always started one above the first
+    entry. It does not -- the start depends on what happened before -- and
+    when the assumption was wrong the count landed on that "Setup" back
+    arrow, where ENTER opens **'Discard Changes and Exit'**. That happened
+    repeatedly on the real machine before the cause was understood. So the
+    cursor is driven to a known place first, and ENTER is only ever sent
+    at least one step below the arrow.
+
+    So the sequence is computed, sent, and then **checked**; it is never
+    assumed to have worked.
+    """
+    target = labels.screen(screen)
+    entries = sidebar_entries(session.read_cursor())
+    if not entries:
+        return NavigationResult(
+            ok=False, reason=BLIND, steps=0,
+            detail="nao consegui ler as entradas da barra lateral",
+        )
+
+    index = next((i for i, (_, text) in enumerate(entries)
+                  if match_score(target, text)), None)
+    if index is None:
+        return NavigationResult(
+            ok=False, reason=CYCLED, steps=0,
+            visited=[text for _, text in entries],
+            detail=f"{screen!r} nao esta entre as entradas lidas",
+        )
+
+    session.press("left")
+    # Park on the top element. Two extra presses beyond the entry count
+    # cover the back arrow above them and any miscount from an entry the
+    # OCR dropped; extra presses at a hard stop are harmless.
+    for _ in range(len(entries) + 2):
+        session.press("up")
+
+    # Confirm the anchor before counting from it. Without this the count
+    # is only as good as the assumption that "up" reached the top, and a
+    # wrong count puts ENTER on the back arrow -- which opens 'Discard
+    # Changes and Exit'. Refusing to continue costs a failed tool run;
+    # continuing on a bad assumption cost exactly that dialog, repeatedly,
+    # on the real machine.
+    anchored = setup_icon_focused(session.read_cursor().get("frame"))
+    if anchored is not True:
+        return NavigationResult(
+            ok=False, reason=BLIND, steps=len(entries) + 3,
+            detail=("nao confirmei o cursor na ancora (icone 'Setup'): "
+                    + ("leitura obstruida" if anchored is None
+                       else "o cursor nao esta no topo")),
+        )
+
+    for _ in range(index + 1):
+        session.press("down")
+    if activate_key:
+        session.press(activate_key)
+
+    # Verify against the post-ENTER single mark, not against the walk.
+    after = session.read_cursor()
+    if looks_like_dialog(after):
+        # Never leave a dialog standing, and never answer one.
+        session.press("esc")
+        return NavigationResult(
+            ok=False, reason=BLIND, steps=index + 2,
+            detail="a sequencia abriu um dialogo de confirmacao; fechei e parei",
+        )
+
+    arrived = sidebar_active(after)
+    if arrived is None or not match_score(target, arrived["text"]):
+        return NavigationResult(
+            ok=False, reason=CYCLED, steps=index + 2,
+            cursor=arrived["text"] if arrived else None,
+            detail=f"apertei {index + 1} 'down' mas a pagina ativa nao e {screen!r}",
+            reading=after,
+        )
+
+    # `reading` here is `after` -- the legacy cursor-shaped dict this
+    # function already had to fetch to verify arrival, NOT a perception
+    # contract. Deliberately not paying for `session.read_stable()` here
+    # too: measured 2026-08-24, that extra full read cost ~1.4-1.8s on
+    # top of everything else in this leg, and it is thrown away whenever
+    # this leg is not the last one in a route -- `Tool.run` overwrites
+    # `reading` for every leg after this one. Only the LAST leg's reading
+    # actually reaches a `Reader`, so only it should ever pay for the full
+    # contract; see registry.py's nav_menu branch, which re-fetches it
+    # exactly once, only when the loop is done.
+    return NavigationResult(
+        ok=True, reason=ARRIVED, steps=index + 2, cursor=arrived["text"],
+        reading=after,
+    )
+
+
+def enter_main_menu_screen(session, screen, activate_key="enter", max_steps=20):
     """Get to a top-level sidebar screen (Main/Advanced/Security/...), from
     wherever the BIOS currently is, and open it.
 
@@ -209,31 +457,75 @@ def enter_main_menu_screen(session, screen, activate_key=None, max_steps=20):
     to either problem reaches every tool that navigates the sidebar,
     instead of needing to be copied into each tool's own route.
 
-    `screen` is a canonical name from `labels.SCREENS`. Moving the cursor
-    to a sidebar entry already switches the displayed page on this BIOS,
-    so `activate_key` defaults to None (nothing to press); pass "enter"
-    for a BIOS where the sidebar needs an explicit open.
+    `screen` is a canonical name from `labels.SCREENS`.
+
+    **`activate_key` defaults to "enter" because this BIOS needs it.** An
+    earlier version defaulted to None, documenting that "moving the cursor
+    to a sidebar entry already switches the displayed page" -- that was
+    measured wrong and was the single biggest reason tools could not reach
+    a screen from an arbitrary starting page. Photographed live
+    (2026-08-24, captures/handshake/): with the page showing Main and the
+    cursor walked onto another entry, the sidebar draws **two** dark bars
+    at once -- one on the displayed page, one on the cursor -- and the
+    content panel keeps showing Main until ENTER is pressed. Without the
+    ENTER the caller lands on the right sidebar row and the wrong page,
+    then reads that wrong page's content and reports the answer missing.
+
+    The walk also tries **both directions**, because this sidebar does not
+    wrap: walked downward from Main the cursor stops dead on 'Event Log'
+    (confirmed live -- eight further presses changed nothing), so a target
+    above the starting point is unreachable by pressing "down" alone. The
+    reverse pass is what makes "from wherever the BIOS currently is"
+    actually true rather than aspirational.
     """
-    target = labels.screen(screen)
-    outcome = move_to(session, target, hint="nav_menu", key="down",
-                      focus_key="left", max_steps=max_steps)
+    # Counting from a verified anchor is the ONLY path. There used to be a
+    # cursor-watching walk as a fallback, and it was actively dangerous
+    # here: it cannot tell the sidebar's cursor bar from its active-page
+    # bar, so with the page already on the target it concluded "arrived"
+    # in zero steps and pressed ENTER -- while the cursor was actually
+    # parked on the back arrow, where ENTER opens 'Discard Changes and
+    # Exit'. That is precisely how that dialog kept appearing on the real
+    # machine. A walk that cannot see what it is walking is not a fallback,
+    # it is a blind keypress with a confident-looking result.
+    #
+    # Failing here is the correct outcome when the anchor cannot be
+    # confirmed: the caller gets "could not get there", nothing is opened,
+    # and no key lands on the arrow.
+    outcome = enter_main_menu_screen_by_count(
+        session, screen, activate_key=activate_key)
+    return outcome, (outcome.reading if outcome.ok else None)
 
-    if not outcome.ok and outcome.reason == BLIND:
-        marked = _sidebar_colour_fallback(outcome.reading, target)
-        if marked is not None:
-            outcome = NavigationResult(
-                ok=True, reason=ARRIVED, steps=outcome.steps,
-                cursor=marked["text"], visited=outcome.visited,
-                reading=outcome.reading,
-            )
 
-    if outcome.ok and activate_key:
-        return outcome, activate(session, activate_key)
-    # `outcome.reading` is the legacy cursor dict move_to reads with, not
-    # a perception Reading -- callers that go on to read a field/value
-    # need the contract (`.full`), so re-read through the normal path
-    # once navigation is confirmed, same as every other leg does.
-    return outcome, (session.read_stable() if outcome.ok else outcome.reading)
+# Phrases that mean the screen is asking to commit or abandon something,
+# rather than showing a settings page. Matched on normalised text, so
+# spacing and OCR punctuation noise do not matter.
+_DIALOG_PHRASES = (
+    "quitwithoutsaving", "discardchanges", "savechanges",
+    "saveconfiguration", "exitwithoutsaving", "loaddefault",
+)
+
+
+def looks_like_dialog(reading):
+    """True when a confirmation dialog is on screen.
+
+    Exists because ESC is not uniformly "go up one level" on this BIOS:
+    pressed at the top level it opens **'Discard Changes and Exit -- Quit
+    without saving?'**, with Ok and Cancel. Observed twice for real on
+    2026-08-24, both times because a tool's cleanup sent ESCs without
+    looking. Anything that sends ESC in a loop has to be able to notice
+    this and stop, or it will eventually send the ENTER that answers it.
+
+    Two independent signals, either sufficient: a known phrase, or an
+    Ok/Cancel pair (which no settings page shows). Deliberately eager --
+    a false positive merely stops cleanup early and leaves the BIOS a
+    level deep, while a false negative risks confirming an exit.
+    """
+    texts = {normalize(line["text"])
+             for block in reading.get("blocks", ())
+             for line in block.get("lines", ())}
+    if any(p in t for t in texts for p in _DIALOG_PHRASES):
+        return True
+    return "ok" in texts and "cancel" in texts
 
 
 OPPOSITE = {"down": "up", "up": "down", "right": "left", "left": "right"}

@@ -37,6 +37,12 @@ DEFAULT_RESOLUTION = (1280, 720)
 # code serves both inputs.
 WARMUP_FRAMES = 8
 
+# Frames dropped after a keypress before believing anything the camera
+# says. Sized to comfortably exceed any driver-side queue depth; at ~30fps
+# this costs a fraction of a second, paid only when a key was actually
+# sent. See `BiosSession._flush` for what it prevents.
+FLUSH_FRAMES = 12
+
 
 @dataclass
 class Reading:
@@ -89,6 +95,7 @@ class BiosSession:
 
         self._warm = None    # perception stages, built lazily on first read
         self._legacy = None  # OCR engine for the cursor path, same lazily
+        self._dirty = False  # a press happened since the buffer was last drained
 
     # -- lifecycle -------------------------------------------------------
 
@@ -115,6 +122,12 @@ class BiosSession:
             cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
             cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
             cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
+        # Ask the driver to keep the shallowest queue it will allow. Not
+        # honoured by every backend, which is why `_flush` below exists as
+        # well rather than instead -- belt and braces, because a stale
+        # frame here is not a cosmetic problem (see `press`).
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
         for _ in range(WARMUP_FRAMES):
             cap.read()
@@ -165,6 +178,7 @@ class BiosSession:
     # -- reading ---------------------------------------------------------
 
     def grab(self, count=None):
+        self._drain_if_dirty()
         count = count or self.frames
         frames = []
         for _ in range(count):
@@ -206,6 +220,7 @@ class BiosSession:
         completely still, and a tool must return an answer rather than
         wait forever for perfect stillness.
         """
+        self._drain_if_dirty()
         timeout = self.settle_timeout if timeout is None else timeout
         deadline = time.monotonic() + timeout
         prev_gray = None
@@ -269,3 +284,41 @@ class BiosSession:
                 "BiosSession to press keys (see actuator.list_serial_ports())"
             )
         self.actuator.press(key)
+        # Marked, not flushed here -- see `_drain_if_dirty`. A caller that
+        # sends several presses before ever reading again (exactly what
+        # the anchored sidebar walk does: one `left` then up to eight
+        # `up`s before the first read) would otherwise pay a ~0.5s drain
+        # after every single one of them for no reason -- measured live
+        # 2026-08-24, the difference between 0.06s and 0.53s per press.
+        self._dirty = True
+
+    def _drain_if_dirty(self, count=FLUSH_FRAMES):
+        """Drop frames captured before now, so the next read cannot answer
+        with the screen as it was *before* the last keypress.
+
+        This is not an optimisation -- it fixes a real, and badly
+        misleading, class of failure. `wait_stable` decides a screen has
+        settled by comparing consecutive frames, and a queue of buffered
+        frames from before the keypress are all identical to each other,
+        so they pass that test perfectly and get returned as "the settled
+        screen". The reading is then confidently wrong rather than
+        uncertain, which is the worst shape an error can take here.
+
+        Caught live 2026-08-24: a confirmation dialog had already been
+        dismissed on the real machine, and two consecutive readings still
+        showed it open, with the highlight detector happily reporting the
+        dialog's 'Cancel' button. Only draining the queue revealed the
+        actual current screen. Before this was understood, the same
+        staleness read as "the BIOS is ignoring our keys" -- an entire
+        investigation chased that instead.
+
+        Called from every read path (`grab`, `wait_stable`), never from
+        `press` itself, so a run of presses with no read between them (the
+        common case in navigation) pays this exactly once, right before
+        the read that actually needs it -- not once per press.
+        """
+        if not self._dirty:
+            return
+        self._dirty = False
+        for _ in range(count):
+            self.cap.read()

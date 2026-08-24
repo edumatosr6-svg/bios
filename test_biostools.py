@@ -19,6 +19,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import cv2
+import numpy as np
 
 from biostools import assistant, navigate, run_tool, screen
 from biostools.session import Reading
@@ -66,6 +67,36 @@ def check_that(label, condition, detail=""):
     return condition
 
 
+def legacy_reading_for(stem):
+    """The legacy `selection.py`-annotated OCR result for a saved frame --
+    what `BiosSession.read_cursor()` returns, minus the camera.
+
+    Cached like `contract_for`, but under a different suffix: this is OCR +
+    `selection.py`, not a perception contract, and the two must never be
+    confused for the same fixture.
+    """
+    os.makedirs(CACHE, exist_ok=True)
+    cached = os.path.join(CACHE, f"{stem}_legacy.json")
+    if os.path.exists(cached):
+        with open(cached, encoding="utf-8") as f:
+            return json.load(f)
+
+    path = os.path.join("captures", stem + ".jpg")
+    frame = cv2.imread(path)
+    if frame is None:
+        sys.exit(f"fixture ausente: {path}")
+
+    from ocr import DEFAULT_ENGINE, create_ocr_engine
+    from selection import annotate_selection
+
+    print(f"  (lendo {stem} pelo caminho legado pela primeira vez...)")
+    result = create_ocr_engine(DEFAULT_ENGINE).read(frame)
+    result["screen_bg_color"] = annotate_selection(frame, result["blocks"])
+    with open(cached, "w", encoding="utf-8") as f:
+        json.dump(result, f)
+    return result
+
+
 def contract_for(stem):
     """Perceive a fixture once, then reuse the cached contract."""
     os.makedirs(CACHE, exist_ok=True)
@@ -104,6 +135,16 @@ class FakeBios:
 
     def __init__(self, contract, entries=NAV_ENTRIES, index=1, wrap=True,
                  opens_to=None, frozen=False, simulate_nav=False):
+        # Each ENTER descends one level, so the screens form a stack, not a
+        # single before/after pair. Modelling it as a pair hid the real
+        # structure: reaching a top-level page needs its own ENTER (the
+        # sidebar cursor moving does NOT switch the page on this BIOS --
+        # measured 2026-08-24), so a tool that opens a submenu presses
+        # ENTER twice and passes through two different screens.
+        # `opens_to` accepts a list for that; a bare contract still means
+        # "one level down".
+        chain = opens_to if isinstance(opens_to, list) else [opens_to]
+        self.stack = [contract] + [c for c in chain if c is not None]
         self.contract = contract
         self.entries = entries
         self.index = index
@@ -115,14 +156,14 @@ class FakeBios:
         # moving cursor is the whole point.
         self.simulate_nav = simulate_nav
         self.keys = []
-        self.opened = False
+        self.opened = 0  # how many ENTERs deep we are in `self.stack`
 
     def _ids_by_text(self, full):
         return {p["content"]: p["id"] for p in full.get("primitives", ())
                 if p.get("content")}
 
     def read_stable(self, timeout=None):
-        contract = self.opens_to if (self.opened and self.opens_to) else self.contract
+        contract = self.stack[min(self.opened, len(self.stack) - 1)]
         full = copy.deepcopy(contract["full"])
         if self.simulate_nav and not self.opened:
             ids = self._ids_by_text(full)
@@ -161,12 +202,34 @@ class FakeBios:
                 "region": "menu_column",
             })
         lines.sort(key=lambda l: (l["bbox"]["top"], l["bbox"]["left"]))
-        return {"blocks": [{"block_num": 0, "lines": lines}]}
+        # A frame whose "Setup" icon region reads as filled, so navigation's
+        # anchor check passes and the ROUTE logic gets exercised here. The
+        # pixel test itself is not faked into passing -- it is checked
+        # against real captures in test_setup_icon_anchor, which is the
+        # only honest way to cover a measurement of real pixels.
+        # Sized from the contract's own surface, not a fixed 1280x720:
+        # these fixtures are 3840-wide photographs, and a frame in a
+        # different coordinate space than the line boxes it accompanies
+        # makes every geometry query (sidebar limit, icon box) answer
+        # about the wrong part of the screen.
+        surface = full.get("surface") or {}
+        width = int(surface.get("width") or 1280)
+        height = int(surface.get("height") or 720)
+        frame = np.zeros((height, width, 3), dtype=np.uint8)
+        # Roughly the filled-disc coverage a real anchored frame shows
+        # (~0.43); an all-white box would instead read as "obscured".
+        x0, y0, x1, y1 = navigate._SETUP_ICON_BOX
+        frame[int(y0 * height):int(y0 * height + (y1 - y0) * height * 0.6),
+              int(x0 * width):int(x1 * width)] = 255
+        return {"blocks": [{"block_num": 0, "lines": lines}], "frame": frame}
 
     def press(self, key):
         self.keys.append(key)
         if key == "enter":
-            self.opened = True
+            self.opened += 1
+            return
+        if key == "esc":
+            self.opened = max(0, self.opened - 1)
             return
         if self.frozen:
             return
@@ -287,7 +350,7 @@ def test_assistant_catches_a_hallucinated_value(menu, readings):
         _content_message("A temperatura da CPU esta em 61C no momento."),
     ], port=18101)
     try:
-        bios = FakeBios(menu, opens_to=readings)
+        bios = FakeBios(menu, opens_to=[menu, readings])
         r = assistant.ask("qual a temperatura da cpu?", bios, port=18101)
         check("uma tool chamada, a certa", [c.tool for c in r.calls], ["cpu_temperature"])
         check("narracao fiel foi aceita", r.narrated, True)
@@ -305,7 +368,7 @@ def test_assistant_catches_a_hallucinated_value(menu, readings):
         _content_message("A temperatura da CPU esta em 65C, um pouco alta."),
     ], port=18102)
     try:
-        bios = FakeBios(menu, opens_to=readings)
+        bios = FakeBios(menu, opens_to=[menu, readings])
         r = assistant.ask("qual a temperatura da cpu?", bios, port=18102)
         check("narracao alterada foi REJEITADA", r.narrated, False)
         check_that("caiu para o valor verificado (61C)", "61C" in r.answer, r.answer)
@@ -321,7 +384,7 @@ def test_assistant_catches_a_hallucinated_value(menu, readings):
         "Nao tenho como responder isso com as informacoes da BIOS."
     )], port=18103)
     try:
-        bios = FakeBios(menu, opens_to=readings)
+        bios = FakeBios(menu, opens_to=[menu, readings])
         r = assistant.ask("qual a cor do gabinete?", bios, port=18103)
         check("nenhuma tool foi chamada", r.calls, [])
         check_that("resposta de recusa foi repassada", "responder" in r.answer, r.answer)
@@ -336,7 +399,7 @@ def test_assistant_catches_a_hallucinated_value(menu, readings):
         _content_message("Nao consegui obter essa informacao."),
     ], port=18104)
     try:
-        bios = FakeBios(menu, opens_to=readings)
+        bios = FakeBios(menu, opens_to=[menu, readings])
         r = assistant.ask("qual a temperatura da cpu?", bios, port=18104)
         check_that("chamada de tool inexistente registrada com erro",
                    len(r.calls) == 1 and r.calls[0].error is not None,
@@ -487,22 +550,39 @@ def test_bios_info(main):
 
 def test_cpu_temperature(menu, readings):
     print("\ntool cpu_temperature, fim a fim")
-    bios = FakeBios(menu, opens_to=readings)
+    bios = FakeBios(menu, opens_to=[menu, readings])
     result = run_tool("cpu_temperature", bios)
     check("resposta", result.value, "61C")
-    # "left"/"right" sao sempre pressionados uma vez por perna com
-    # focus_key (entregam o foco do teclado a sidebar/conteudo antes de
-    # andar -- ver Step.focus_key), mesmo quando o cursor ja estava no
-    # alvo; so as setas de navegacao propriamente ditas (up/down) devem
-    # ficar a zero aqui.
-    check("cursor ja estava no alvo, nenhuma navegacao gasta",
-          [k for k in bios.keys if k in ("up", "down")], [])
+    # A perna da barra lateral ancora e conta, sempre: N+2 "up" para
+    # encostar no topo (a lista nao da a volta) e indice+1 "down" para
+    # descer ate a entrada. Nao ha atalho de "o cursor ja estava la" --
+    # essa era uma economia do caminho que observava o cursor, e ele foi
+    # removido justamente por nao conseguir distinguir a barra do cursor
+    # da barra da pagina ativa. Pagar 8 teclas para ter certeza e melhor
+    # que economizar 8 e apertar ENTER no lugar errado.
+    ups = [k for k in bios.keys if k == "up"]
+    downs = [k for k in bios.keys if k == "down"]
+    check("ancorou no topo antes de contar", len(ups), len(NAV_ENTRIES) + 2)
+    check_that("contou ate 'advanced' (indice 1 -> 2 down) mais a perna 2",
+               len(downs) >= 2, f"downs: {downs}")
     check("focus_key (left) da perna 1 foi pressionado", bios.keys.count("left"), 1)
-    check("focus_key (right) da perna 2 foi pressionado", bios.keys.count("right"), 1)
-    check("abriu com enter", bios.keys.count("enter"), 1)
+    # Nenhum "right": o ENTER da perna 1 ja entrega o foco ao conteudo da
+    # pagina aberta. O "right" que existia aqui era compensacao para a
+    # perna 1 nao abrir a pagina (activate=False) e deixar o foco na barra
+    # lateral; com aquilo corrigido, ele passou a ATRAPALHAR -- levaria o
+    # foco para a coluna de icones da direita. Ver cpu_temperature.py.
+    check("nenhum focus_key na perna 2", bios.keys.count("right"), 0)
+    # DOIS enters, um por nivel: o primeiro abre a pagina "Advanced" a
+    # partir da barra lateral, o segundo abre "Hardware Monitor" dentro
+    # dela. Isto era 1 ate 2026-08-24, quando a perna da barra lateral
+    # tinha activate=False -- o cursor chegava em Advanced mas a pagina
+    # exibida continuava a anterior, e a perna 2 procurava "Hardware
+    # Monitor" no conteudo da tela errada. Era essa a falha de "estou na
+    # Main e nao consigo ir para a Advanced"; ver captures/handshake/.
+    check("abriu com enter, um por nivel", bios.keys.count("enter"), 2)
     # Without this the tool is single-use: it would leave the BIOS inside
     # the submenu, where the entry it navigates to no longer exists.
-    check("fechou o que abriu (repetivel)", bios.keys.count("esc"), 1)
+    check("fechou o que abriu (repetivel)", bios.keys.count("esc"), 2)
     check("esc veio depois do enter", bios.keys[-1], "esc")
 
 
@@ -531,6 +611,86 @@ def test_walk_survives_stuck_cursor(menu):
     check_that("marca a lista como nao confirmada",
                any("sem confirmacao" in n for n in result.notes),
                f"notas: {result.notes}")
+
+
+def test_setup_icon_anchor():
+    """A ancora de navegacao, medida em frames REAIS (nao simulados).
+
+    O sinal nao esta em texto nenhum: a palavra "Setup" renderiza
+    identica com e sem o cursor nela (fg/bg bit a bit iguais, medido).
+    O que muda e o icone circular ao lado -- anel quando o cursor esta
+    em outro lugar, disco preenchido quando esta nele. E por isso que
+    todas as tentativas via OCR erraram: `selection.py` so amostra cor
+    dentro de caixa de texto, e isto e um icone.
+    """
+    print("\nancora de navegacao: icone 'Setup' preenchido vs contornado")
+    for stem, expected, what in (
+        ("ancora_topo", True, "cursor NA seta (ancorado)"),
+        ("agora_fresco", False, "cursor no conteudo"),
+        ("na_main", False, "cursor no conteudo, outra pagina"),
+    ):
+        frame = cv2.imread(os.path.join("captures", "handshake", stem + ".png"))
+        if frame is None:
+            check_that(f"fixture {stem} presente", False)
+            continue
+        check(f"{what}", navigate.setup_icon_focused(frame), expected)
+
+    # Um dialogo modal escurece a pagina atras dele, e a regiao do icone
+    # some. Isso tem que devolver None ("nao consigo dizer"), nunca False
+    # ("nao esta ancorado") -- sao respostas diferentes: a segunda
+    # autorizaria apertar mais teclas.
+    dialog = cv2.imread(os.path.join("captures", "handshake", "apos_falha.png"))
+    if dialog is not None:
+        check("dialogo cobrindo a barra -> nao sei dizer",
+              navigate.setup_icon_focused(dialog), None)
+
+
+def test_sidebar_legacy_cursor():
+    """Padroes 1 e 3 do P-spec `deteccao-cursor-barra-lateral-instavel-
+    entre-frames.md`, travados como fixture -- ver `study_sidebar_stability.py`
+    e o P-spec para como/por que estes 3 frames foram escolhidos: 25/25 (padrao
+    1), 6/6 e 8/8 (padrao 3, dois pares de itens diferentes) leituras ao vivo
+    identicas, ou seja, nao e jitter de captura, e comportamento reproduzivel.
+    """
+    print("\ncursor legado na barra lateral: padroes 1 e 3")
+
+    # Padrao 1: fundo escuro atras do item ativo -- selection.py acha o
+    # cursor direto, sem precisar do fallback.
+    reading = legacy_reading_for("positivo_sidebar_pattern1_advanced")
+    marked = screen.legacy_cursor(reading)
+    check_that("padrao 1: cursor achado direto", marked is not None)
+    if marked:
+        check("padrao 1: item certo", screen.normalize(marked["text"]), "advanced")
+
+    # Padrao 3: dois itens com texto escuro ao mesmo tempo -- a pagina
+    # aberta (Advanced) e o item onde o cursor esta agora (Security),
+    # quando diferem. A trava MAX_TEXT_COLOR_OUTLIERS=1 de selection.py
+    # abstem por design (dois candidatos, nenhuma base para escolher as
+    # cegas); e o proprio navigate.py que resolve, ja sabendo qual dos
+    # dois esta procurando.
+    #
+    # So um par vira fixture aqui, nao dois: um segundo par (Advanced +
+    # Boot) capturado na mesma sessao (2026-08-24) mostrou que esse caso
+    # pode estar bem na fronteira de deteccao -- a mesma imagem, salva em
+    # JPG e relida, mudou de "abstem" para "decide sozinho" so por causa
+    # da compressao com perda. Nao e um caso estavel para travar como
+    # fixture; ver a nota em `study_sidebar_stability.py` sobre por que
+    # frames agora sao salvos em PNG.
+    reading = legacy_reading_for("positivo_sidebar_pattern3_advanced-security")
+    marked = screen.legacy_cursor(reading)
+    check("padrao 3: selection.py sozinho abstem", marked, None)
+
+    fallback = navigate._sidebar_colour_fallback(reading, "Security")
+    check_that("padrao 3: fallback acha o alvo certo",
+               fallback is not None
+               and screen.normalize(fallback["text"]) == "security",
+               f"achou: {fallback['text'] if fallback else None}")
+
+    # O outro item escuro (a pagina aberta) nao pode ser o resultado --
+    # o fallback so deve responder quando esta procurando `target`.
+    other = navigate._sidebar_colour_fallback(reading, "Nao Existe Na Tela")
+    check("padrao 3: fallback nao inventa alvo quando nao encontra o seu",
+          other, None)
 
 
 def test_safety_guards(menu):
@@ -567,6 +727,8 @@ def main():
     test_assistant_catches_a_hallucinated_value(menu, readings)
     test_menu_walk(menu)
     test_walk_survives_stuck_cursor(menu)
+    test_setup_icon_anchor()
+    test_sidebar_legacy_cursor()
     test_safety_guards(menu)
 
     print()
