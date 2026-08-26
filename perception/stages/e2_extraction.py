@@ -64,8 +64,10 @@ class Extraction:
         sources: list["Source"] | None = None,
         engine: str = DEFAULT_ENGINE,
         ocr_votes: int = 1,
+        engine_instance=None,
     ):
-        self.sources = sources if sources is not None else default_sources(engine, ocr_votes)
+        self.sources = sources if sources is not None else default_sources(
+            engine, ocr_votes, engine_instance=engine_instance)
 
     def run(self, perception: Perception) -> StageOutput:
         surface = perception.surface
@@ -148,12 +150,17 @@ class SymbolicSource(Source):
     """
     kind = "symbolic"
 
-    def __init__(self, engine: str = DEFAULT_ENGINE, lang: str | None = None, votes: int = 1):
+    def __init__(self, engine: str = DEFAULT_ENGINE, lang: str | None = None,
+                 votes: int = 1, engine_instance=None):
         self.name = f"symbolic:{engine}"
         self._engine_name = engine
         self._lang = lang
         self.votes = max(1, votes)
-        self._engine = None
+        # Optional pre-built engine, for a caller that already has one warm
+        # elsewhere and wants this source to reuse it rather than pay its
+        # own cold start. Purely additive: unset, behaviour is exactly what
+        # it always was (lazy `create_ocr_engine` on first use).
+        self._engine = engine_instance
 
     def _get_engine(self):
         if self._engine is None:
@@ -412,5 +419,7 @@ def _drop_near_duplicates(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return kept
 
 
-def default_sources(engine: str = DEFAULT_ENGINE, ocr_votes: int = 1) -> list[Source]:
-    return [SymbolicSource(engine=engine, votes=ocr_votes), RuleSource(), FilledRectSource()]
+def default_sources(engine: str = DEFAULT_ENGINE, ocr_votes: int = 1,
+                     engine_instance=None) -> list[Source]:
+    return [SymbolicSource(engine=engine, votes=ocr_votes, engine_instance=engine_instance),
+            RuleSource(), FilledRectSource()]

@@ -145,9 +145,18 @@ class BiosSession:
             Identity, Regionalisation, Serialisation, StateInference, Typing,
         )
 
+        # Share one OCR engine instance with the legacy cursor path instead
+        # of letting Extraction build its own. Measured 2026-08-24: each
+        # engine instance pays its own cold start (~1.6-2.6s) the first
+        # time it reads, and a tool run touches both paths (navigation
+        # through `read_cursor`, the final field read through `read`), so
+        # two instances meant paying that cost twice per session for no
+        # reason -- same engine name, same weights. `_legacy_engine()`
+        # builds it if the legacy path has not been used yet this session.
         return [
             Conditioning(),
-            Extraction(engine=self.engine, ocr_votes=self.ocr_votes),
+            Extraction(engine=self.engine, ocr_votes=self.ocr_votes,
+                      engine_instance=self._legacy_engine()),
             Characterisation(),
             Regionalisation(),
             Grouping(),
