@@ -81,6 +81,19 @@ class ToolResult:
     `values` for a set of them, `entries` for a list of menu options. All
     three keys are always present in the JSON so a consumer can rely on
     the shape without branching first.
+
+    `open_ended`, for `kind == "fields"` only: True when `values` is
+    whatever a screen happened to show (`AllFields`, e.g. `main_info`,
+    `goto_screen`) rather than a short list the caller specifically named
+    (`Fields`, e.g. `bios_info`'s three fields). Not part of the public
+    JSON shape (`as_dict` below) -- it exists only to tell
+    `assistant._required_values` apart: a targeted `Fields` answer is
+    short because the question already picked exactly what matters, so
+    narrating it should echo every value back; an open `AllFields` dump
+    can be a dozen unrelated pairs for a question about ONE of them, and
+    demanding all of them appear verbatim in the narration made every
+    such answer fall back to the raw dump -- see goto_screen's own
+    "fast boot enabled?" report, 2026-08-28.
     """
     tool: str
     ok: bool
@@ -96,6 +109,7 @@ class ToolResult:
     steps: int = 0
     error: str | None = None
     abstentions: list = field(default_factory=list)
+    open_ended: bool = False
 
     def as_dict(self):
         return {
@@ -203,23 +217,97 @@ class AllFields:
     page say" -- a hardcoded label list silently returns less when a BIOS
     model words a field differently, while this returns whatever is there
     and lets the caller notice.
+
+    `scroll`, when set, does not stop at the first frame: it presses
+    `scroll_key` (content is already focused after the ENTER that opened
+    this screen -- see `enter_main_menu_screen`'s docstring) and re-reads,
+    merging any label the new frame shows that the first one did not,
+    same "keep going until nothing new turns up" shape `walk_group` uses
+    for a menu. Exists because a settings page can hold more rows than
+    fit on screen at once -- confirmed live 2026-08-28: asked "what is
+    Boot Option #1", `goto_screen` on 'boot' answered with the five fields
+    visible in the first frame and never found it, because it never
+    scrolled. Off by default (`False`, matching every reader before this
+    one) because it costs real key presses and reads for every screen,
+    not just the ones that need it; `goto_screen` turns it on because it
+    does not know ahead of time whether the screen it is about to land on
+    is one page or several.
     """
     exclude_nav: bool = True
+    scroll: bool = False
+    scroll_key: str = "down"
+    max_scroll: int = 15
 
     # Any settings page has label->value pairs, so reading some proves
     # nothing about *which* page this is. Never skip navigation for this.
     identifies_screen = False
 
+    def __post_init__(self):
+        if self.scroll and self.scroll_key not in SAFE_KEYS:
+            raise UnsafeRoute(
+                f"AllFields(scroll=True) usaria a tecla {self.scroll_key!r}, "
+                f"que nao esta em SAFE_KEYS"
+            )
+
     def read(self, tool, session, reading, steps):
         full = reading.full
         exclude = screen.nav_element_ids(full) if self.exclude_nav else frozenset()
         values = screen.field_pairs(full, exclude_ids=exclude)
+        notes = []
+
+        if self.scroll:
+            values, extra_steps, scroll_notes = self._scroll_and_merge(
+                session, values)
+            steps += extra_steps
+            notes += scroll_notes
+
         return ToolResult(
             tool=tool.name, ok=bool(values), kind="fields", values=values,
             steps=steps, screen_id=screen.screen_id(full),
-            abstentions=screen.selection_abstentions(full),
+            abstentions=screen.selection_abstentions(full), notes=notes,
             error=None if values else "nenhum par rotulo/valor nesta tela",
+            open_ended=True,
         )
+
+    def _scroll_and_merge(self, session, values):
+        """Press `scroll_key`, re-read, merge in whatever label is new.
+
+        Stops after TWO consecutive presses that add nothing -- one could
+        be a redraw quirk, but two in a row means either the list ended
+        (a non-wrapping content panel simply stops moving, same as the
+        sidebar in `navigate.enter_main_menu_screen_by_count`) or it
+        wrapped back to labels already merged in. Either way there is
+        nothing left to gain by continuing, and stopping early keeps a
+        short page (most of them) to the couple of presses that confirm
+        it, not the full `max_scroll` budget.
+        """
+        values = dict(values)
+        notes = []
+        steps = 0
+        stall = 0
+
+        for _ in range(self.max_scroll):
+            session.press(self.scroll_key)
+            steps += 1
+            reading = session.read_stable()
+            full = reading.full
+            exclude = screen.nav_element_ids(full) if self.exclude_nav else frozenset()
+            found = screen.field_pairs(full, exclude_ids=exclude)
+            new = {k: v for k, v in found.items() if k not in values}
+            if new:
+                values.update(new)
+                stall = 0
+            else:
+                stall += 1
+                if stall >= 2:
+                    break
+        else:
+            notes.append(
+                f"parei de rolar apos {self.max_scroll} teclas -- "
+                f"pode haver mais campos abaixo do que os lidos"
+            )
+
+        return values, steps, notes
 
 
 def _in_screen_order(walked, visible):
@@ -339,12 +427,38 @@ class Tool:
     `route` is how to get to the screen holding the answer; `reader` is
     what to do once there. Adding a tool means writing one of these, not
     another navigate/read loop.
+
+    `router`, when set, replaces BOTH `route` and `reader`: instead of a
+    path decided at import time, it is a function `(tool, session, args,
+    mode) -> ToolResult` called with whatever arguments the caller (an
+    LLM tool call, or the CLI) supplied for THIS run. This exists because
+    every route-based tool answers one question fixed in advance ("what is
+    the CPU temperature") -- it cannot answer "go to the screen named X"
+    for an X chosen at call time without one Tool per possible X. A router
+    resolves its path at call time instead, reusing the same
+    `navigate.enter_main_menu_screen` every `hint="nav_menu"` Step already
+    goes through -- see `tools/goto_screen.py`.
+
+    `params` describes those caller-supplied arguments as JSON-schema
+    properties, so `assistant._tool_schemas()` can hand them to the model.
+    Empty for every route-based tool: today none of them take a parameter
+    (see assistant.py's docstring), so there is nothing to describe.
+
+    `required_params` names the subset of `params` the tool cannot run
+    without; left empty it means "all of them", which is what every tool
+    up to `goto_screen` meant. `find_setting` is the first with a genuinely
+    optional parameter (`question`), and marking it required would make a
+    model invent a question string to satisfy the schema -- inventing
+    input to a read-only guard is the last thing wanted here.
     """
     name: str
     question: str
     reader: object
     route: list = field(default_factory=list)
     restore: bool = True
+    router: object = None
+    params: dict = field(default_factory=dict)
+    required_params: list = field(default_factory=list)
 
     def __post_init__(self):
         keys = []
@@ -365,12 +479,23 @@ class Tool:
                     f"change BIOS settings"
                 )
 
-    def run(self, session):
+    def run(self, session, mode="keyboard", args=None):
         """Navigate to the screen, then read it. Never raises for a
         navigation or reading miss -- those are answers ("could not
         determine"), reported in the result. Hardware faults
         (`CableNotResponding`, `CameraUnavailable`) do propagate: they mean
         the setup is broken, not that the BIOS said something unexpected.
+
+        `mode` is the operator's choice of how the sidebar legs of the
+        route are driven -- "keyboard", "mouse", or "auto" -- passed
+        straight through to `enter_main_menu_screen` (see its docstring
+        for what each does). It has no effect on a route with no
+        `nav_menu` leg.
+
+        `args` is whatever the caller supplied for this run (an LLM tool
+        call's arguments, or the CLI's own flags) -- meaningless for a
+        route-based tool, which decided everything at import time, so it
+        is used only when `router` is set.
 
         With `restore`, every submenu the tool opened is closed again
         before returning. Without it a tool is single-use: after
@@ -381,6 +506,14 @@ class Tool:
         as it was found -- which also matters for running two tools in a
         row off one session.
         """
+        if self.router is not None:
+            # A router owns its own screen state -- see `goto_screen`,
+            # which sets restore=False on purpose because arriving and
+            # STAYING is the entire point of that tool. No `_close_opened`
+            # bookkeeping applies here; a router that wants restoring
+            # behaviour is responsible for its own cleanup.
+            return self.router(self, session, args or {}, mode)
+
         steps = 0
         opened = 0
         reading = None
@@ -413,6 +546,7 @@ class Tool:
                         session, leg.to,
                         activate_key="enter" if leg.activate else None,
                         max_steps=leg.max_steps,
+                        mode=mode,
                     )
                     steps += outcome.steps
                     if not outcome.ok:

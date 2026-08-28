@@ -285,8 +285,18 @@ def setup_icon_focused(frame):
 # Canonical screens that are top-level sidebar entries, so a reading can
 # be filtered down to just the menu. Order is NOT taken from here -- it is
 # read off the screen -- because a BIOS model may list them differently.
+#
+# Public under both names on purpose: everything in this module already
+# said `_SIDEBAR_SCREENS`, and renaming it would touch every call site for
+# no benefit. `TOP_LEVEL_SCREENS` is the name a caller OUTSIDE this module
+# should use -- `goto_screen` needs exactly this set (the screens
+# `enter_main_menu_screen` can actually reach) to know which names are
+# valid to offer the model, as opposed to `labels.SCREENS`, which also
+# lists screens like `hardware_monitor` that live inside Advanced and are
+# not a sidebar entry `enter_main_menu_screen` can walk to directly.
 _SIDEBAR_SCREENS = ("main", "advanced", "security", "boot",
                     "save_and_exit", "event_log")
+TOP_LEVEL_SCREENS = _SIDEBAR_SCREENS
 
 
 def sidebar_entries(reading):
@@ -312,6 +322,53 @@ def sidebar_entries(reading):
     return entries
 
 
+def resolves_to_screen(text, screen):
+    """True when `text` is most plausibly this screen's entry, allowing for
+    OCR damage.
+
+    `match_score` is deliberately strict -- it absorbs how a screen is
+    *drawn* but not how it is *worded*, because a loose match on a field
+    label can silently report the wrong reading (see labels.py). That is
+    right for field labels and wrong for *verifying arrival*, where the
+    candidates are a known, closed set of six sidebar entries and the only
+    question is which one this is.
+
+    Measured live 2026-08-26: a click on 'Advanced' worked -- the page
+    really did switch -- but verification rejected it because OCR returned
+    **'Avanced'**, one character short. Strict matching turned a correct
+    navigation into a reported failure, five times out of six. Picking the
+    nearest known entry cannot invent a screen that is not in the list, so
+    it does not reopen the silent-wrong-answer risk strictness protects
+    against here.
+
+    0.8 was the first cutoff tried and it undershot on the SHORT entries:
+    'main' and 'boot' are only 4 characters, so a single swapped/dropped
+    character in the middle ('maln', 'mair', '6oot', 'booi', ...) already
+    scores 0.75 -- below 0.8 -- while the same class of damage on the
+    8-character 'advanced' still scores 0.93. Reported live 2026-08-28: a
+    click that visibly landed on 'Main' was reported as a failed
+    navigation for exactly this reason. Lowered to 0.7, which still clears
+    every cross-screen pair with a wide margin -- the closest two distinct
+    screens ('security' and 'save & exit') score only 0.42 against each
+    other -- so this still cannot pick the wrong screen from the list, it
+    just also accepts the single-character damage a short name is more
+    exposed to.
+    """
+    from difflib import SequenceMatcher
+
+    seen = normalize(text)
+    if not seen:
+        return False
+
+    best_screen, best_ratio = None, 0.0
+    for canonical in _SIDEBAR_SCREENS:
+        for spelling in labels.screen(canonical):
+            ratio = SequenceMatcher(None, seen, normalize(spelling)).ratio()
+            if ratio > best_ratio:
+                best_screen, best_ratio = canonical, ratio
+    return best_screen == screen and best_ratio >= 0.7
+
+
 def sidebar_active(reading):
     """The marked entry **inside the sidebar**, or None.
 
@@ -326,6 +383,114 @@ def sidebar_active(reading):
               for line in block.get("lines", ())
               if line["bbox"]["left"] < limit and line.get("highlighted")]
     return marked[0] if len(marked) == 1 else None
+
+
+def enter_main_menu_screen_by_click(session, screen, settle_delay=0.0):
+    """Reach a top-level page by CLICKING its sidebar entry.
+
+    The portable path. It knows only two things: what the entry is
+    called, and that clicking it works -- no wrap behaviour, no back
+    arrow, no press counts. Measured live 2026-08-24: one click on a
+    sidebar entry both moves *and* opens, where the keyboard needs
+    anchor + count + ENTER.
+
+    `settle_delay`: seconds paused right before the click is sent, after
+    the pointer has already confirmed its position. Exists to test a
+    specific live observation (2026-08-27): repeated clicks through this
+    same path failed in CONSECUTIVE runs (e.g. four in a row), not spread
+    randomly, which does not look like per-click noise -- it looks like a
+    state that gets entered and stays bad for a while. One candidate is a
+    window right after a page redraw where the BIOS has not yet resumed
+    listening for pointer input; `wait_stable()` only confirms the IMAGE
+    stopped changing, which is not the same thing. Defaults to 0.0 (no
+    behaviour change) until that hypothesis is actually confirmed live.
+
+    Returns a `NavigationResult` like its keyboard sibling. On any
+    pointer trouble it reports failure rather than raising, so the caller
+    can fall back -- a BIOS that ignores the mouse is a normal condition
+    here (the first Positivo unit does exactly that), not a fault.
+    """
+    import time
+
+    from .pointer import Pointer, PointerUnavailable
+
+    target = labels.screen(screen)
+    reading = session.read_cursor()
+    entry = None
+    limit = sidebar_limit(reading)
+    for block in reading.get("blocks", ()):
+        for line in block.get("lines", ()):
+            if line["bbox"]["left"] < limit and match_score(target, line["text"]):
+                entry = line
+                break
+    if entry is None:
+        return NavigationResult(
+            ok=False, reason=CYCLED, steps=0,
+            detail=f"{screen!r} nao esta visivel na barra lateral")
+
+    # One calibrated pointer per session, not per call. Calibrating on
+    # every call was both the slowest part of this path (~8s) and its
+    # biggest reliability drag: measured over six consecutive clicks, two
+    # failed outright with "nao localizei o ponteiro" -- failures that only
+    # existed because a fresh calibration was attempted each time. The
+    # pointer tracks its own position across moves, so one calibration is
+    # all the session ever needs; a later failure re-arms it by clearing
+    # the cache rather than limping on a stale estimate.
+    pointer = getattr(session, "_pointer", None)
+    if pointer is None:
+        try:
+            pointer = Pointer(session)
+            pointer.calibrate()
+        except PointerUnavailable as exc:
+            return NavigationResult(ok=False, reason=BLIND, steps=0,
+                                    detail=f"ponteiro indisponivel: {exc}")
+        session._pointer = pointer
+
+    bbox = entry["bbox"]
+    # In the BLANK part of the row, not on the text. Measured directly
+    # 2026-08-26 (pixel-sampled a saved frame): an active sidebar row
+    # paints its highlight across the WHOLE sidebar column, x~0 to ~400 at
+    # 1280 width, while the label itself only occupies a narrow band in
+    # the middle (e.g. 'Boot' spans x=120..190). Aiming inside the text's
+    # own bbox means the target sits right next to the OCR box's edge,
+    # which jitters a little between reads -- clicking the wide blank
+    # margin between the text and the sidebar's own boundary is the same
+    # row with far more room for that jitter to land safely. This is the
+    # user's own observation, watching the real screen -- there visibly is
+    # a gap between where the label ends and the row's selectable edge.
+    text_right = bbox["left"] + bbox["width"]
+    sidebar_right = sidebar_limit(reading)
+    x = (text_right + sidebar_right) / 2 if sidebar_right > text_right else text_right + 20
+    y = bbox["top"] + bbox["height"] / 2
+    if not pointer.move_to(x, y):
+        # Its position estimate is no longer trustworthy; drop it so the
+        # next attempt recalibrates instead of compounding the error.
+        session._pointer = None
+        return NavigationResult(
+            ok=False, reason=BLIND, steps=0,
+            detail="ponteiro nao convergiu no alvo -- nao cliquei")
+
+    if settle_delay:
+        time.sleep(settle_delay)
+    session.mouse_click("left")
+    after = session.read_cursor()
+    if looks_like_dialog(after):
+        session.press("esc")
+        return NavigationResult(
+            ok=False, reason=BLIND, steps=1,
+            detail="o clique abriu um dialogo de confirmacao; fechei e parei")
+
+    # Same arrival check the counted path uses: after opening, the sidebar
+    # carries exactly one mark and it is the page now displayed.
+    arrived = sidebar_active(after)
+    if arrived is None or not resolves_to_screen(arrived["text"], screen):
+        return NavigationResult(
+            ok=False, reason=CYCLED, steps=1,
+            cursor=arrived["text"] if arrived else None,
+            detail=f"cliquei mas a pagina ativa nao e {screen!r}", reading=after)
+
+    return NavigationResult(ok=True, reason=ARRIVED, steps=1,
+                            cursor=arrived["text"], reading=after)
 
 
 def enter_main_menu_screen_by_count(session, screen, activate_key="enter"):
@@ -418,7 +583,7 @@ def enter_main_menu_screen_by_count(session, screen, activate_key="enter"):
         )
 
     arrived = sidebar_active(after)
-    if arrived is None or not match_score(target, arrived["text"]):
+    if arrived is None or not resolves_to_screen(arrived["text"], screen):
         return NavigationResult(
             ok=False, reason=CYCLED, steps=index + 2,
             cursor=arrived["text"] if arrived else None,
@@ -442,9 +607,26 @@ def enter_main_menu_screen_by_count(session, screen, activate_key="enter"):
     )
 
 
-def enter_main_menu_screen(session, screen, activate_key="enter", max_steps=20):
+NAV_MODES = ("keyboard", "mouse", "auto")
+
+
+def enter_main_menu_screen(session, screen, activate_key="enter", max_steps=20,
+                           mode="keyboard", click_settle_delay=0.0):
     """Get to a top-level sidebar screen (Main/Advanced/Security/...), from
     wherever the BIOS currently is, and open it.
+
+    `mode` picks which of the two paths below actually drives the
+    machine -- an operator's own choice, not a fallback the code decides
+    on its own:
+
+    * `"keyboard"` -- the counted walk only. The default, because it is
+      the one measured reliable on real hardware (see the timing
+      comparison below).
+    * `"mouse"` -- the click path only, skipping the counted walk
+      entirely. For a BIOS or a moment where the keyboard path is known
+      to misbehave, or simply to test the pointer path on its own.
+    * `"auto"` -- keyboard first, and only if that fails, the click path
+      as a fallback. This is the one place both are combined.
 
     The one building block every tool needing a specific top-level page
     should call, instead of hand-declaring a `nav_menu` Step -- centralised
@@ -491,9 +673,42 @@ def enter_main_menu_screen(session, screen, activate_key="enter", max_steps=20):
     # Failing here is the correct outcome when the anchor cannot be
     # confirmed: the caller gets "could not get there", nothing is opened,
     # and no key lands on the arrow.
-    outcome = enter_main_menu_screen_by_count(
-        session, screen, activate_key=activate_key)
-    return outcome, (outcome.reading if outcome.ok else None)
+    # **Keyboard is the default, and the pointer path is opt-in via
+    # `mode`.** The pointer path is more PORTABLE in principle -- it
+    # encodes none of this BIOS's sidebar quirks, so it is the likelier
+    # survivor on an unseen model -- and that argued for trying it first.
+    # The measurements did not support it: back to back on real hardware
+    # the counted keyboard walk reached its target in ~4s while the click
+    # path spent ~14s and still failed its own arrival check ("cliquei mas
+    # a pagina ativa nao e 'advanced'"). Portability is a bet on a machine
+    # we have not met; reliability here is measured on the one in front of
+    # us, and the measured thing wins the default. Revisit when the click
+    # path holds up repeatedly, or when a third BIOS model actually breaks
+    # the counted walk and makes the bet concrete.
+    if mode not in NAV_MODES:
+        raise ValueError(f"modo de navegacao desconhecido: {mode!r} "
+                         f"(esperado um de {NAV_MODES})")
+
+    outcome = None
+    if mode in ("keyboard", "auto"):
+        outcome = enter_main_menu_screen_by_count(
+            session, screen, activate_key=activate_key)
+        if outcome.ok:
+            return outcome, outcome.reading
+        if mode == "keyboard":
+            return outcome, None
+
+    # `getattr`, not attribute access: a session stand-in that does not
+    # model an actuator (the offline suite's `FakeBios`) has no pointer by
+    # definition and should simply not get this branch.
+    if getattr(session, "actuator", None) is None:
+        return outcome or NavigationResult(
+            ok=False, reason=BLIND, steps=0,
+            detail="sem atuador -- nao ha como mover o ponteiro"), None
+
+    clicked = enter_main_menu_screen_by_click(
+        session, screen, settle_delay=click_settle_delay)
+    return clicked, (clicked.reading if clicked.ok else None)
 
 
 # Phrases that mean the screen is asking to commit or abandon something,

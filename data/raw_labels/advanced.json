@@ -1,0 +1,288 @@
+[
+  {
+    "text": "»MAC Address Pass-Through (MAPT)",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 429,
+      "top": 75,
+      "width": 248,
+      "height": 20
+    }
+  },
+  {
+    "text": "Configure MAC Address Pass-Through to USB Docking Station",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 429,
+      "top": 101,
+      "width": 303,
+      "height": 16
+    }
+  },
+  {
+    "text": "» Trusted Computing",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 426,
+      "top": 131,
+      "width": 150,
+      "height": 23
+    }
+  },
+  {
+    "text": "Trusted Computing Settings",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 159,
+      "width": 142,
+      "height": 17
+    }
+  },
+  {
+    "text": "» Device Control",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 192,
+      "width": 115,
+      "height": 19
+    }
+  },
+  {
+    "text": "Previous",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1210,
+      "top": 192,
+      "width": 49,
+      "height": 16
+    }
+  },
+  {
+    "text": "Values",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1214,
+      "top": 205,
+      "width": 42,
+      "height": 17
+    }
+  },
+  {
+    "text": "Device Control Information",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 218,
+      "width": 140,
+      "height": 16
+    }
+  },
+  {
+    "text": "» Hardware Monitor",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 426,
+      "top": 249,
+      "width": 141,
+      "height": 22
+    }
+  },
+  {
+    "text": "Hardware Monitor Information",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 277,
+      "width": 157,
+      "height": 15
+    }
+  },
+  {
+    "text": "Optimized",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1207,
+      "top": 290,
+      "width": 57,
+      "height": 16
+    }
+  },
+  {
+    "text": "Defaults",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1210,
+      "top": 303,
+      "width": 50,
+      "height": 17
+    }
+  },
+  {
+    "text": "» Smart Charging",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 426,
+      "top": 307,
+      "width": 123,
+      "height": 24
+    }
+  },
+  {
+    "text": "Battery charge limiting mode should be implemented, where the maximum level to which the device will be charged is reduced to extend",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 426,
+      "top": 333,
+      "width": 679,
+      "height": 20
+    }
+  },
+  {
+    "text": "battery life.",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 348,
+      "width": 65,
+      "height": 17
+    }
+  },
+  {
+    "text": "» Network Stack Configuration",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 382,
+      "width": 212,
+      "height": 19
+    }
+  },
+  {
+    "text": "Back",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1219,
+      "top": 388,
+      "width": 31,
+      "height": 15
+    }
+  },
+  {
+    "text": "Network Stack Settings",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 426,
+      "top": 404,
+      "width": 122,
+      "height": 22
+    }
+  },
+  {
+    "text": "» TLS Auth. Configuration",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 440,
+      "width": 179,
+      "height": 20
+    }
+  },
+  {
+    "text": "Press <Enter> to select TIs Auth Configuration.",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 467,
+      "width": 231,
+      "height": 15
+    }
+  },
+  {
+    "text": "Save & Exit",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1205,
+      "top": 487,
+      "width": 59,
+      "height": 14
+    }
+  },
+  {
+    "text": "» Positivo Asset Protection (PAP)",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 499,
+      "width": 224,
+      "height": 17
+    }
+  },
+  {
+    "text": "Positivo Asset Protection (PAP) - Anti-theft BIOS Module.",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 524,
+      "width": 282,
+      "height": 17
+    }
+  },
+  {
+    "text": "» Absolute Persistence(R) Module",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 559,
+      "width": 229,
+      "height": 16
+    }
+  },
+  {
+    "text": "Absolute Persistence(R) Module",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 583,
+      "width": 162,
+      "height": 16
+    }
+  },
+  {
+    "text": "Version 2.22.0058. Copyright (C) 2026 Positivo Tecnologia SA.",
+    "screen": "advanced",
+    "screen_index": 0,
+    "bbox": {
+      "left": 612,
+      "top": 682,
+      "width": 361,
+      "height": 20
+    }
+  }
+]

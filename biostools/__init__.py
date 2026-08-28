@@ -16,6 +16,7 @@ the OCR model load again -- see `session.py`.
 
 CLI:  py -3.13 -m biostools cpu-temperature --serial-port COM3
 """
+from .page import PageScan, ScreenSlice, ScrolledAllFields, scan_page
 from .registry import (
     AllFields, Entries, Field, Fields, Step, Tool, ToolResult, UnknownTool,
     register,
@@ -23,11 +24,14 @@ from .registry import (
 from .registry import all_tools as _all_tools
 from .registry import get as _get
 from .session import BiosSession, CameraUnavailable, Reading
+from .submenu import SubmenuResult, enter_submenu
 
 __all__ = [
     "BiosSession", "CameraUnavailable", "Reading",
     "Tool", "Step", "ToolResult", "UnknownTool",
     "Field", "Fields", "AllFields", "Entries",
+    "PageScan", "ScreenSlice", "ScrolledAllFields", "scan_page",
+    "SubmenuResult", "enter_submenu",
     "register", "get", "all_tools", "list_tools", "run_tool",
 ]
 
@@ -64,6 +68,13 @@ def list_tools():
     return {name: tool.question for name, tool in sorted(all_tools().items())}
 
 
-def run_tool(name, session):
-    """Run one tool against an already-open session."""
-    return get(name).run(session)
+def run_tool(name, session, mode="keyboard", args=None):
+    """Run one tool against an already-open session.
+
+    `mode` is the operator's choice of how sidebar navigation is driven
+    -- "keyboard", "mouse", or "auto" -- see `Tool.run`. `args` is passed
+    straight through too; every route-based tool ignores it, and a
+    router-based tool (currently only `goto_screen`) uses whatever it
+    needs from it.
+    """
+    return get(name).run(session, mode=mode, args=args)
