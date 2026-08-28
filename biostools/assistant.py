@@ -101,7 +101,8 @@ Regras:
 1. Responda DIRETAMENTE o que foi perguntado, em português, numa frase completa. Se a pergunta é de sim/não ("o fast boot está habilitado?"), comece por "Sim" ou "Não".
 2. A frase tem que se sustentar sozinha: nomeie o campo e cite o valor lido EXATAMENTE como a tool devolveu (ex.: "Enabled", "61C", "06/26/2026 16:01:12"), sem reformatar, traduzir ou reordenar o valor em si. Ex.: "Sim, o Fast Boot está Enabled." Uma resposta de uma palavra só ("Habilitado") não serve -- quem lê depois não sabe de qual campo era.
 3. Não liste os outros campos da tela que não foram perguntados. A tool pode ler a tela inteira; a resposta é só sobre o que o usuário pediu.
-4. Se a tool não trouxe o campo perguntado, diga isso claramente. Nunca invente, estime ou complete um valor que não foi lido."""
+4. Se a tool não trouxe o campo perguntado, diga isso claramente. Nunca invente, estime ou complete um valor que não foi lido.
+5. Antes de dizer que uma informação não está disponível, tente a tool find_setting, passando em `term` só o nome do ajuste (ex.: "hora do sistema", "Bootup NumLock State") -- ela procura QUALQUER configuração desta BIOS pelo nome, mesmo sem tool nomeada para o assunto. Só conclua que não há resposta depois que find_setting também não achar."""
 
 
 class RoutingError(Exception):
@@ -248,6 +249,7 @@ def ask(question, session, host=DEFAULT_HOST, port=DEFAULT_PORT,
     messages = [{"role": "system", "content": _SYSTEM_PROMPT},
                 {"role": "user", "content": question}]
     calls = []
+    nudged = False
 
     for _ in range(MAX_ROUNDS):
         try:
@@ -265,6 +267,36 @@ def ask(question, session, host=DEFAULT_HOST, port=DEFAULT_PORT,
         tool_calls = message.get("tool_calls")
 
         if not tool_calls:
+            # Rule 5 in the prompt is not enough on its own -- measured
+            # live 2026-08-28: asked "qual a hora do sistema?", the model
+            # answered "nao e possivel determinar" WITHOUT calling
+            # find_setting, even though "System Time" is in the index.
+            # `_finish` with `calls == []` verifies vacuously (nothing to
+            # check a value against), so that refusal would have sailed
+            # through unverified -- correct behaviour for a question
+            # genuinely outside the BIOS's own settings ("qual a cor do
+            # gabinete?", see test cenario 3), wrong here because
+            # find_setting actually covers this. A one-time in-context
+            # nudge, fired only on the exact failure shape (gave up
+            # before trying anything), pushes the retry without touching
+            # `_finish`'s verification or guessing `term` in code --
+            # extracting `term` from the question stays the model's job
+            # (CA-F4.1a): a full-sentence `term` does not match anything
+            # in the index (`screen.match_score` wants a concept, not a
+            # sentence), so code cannot fill it in reliably either.
+            if not calls and not nudged:
+                nudged = True
+                messages.append({"role": "assistant",
+                                 "content": message.get("content") or ""})
+                messages.append({
+                    "role": "user",
+                    "content": ("Antes de responder que a informacao nao "
+                                "esta disponivel: chame find_setting com "
+                                "`term` = o nome curto do ajuste perguntado "
+                                "(extraido desta pergunta). So desista se "
+                                "find_setting tambem nao achar."),
+                })
+                continue
             final_text = message.get("content") or ""
             return _finish(question, calls, final_text)
 
