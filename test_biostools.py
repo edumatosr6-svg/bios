@@ -388,9 +388,14 @@ def test_assistant_catches_a_hallucinated_value(menu, readings):
     finally:
         llm.close()
 
-    # Cenario 3: nenhuma tool cobre a pergunta -- o modelo responde direto,
-    # sem chamar nada. Vazio-verdadeiro na verificacao (nao ha valor a
-    # conferir), entao a frase do modelo passa como esta.
+    # Cenario 3: nenhuma tool cobre a pergunta -- o modelo desiste sem
+    # chamar nada. O loop insiste uma vez (ver Cenario 3b), o
+    # _FakeLLM aqui so tem UMA mensagem no script e repete a ultima em
+    # toda chamada extra, entao a segunda rodada ve a MESMA recusa de
+    # novo -- exatamente o que um modelo real faria para uma pergunta que
+    # nenhuma tool cobre de verdade. So depois da insistencia o loop
+    # aceita: vazio-verdadeiro na verificacao (nao ha valor a conferir),
+    # entao a frase do modelo passa como esta.
     llm = _FakeLLM([_content_message(
         "Nao tenho como responder isso com as informacoes da BIOS."
     )], port=18103)
@@ -399,6 +404,31 @@ def test_assistant_catches_a_hallucinated_value(menu, readings):
         r = assistant.ask("qual a cor do gabinete?", bios, port=18103)
         check("nenhuma tool foi chamada", r.calls, [])
         check_that("resposta de recusa foi repassada", "responder" in r.answer, r.answer)
+    finally:
+        llm.close()
+
+    # Cenario 3b: o BUG QUE ESTE COMMIT CORRIGE, ao vivo em 2026-08-28 --
+    # "qual a hora do sistema?" tinha "System Time" no indice de
+    # find_setting, e o modelo mesmo assim respondeu "nao e possivel"
+    # SEM chamar nada, passando sem verificacao pelo caminho vazio-
+    # verdadeiro do Cenario 3 (errado ali, porque a pergunta TEM
+    # resposta). Aqui a segunda rodada chama cpu_temperature em vez de
+    # find_setting -- so para provar que o loop de fato insiste e a
+    # tool chamada na volta e verificada normalmente, sem precisar
+    # arrastar o indice real de find_setting para este teste (esse ja
+    # tem cobertura propria).
+    llm = _FakeLLM([
+        _content_message("Nao e possivel determinar isso com as ferramentas disponiveis."),
+        _tool_call_message("call_1", "cpu_temperature"),
+        _content_message("A temperatura da CPU esta em 61C no momento."),
+    ], port=18108)
+    try:
+        bios = FakeBios(menu, opens_to=[menu, readings])
+        r = assistant.ask("qual a temperatura da cpu?", bios, port=18108)
+        check("o loop insistiu -- a tool acabou sendo chamada",
+              [c.tool for c in r.calls], ["cpu_temperature"])
+        check("resposta apos a insistencia foi verificada", r.narrated, True)
+        check_that("valor real aparece", "61C" in r.answer, r.answer)
     finally:
         llm.close()
 
