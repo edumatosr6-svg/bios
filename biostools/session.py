@@ -301,6 +301,35 @@ class BiosSession:
         # 2026-08-24, the difference between 0.06s and 0.53s per press.
         self._dirty = True
 
+    def _require_actuator(self):
+        if self.actuator is None:
+            raise ActuatorUnavailable(
+                "this session has no actuator -- pass serial_port=... to "
+                "BiosSession to drive the machine "
+                "(see actuator.list_serial_ports())"
+            )
+
+    def mouse_move(self, direction, steps=1, large=False):
+        """Move the pointer, and mark the frame buffer dirty like `press`.
+
+        Exists so mouse motion cannot bypass the staleness guard. Driving
+        `session.actuator.mouse_move()` directly -- which every prototype
+        did before this -- moves the machine without ever setting
+        `_dirty`, so the next read is free to answer with a frame captured
+        BEFORE the move. That is the same confidently-wrong failure
+        `_drain_if_dirty` exists to prevent for keypresses, and it bit the
+        mouse work for real (a pointer read as "not there" that had simply
+        not been captured yet).
+        """
+        self._require_actuator()
+        self.actuator.mouse_move(direction, steps=steps, large=large)
+        self._dirty = True
+
+    def mouse_click(self, button="left"):
+        self._require_actuator()
+        self.actuator.mouse_click(button)
+        self._dirty = True
+
     def _drain_if_dirty(self, count=FLUSH_FRAMES):
         """Drop frames captured before now, so the next read cannot answer
         with the screen as it was *before* the last keypress.

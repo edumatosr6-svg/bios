@@ -1,0 +1,299 @@
+[
+  {
+    "text": "The password length must be",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 429,
+      "top": 111,
+      "width": 202,
+      "height": 19
+    }
+  },
+  {
+    "text": "in the following range:",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 426,
+      "top": 144,
+      "width": 159,
+      "height": 24
+    }
+  },
+  {
+    "text": "Minimum length",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 426,
+      "top": 180,
+      "width": 120,
+      "height": 22
+    }
+  },
+  {
+    "text": "6",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 816,
+      "top": 183,
+      "width": 12,
+      "height": 16
+    }
+  },
+  {
+    "text": "Previous",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1210,
+      "top": 192,
+      "width": 49,
+      "height": 16
+    }
+  },
+  {
+    "text": "Values",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1212,
+      "top": 203,
+      "width": 44,
+      "height": 20
+    }
+  },
+  {
+    "text": "20",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 813,
+      "top": 216,
+      "width": 24,
+      "height": 21
+    }
+  },
+  {
+    "text": "Maximum length",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 217,
+      "width": 121,
+      "height": 23
+    }
+  },
+  {
+    "text": "Administrator Password -Not Installed",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 253,
+      "width": 265,
+      "height": 21
+    }
+  },
+  {
+    "text": "Set the Administrator password.",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 280,
+      "width": 163,
+      "height": 16
+    }
+  },
+  {
+    "text": "Optimized",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1207,
+      "top": 290,
+      "width": 57,
+      "height": 16
+    }
+  },
+  {
+    "text": "Defaults",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1210,
+      "top": 303,
+      "width": 50,
+      "height": 17
+    }
+  },
+  {
+    "text": "User Password -Not Installed",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 429,
+      "top": 314,
+      "width": 198,
+      "height": 17
+    }
+  },
+  {
+    "text": "Set the User password. An Administrator password is required. The User cannot change Setup, only visualize.",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 426,
+      "top": 337,
+      "width": 540,
+      "height": 20
+    }
+  },
+  {
+    "text": "Password Check",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 372,
+      "width": 114,
+      "height": 19
+    }
+  },
+  {
+    "text": "Setup",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 820,
+      "top": 373,
+      "width": 43,
+      "height": 25
+    }
+  },
+  {
+    "text": "Back",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1219,
+      "top": 388,
+      "width": 31,
+      "height": 15
+    }
+  },
+  {
+    "text": "Setup: Request password only to enter BIOS Setup or change default boot path.",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 410,
+      "width": 393,
+      "height": 18
+    }
+  },
+  {
+    "text": "Always: Request password to enter BIOS Setup and to Boot (Power On).",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 424,
+      "width": 352,
+      "height": 16
+    }
+  },
+  {
+    "text": "Save & Exit",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1205,
+      "top": 487,
+      "width": 59,
+      "height": 14
+    }
+  },
+  {
+    "text": "Removable Storage Devices Policy",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 493,
+      "width": 233,
+      "height": 20
+    }
+  },
+  {
+    "text": "Read-Write",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 820,
+      "top": 495,
+      "width": 74,
+      "height": 21
+    }
+  },
+  {
+    "text": "Defines a policy for write access to Removable Storage Devices (e.g. USB devices). Works under Windows(R) and requires \"Positivo BIOS",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 530,
+      "width": 672,
+      "height": 19
+    }
+  },
+  {
+    "text": "Companion Apps\" to be installed.",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 545,
+      "width": 166,
+      "height": 16
+    }
+  },
+  {
+    "text": "Flash Write Protection",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 429,
+      "top": 578,
+      "width": 153,
+      "height": 17
+    }
+  },
+  {
+    "text": "Disabled",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 818,
+      "top": 579,
+      "width": 61,
+      "height": 24
+    }
+  },
+  {
+    "text": "Version 2.22.0058. Copyright (C) 2026 Positivo Tecnologia SA.",
+    "screen": "security",
+    "screen_index": 0,
+    "bbox": {
+      "left": 612,
+      "top": 682,
+      "width": 361,
+      "height": 20
+    }
+  }
+]

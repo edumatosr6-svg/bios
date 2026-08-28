@@ -1,0 +1,3048 @@
+{
+  "bios_model": "Positivo",
+  "bios_version": "2.22.0058",
+  "captured_at": "2026-08-28T15:25:44",
+  "source": "tour ao vivo",
+  "visited": [
+    {
+      "screen": "main",
+      "submenu": null
+    },
+    {
+      "screen": "advanced",
+      "submenu": null
+    },
+    {
+      "screen": "security",
+      "submenu": null
+    },
+    {
+      "screen": "boot",
+      "submenu": null
+    },
+    {
+      "screen": "event_log",
+      "submenu": null
+    }
+  ],
+  "skipped": [
+    {
+      "screen": "save_and_exit",
+      "submenu": null,
+      "reason": "nao visitada por decisao de projeto: todo controle dessa tela confirma ou descarta configuracao (R6)"
+    },
+    {
+      "screen": "advanced",
+      "submenu": "device_control",
+      "reason": "provenance=palpite"
+    },
+    {
+      "screen": "advanced",
+      "submenu": "hardware_monitor",
+      "reason": "provenance=palpite"
+    },
+    {
+      "screen": "advanced",
+      "submenu": "mapt",
+      "reason": "provenance=palpite"
+    },
+    {
+      "screen": "advanced",
+      "submenu": "network_stack",
+      "reason": "provenance=palpite"
+    },
+    {
+      "screen": "advanced",
+      "submenu": "pap",
+      "reason": "provenance=palpite"
+    },
+    {
+      "screen": "advanced",
+      "submenu": "smart_charging",
+      "reason": "provenance=palpite"
+    },
+    {
+      "screen": "advanced",
+      "submenu": "tls_auth",
+      "reason": "provenance=palpite"
+    },
+    {
+      "screen": "advanced",
+      "submenu": "trusted_computing",
+      "reason": "provenance=palpite"
+    }
+  ],
+  "pages": [
+    {
+      "page_id": "main",
+      "screen": "main",
+      "submenu": null,
+      "total_screens": 7,
+      "screen_id": "264ded7ac01f530c",
+      "signatures": {
+        "0": [
+          "1.2.5.XD22.I219V.P",
+          "BIOS Build Date (MM/DD/YYYY)",
+          "BIOS Version",
+          "Back",
+          "Compliant with NIST SP 800-147 Secure Flash",
+          "Compliant with NIST SP 800-88r1 Media Sanitization",
+          "Copyright© 2025 Positivo Tecnologia SA",
+          "Days: Dependent on month",
+          "Default Ranges:",
+          "Defaults",
+          "Developed by Positivo Tecnologia SA",
+          "EC FW Version",
+          "Enabled",
+          "Intel BIOS Guard Technology",
+          "Months: 1-12",
+          "Optimized",
+          "Platform BIOS Type",
+          "Positivo Diag Version",
+          "Previous",
+          "Range of Years may vary.",
+          "RaptorLake P I219-V",
+          "Save & Exit",
+          "Set the Date. Use Tab to switch between Date elements.",
+          "Set the Time. Use Tab to switch between Time elements.",
+          "System Date",
+          "System Information",
+          "System Time",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+          "www.positivotecnologia.com.br"
+        ],
+        "1": [
+          "0Ah Notebook",
+          "Access Level",
+          "Administrator",
+          "BIOSPST.FW",
+          "Back",
+          "BaseBoard Product",
+          "Change System Serial Number",
+          "DN50F-140H_I219V_RPL",
+          "Defaults",
+          "EC Build Date (MM/DD/YYYY)",
+          "Enclosure Type",
+          "Family Name",
+          "Loading Setup Defaults will revert unsaved changes.",
+          "MASTER",
+          "Manufacturer Name",
+          "Only alphanumeric letters (a-z, A-Z and 0-9) and symbols '=', '-' and'_' are accepted.",
+          "Optimized",
+          "Positivo Tecnologia SA",
+          "Previous",
+          "Product Information",
+          "Product Name",
+          "Recovery File Pattern",
+          "SKU Number",
+          "Save & Exit",
+          "Serial Number",
+          "Setup must be saved for a new value take effect.",
+          "To Be Filled By Positivo",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA."
+        ],
+        "2": [
+          "ACPI Version",
+          "Asset Tag Number",
+          "Back",
+          "Change Asset Tag Number",
+          "Defaults",
+          "Loading Setup Defaults will revert unsaved changes.",
+          "M.2 Slot 1",
+          "MAC Address",
+          "MZVL2256HCHQ-00B00 256.0GB",
+          "NVMe:SAMSUNG",
+          "Only alphanumeric letters (a-z, A-Z and 0-9) and symbols '=', '-' and'_' are accepted.",
+          "Optimized",
+          "PXE Version",
+          "Previous",
+          "SMBIOS Version",
+          "Save & Exit",
+          "Setup must be saved for a new value take effect.",
+          "Storage Information",
+          "To Be Filled By Positivo",
+          "UEFI 2.8; PI 1.7",
+          "UEFI Version",
+          "UUID",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+          "WfM Version"
+        ],
+        "3": [
+          "13th Gen Intel(R) Core(TM) i3-1315U",
+          "2Core(s)/ 4Thread(s)",
+          "4Core(s)/ 4Thread(s)",
+          "Back",
+          "Defaults",
+          "Displays number of CPU cores.",
+          "Displays the Processor Details.",
+          "Displays the Processor ID.",
+          "Displays the Processor Package.",
+          "Displays the Processor Speed.",
+          "Displays the Processor Stepping.",
+          "Displays the Processor Type.",
+          "ID",
+          "M.2 S1ot 2",
+          "Name",
+          "Not Implemented Yet",
+          "Number of Efficient-cores",
+          "Number of Performance-cores",
+          "Optimized",
+          "Package",
+          "Previous",
+          "Processor Information",
+          "QO",
+          "RaptorLake ULT",
+          "Save & Exit",
+          "Speed",
+          "Stepping",
+          "Type",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+          "tmpty"
+        ],
+        "4": [
+          "10 MB",
+          "1280 KB x 2",
+          "32 KB x 2",
+          "48 KB x 2",
+          "Back",
+          "CPU Microcode Revision",
+          "Defaults",
+          "Displays the Performance-core L1 Data Cache size.",
+          "Displays the Performance-core L1 Instruction Cache size.",
+          "Displays the Performance-core L2 Cache size.",
+          "Displays the Performance-core L3 Cache size.",
+          "GT Info",
+          "L1 Data Cache",
+          "L1 Instruction Cache",
+          "L2 Cache",
+          "L3 Cache",
+          "Memory Information",
+          "Memory RC Version",
+          "Microcode Revision",
+          "N/A",
+          "Optimized",
+          "Previous",
+          "Processor GT Info. Only valid if SNB stepping is D0 or above.",
+          "Save & Exit",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+          "eDRAM Size",
+          "eDRAM Size supported by the SKU"
+        ],
+        "5": [
+          "0 MB (DDR5)",
+          "8192 MB (DDR5)",
+          "Back",
+          "Consumer SKU",
+          "DIMM A Size",
+          "DIMM B Size",
+          "Defaults",
+          "Displays the Frequency of Memory",
+          "ME FW Version",
+          "ME Firmware Mode",
+          "ME Firmware SKU",
+          "ME Firmware Version",
+          "Memory Frequency",
+          "Normal Mode",
+          "Optimized",
+          "PCH-FW Configuration",
+          "PMC FW Version",
+          "PMC Firmware Version",
+          "Previous",
+          "Save & Exit",
+          "Svstem Language",
+          "Total Memory",
+          "Total Memory in the System.",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA."
+        ],
+        "6": [
+          "0 MB (DDR5)",
+          "8192 MB (DDR5)",
+          "Back",
+          "Choose the system default language",
+          "Consumer SKU",
+          "DIMM A Size",
+          "DIMM B Size",
+          "Defaults",
+          "Displays the Frequency of Memory",
+          "English",
+          "ME FW Version",
+          "ME Firmware Mode",
+          "ME Firmware SKU",
+          "ME Firmware Version",
+          "Memory Frequency",
+          "Normal Mode",
+          "Optimized",
+          "PCH-FW Configuration",
+          "PMC FW Version",
+          "PMC Firmware Version",
+          "Previous",
+          "Save & Exit",
+          "System Language",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA."
+        ]
+      }
+    },
+    {
+      "page_id": "advanced",
+      "screen": "advanced",
+      "submenu": null,
+      "total_screens": 4,
+      "screen_id": "a4454eb85339cd7d",
+      "signatures": {
+        "0": [
+          "Absolute Persistence(R) Module",
+          "Back",
+          "Configure MAC Address Pass Through",
+          "Defaults",
+          "Device Control",
+          "Device Control Information",
+          "Enabled",
+          "Hardware Monitor",
+          "Hardware Monitor Information",
+          "MAC Address Pass Through",
+          "Network Stack Configuration",
+          "Network Stack Settings",
+          "Optimized",
+          "Press <Enter> to select TIs Auth Configuration.",
+          "Previous",
+          "Save & Exit",
+          "TLS Auth. Configuration",
+          "Trusted Computing",
+          "Trusted Computing Settings",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+          "Wake on PCI/PCIE"
+        ],
+        "1": [
+          "AHCI",
+          "Back",
+          "Defaults",
+          "Determines how SATA controller(s) operate.",
+          "Disabled",
+          "Enable or disable System wake on alarm event. Select FixedTime, system will wake on the",
+          "Enable/Disable USB Charger in DC mode when system in S4/S5.",
+          "Enable/Disable Wake On USB Keyboard/Mouse",
+          "Enable/Disable Wake on PCI/PCIE Devices.",
+          "Enable/Disable integrated LAN to wake the system.",
+          "Enabled",
+          "IGFX",
+          "Optimized",
+          "Previous",
+          "Primary Display",
+          "SATA Mode Selection",
+          "Save & Exit",
+          "Select which of IGFX/PEG/PCI Graphics device should be Primary Display Or select HG for Hybrid Gfx.",
+          "USB Charger",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+          "Wake on Keyboard/Mouse USB",
+          "Wake on LAN",
+          "Wake on RTC Alarm",
+          "hr::min::sec specified. Select DynamicTime, System will wake on the current time + Increase",
+          "minute(s)"
+        ],
+        "2": [
+          "8MB",
+          "Aperture Size",
+          "Back",
+          "DVMT Pre-Allocated",
+          "Defaults",
+          "Disabled",
+          "Enable/Disable ME FW Image Re-Flash function.",
+          "Enable/Disable support to Intel VT-d (Intel® Virtualization Technology for Directed I/O). The VT-d",
+          "Enabled",
+          "GTT Size",
+          "Intel VT-d",
+          "Intel Virtualization Technology",
+          "ME FW Image Re-Flash",
+          "Note: Above 4GB MMIO BIOS assignment is automatically enabled when selecting 2048MB",
+          "Optimized",
+          "Previous",
+          "Removable Boot Devices",
+          "Save & Exit",
+          "Select DVMT 5.0 Pre-Allocated (Fixed) Graphics Memory size used by the Internal Graphics Device.",
+          "Select the Aperture Size",
+          "Select the GTT Size",
+          "Technology (VT-x).",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+          "When enabled, a VMM can utilize the additional hardware capabilities provided by Vanderpool",
+          "aperture. To use this feature, please disable CSM Support.",
+          "implements a IOMMU. If X2APIC is supported and enabled, this option will be blocked."
+        ],
+        "3": [
+          "Audio DSP",
+          "Back",
+          "Defaults",
+          "Disable 'Removable Boot Driver means the system is NOT allowed to boot from removable boot",
+          "Disabled",
+          "Driver.",
+          "Enable 'Removable Boot Driver means the system is allowed to boot from removable boot Driver.",
+          "Enable/Disable Audio DSP.",
+          "Enable/Disable ME FW Image Re-Flash function.",
+          "Enable/Disable support to Intel VT-d (Intel® Virtualization Technology for Directed I/O). The VT-d",
+          "Enabled",
+          "Intel VT-d",
+          "Intel Virtualization Technology",
+          "ME FW Image Re-Flash",
+          "Optimized",
+          "Previous",
+          "Removable Boot Devices",
+          "Run SMART Self Test on all SSDs/HDDs during POST",
+          "S.M.A.R.T. Status Check",
+          "Save & Exit",
+          "Select DVMT 5.0 Pre-Allocated (Fixed) Graphics Memory size used by the Internal Graphics Device.",
+          "Technology (VT-x).",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+          "When enabled, a VMM can utilize the additional hardware capabilities provided by Vanderpool",
+          "implements a IOMMU. If X2APIC is supported and enabled, this option will be blocked."
+        ]
+      }
+    },
+    {
+      "page_id": "security",
+      "screen": "security",
+      "submenu": null,
+      "total_screens": 3,
+      "screen_id": "214eee453b559bc8",
+      "signatures": {
+        "0": [
+          "Administrator Password -Not Installed",
+          "Always: Request password to enter BIOS Setup and to Boot (Power On).",
+          "Back",
+          "Config. Inventory Monitoring",
+          "Defaults",
+          "Disabled: Disables the Configuration Inventory monitoring.",
+          "Enabled",
+          "Enabled: Enables the Configuration Inventory Monitoring.",
+          "Maximum length",
+          "Minimum length",
+          "Optimized",
+          "Password Check",
+          "Previous",
+          "Reset: Clear the Configuration Inventory changed alert. Sets the current Processor, RAM, HDD/SSD",
+          "Save & Exit",
+          "Set the Administrator password.",
+          "Set the User password. An Administrator password is required. The User cannot change Setup, only",
+          "Setup",
+          "Setup: Request password only to enter BIOS Setup or change default boot path.",
+          "The password length must be",
+          "User Password -Not Installed",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+          "in the following range:",
+          "visualize."
+        ],
+        "1": [
+          "BIOS Version Downgrade",
+          "Back",
+          "Defaults",
+          "Defines a policy for write access to Removable Storage Devices (e.g. USB devices). Works under",
+          "Disabled",
+          "Enable/Disable Flash Write Protection. If enabled, Firmware Updates, BIOS Updates and SMBIOS",
+          "Enable/Disable flashing an older BIOS version. The option will be automatically disabled after next",
+          "Enables the UEFI Network Stack Configuration and Intel GBE MAC Monitor (when available) to detect",
+          "Enter Media Sanitization Page.",
+          "Flash Write Protection",
+          "Intel GBE.",
+          "Media Sanitization",
+          "Modifications will not be possible.",
+          "Monitor UEFI Network Stack Config.",
+          "Optimized",
+          "Previous",
+          "Read-Write",
+          "Removable Storage Devices Policy",
+          "Save & Exit",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+          "Windows(R) and requires \"Positivo BIOS Companion Apps\" to be installed.",
+          "and Network Config. as the default system configuration baseline. MAC restore supported only for",
+          "and revert changes. Configuration Inventory Monitoring must be enabled too.",
+          "reboot. Option disabled for systems with Absolute Persistence(R) enabled."
+        ],
+        "2": [
+          "BIOS Version Downgrade",
+          "Back",
+          "Defaults",
+          "Disabled",
+          "Enable/Disable Flash Write Protection. If enabled, Firmware Updates, BIOS Updates and SMBIOS",
+          "Enable/Disable flashing an older BIOS version. The option will be automatically disabled after next",
+          "Enter Media Sanitization Page.",
+          "Flash Write Protection",
+          "Media Sanitization",
+          "Modifications will not be possible.",
+          "Optimized",
+          "Previous",
+          "SAMSUNG MZVL2256HCHQ-00B00",
+          "Save & Exit",
+          "Secure Boot",
+          "Secure Boot configuration",
+          "TCG Storage Security Configuration:",
+          "TCG Storage device Security Configuration",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+          "Windows(R) and requires \"Positivo BIOS Companion Apps\" to be installed.",
+          "reboot. Option disabled for systems with Absolute Persistence(R) enabled."
+        ]
+      }
+    },
+    {
+      "page_id": "boot",
+      "screen": "boot",
+      "submenu": null,
+      "total_screens": 4,
+      "screen_id": "748733b2f46f12ad",
+      "signatures": {
+        "0": [
+          "BIOS POST Logo",
+          "BIOS POST Logo Delay",
+          "Back",
+          "Boot Configuration",
+          "Bootup NumLock State",
+          "Defaults",
+          "Enable/Disable POPUP Boot Menu Hotkey [F11] function.",
+          "Enabled",
+          "Enables or disables boot with initialization of a minimal set of devices required to launch active boot",
+          "Enables/Disable show BIOS POST Logo",
+          "Fast Boot",
+          "If this option is enabled, the BIOS will ignore requests to activate Integrated Keyboard's NumLock",
+          "Increases the time that Logo will be visible during BIOS POST.",
+          "LAN PXE Boot Hotkev [F12]",
+          "NumLock Disabled During Pre-Boot",
+          "Optimized",
+          "POPUP Boot Menu Hotkey [F11]",
+          "Previous",
+          "Save & Exit",
+          "Select the keyboard NumLock state",
+          "Standard",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+          "enabled with an alphanumeric password.",
+          "off",
+          "option. Has no effect for BBS boot options.",
+          "until the Operating System takes control of the hardware. Useful when Microsoft® BitLocker® is"
+        ],
+        "1": [
+          "Back",
+          "Boot Option #1",
+          "Boot Option #2",
+          "Boot Option #3",
+          "Boot Option #4",
+          "CD/DVD",
+          "Defaults",
+          "Disabled",
+          "Driver Option Priorities",
+          "Enable/Disable LAN PXE Boot Hotkey [F12] function.",
+          "Enable/Disable PXE Boot after Wake on LAN function.",
+          "FIXED BOOT ORDER Priorities",
+          "Hard Disk",
+          "NVME",
+          "Optimized",
+          "PXE Boot after Wake on LAN",
+          "Previous",
+          "SD",
+          "Save & Exit",
+          "Sets the system boot order",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+          "cudvieu"
+        ],
+        "2": [
+          "Back",
+          "Boot Option #10",
+          "Boot Option #11",
+          "Boot Option #5",
+          "Boot Option #6",
+          "Boot Option #7",
+          "Boot Option #8",
+          "Boot Option #9",
+          "Defaults",
+          "Network:UEFI: PXE IPv4 Intel(R)",
+          "Optimized",
+          "Other Device:Positivo Diag 2.2",
+          "Previous",
+          "Save & Exit",
+          "Sets the system boot order",
+          "USB CD/DVD",
+          "USB Floppy",
+          "USB Hard Disk",
+          "USB Key",
+          "USB Lan",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA."
+        ],
+        "3": [
+          "Back",
+          "Boot Option #10",
+          "Boot Option #11",
+          "Boot Option #7",
+          "Boot Option #8",
+          "Boot Option #9",
+          "Defaults",
+          "Network:UEFI: PXE IPv4 Intel(R)",
+          "Optimized",
+          "Other Device:Positivo Diag 2.2",
+          "Previous",
+          "Save & Exit",
+          "Sets the system boot order",
+          "Specifies the Boot Device Priority sequence from available UEFI NETWORK Drives.",
+          "Specifies the Boot Device Priority sequence from available UEFI Other Drives.",
+          "UEFI NETWORK Drive BBS Priorities",
+          "UEFI Other Drive BBS Priorities",
+          "USB Floppy",
+          "USB Key",
+          "USB Lan",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA."
+        ]
+      }
+    },
+    {
+      "page_id": "event_log",
+      "screen": "event_log",
+      "submenu": null,
+      "total_screens": 1,
+      "screen_id": "269e2d256d025bbc",
+      "signatures": {
+        "0": [
+          "Back",
+          "Defaults",
+          "Event Log",
+          "Optimized",
+          "Press <Enter> to change the SMBIOS Event Log configuration.",
+          "Press <Enter> to view the Event Log records.",
+          "Previous",
+          "SMBIOS Event Log Settings",
+          "Save & Exit",
+          "Values",
+          "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA."
+        ]
+      }
+    }
+  ],
+  "entries": [
+    {
+      "label": "System Information",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Developed by Positivo Tecnologia SA",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Copyright© 2025 Positivo Tecnologia SA",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Compliant with NIST SP 800-147 Secure Flash",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Compliant with NIST SP 800-88r1 Media Sanitization",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "www.positivotecnologia.com.br",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Previous",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Values",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "System Date",
+      "page": "main",
+      "screen_index": 0,
+      "value": "2026/08/28",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "2026/08/28",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Set the Date. Use Tab to switch between Date elements.",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Default Ranges:",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Year: 1998-2099",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Months: 1-12",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Optimized",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Days: Dependent on month",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Defaults",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Range of Years may vary.",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "15:24:48",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "System Time",
+      "page": "main",
+      "screen_index": 0,
+      "value": "15:24:48",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Set the Time. Use Tab to switch between Time elements.",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Back",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enabled",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Intel BIOS Guard Technology",
+      "page": "main",
+      "screen_index": 0,
+      "value": "Enabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "BIOS Version",
+      "page": "main",
+      "screen_index": 0,
+      "value": "1.2.5.XD22.I219V.P",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "1.2.5.XD22.I219V.P",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "12/03/2025 08:38:04",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "BIOS Build Date (MM/DD/YYYY)",
+      "page": "main",
+      "screen_index": 0,
+      "value": "12/03/2025 08:38:04",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Save & Exit",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "2.2",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Positivo Diag Version",
+      "page": "main",
+      "screen_index": 0,
+      "value": "2.2",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "RaptorLake P I219-V",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Platform BIOS Type",
+      "page": "main",
+      "screen_index": 0,
+      "value": "RaptorLake P I219-V",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "00.04",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "EC FW Version",
+      "page": "main",
+      "screen_index": 0,
+      "value": "00.04",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+      "page": "main",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "EC Build Date (MM/DD/YYYY)",
+      "page": "main",
+      "screen_index": 1,
+      "value": "04/22/2025 17:05:39",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "04/22/2025 17:05:39",
+      "page": "main",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Administrator",
+      "page": "main",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Access Level",
+      "page": "main",
+      "screen_index": 1,
+      "value": "Administrator",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Recovery File Pattern",
+      "page": "main",
+      "screen_index": 1,
+      "value": "BIOSPST.FW",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "BIOSPST.FW",
+      "page": "main",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Product Information",
+      "page": "main",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "N6440",
+      "page": "main",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Product Name",
+      "page": "main",
+      "screen_index": 1,
+      "value": "N6440",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Positivo Tecnologia SA",
+      "page": "main",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Manufacturer Name",
+      "page": "main",
+      "screen_index": 1,
+      "value": "Positivo Tecnologia SA",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "MASTER",
+      "page": "main",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Family Name",
+      "page": "main",
+      "screen_index": 1,
+      "value": "MASTER",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "SKU Number",
+      "page": "main",
+      "screen_index": 1,
+      "value": "To Be Filled By Positivo",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "To Be Filled By Positivo",
+      "page": "main",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Serial Number",
+      "page": "main",
+      "screen_index": 1,
+      "value": "To Be Filled By Positivo",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Change System Serial Number",
+      "page": "main",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Only alphanumeric letters (a-z, A-Z and 0-9) and symbols '=', '-' and'_' are accepted.",
+      "page": "main",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Setup must be saved for a new value take effect.",
+      "page": "main",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Loading Setup Defaults will revert unsaved changes.",
+      "page": "main",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "DN50F-140H_I219V_RPL",
+      "page": "main",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "BaseBoard Product",
+      "page": "main",
+      "screen_index": 1,
+      "value": "DN50F-140H_I219V_RPL",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enclosure Type",
+      "page": "main",
+      "screen_index": 1,
+      "value": "0Ah Notebook",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "0Ah Notebook",
+      "page": "main",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Asset Tag Number",
+      "page": "main",
+      "screen_index": 2,
+      "value": "To Be Filled By Positivo",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Change Asset Tag Number",
+      "page": "main",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "MAC Address",
+      "page": "main",
+      "screen_index": 2,
+      "value": "84:47:09:2F:09:C0",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "84:47:09:2F:09:C0",
+      "page": "main",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "UUID",
+      "page": "main",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "7E672140-EE29-0837-2D",
+      "page": "main",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "8C-84-47-09-2F-09-C0",
+      "page": "main",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "UEFI 2.8; PI 1.7",
+      "page": "main",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "UEFI Version",
+      "page": "main",
+      "screen_index": 2,
+      "value": "UEFI 2.8; PI 1.7",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "3.6",
+      "page": "main",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "SMBIOS Version",
+      "page": "main",
+      "screen_index": 2,
+      "value": "3.6",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "6.5",
+      "page": "main",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "ACPI Version",
+      "page": "main",
+      "screen_index": 2,
+      "value": "6.5",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "2.1",
+      "page": "main",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "PXE Version",
+      "page": "main",
+      "screen_index": 2,
+      "value": "2.1",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "2.0",
+      "page": "main",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "WfM Version",
+      "page": "main",
+      "screen_index": 2,
+      "value": "2.0",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Storage Information",
+      "page": "main",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "M.2 Slot 1",
+      "page": "main",
+      "screen_index": 2,
+      "value": "NVMe:SAMSUNG",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "NVMe:SAMSUNG",
+      "page": "main",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "MZVL2256HCHQ-00B00 256.0GB",
+      "page": "main",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "tmpty",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "M.2 S1ot 2",
+      "page": "main",
+      "screen_index": 3,
+      "value": "tmpty",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Processor Information",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "RaptorLake ULT",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Name",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Displays the Processor Details.",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Type",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "13th Gen Intel(R) Core(TM) i3-1315U",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Displays the Processor Type.",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Speed",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "1200 MHz",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Displays the Processor Speed.",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "ID",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "0xB06A3",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Displays the Processor ID.",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Stepping",
+      "page": "main",
+      "screen_index": 3,
+      "value": "QO",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "QO",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Displays the Processor Stepping.",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Package",
+      "page": "main",
+      "screen_index": 3,
+      "value": "Not Implemented Yet",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Not Implemented Yet",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Displays the Processor Package.",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "4Core(s)/ 4Thread(s)",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Number of Efficient-cores",
+      "page": "main",
+      "screen_index": 3,
+      "value": "4Core(s)/ 4Thread(s)",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Displays number of CPU cores.",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Number of Performance-cores",
+      "page": "main",
+      "screen_index": 3,
+      "value": "2Core(s)/ 4Thread(s)",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "2Core(s)/ 4Thread(s)",
+      "page": "main",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "411C",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Microcode Revision",
+      "page": "main",
+      "screen_index": 4,
+      "value": "411C",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "CPU Microcode Revision",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "0xA7A9",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "GT Info",
+      "page": "main",
+      "screen_index": 4,
+      "value": "0xA7A9",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Processor GT Info. Only valid if SNB stepping is D0 or above.",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "N/A",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "eDRAM Size",
+      "page": "main",
+      "screen_index": 4,
+      "value": "N/A",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "eDRAM Size supported by the SKU",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "L1 Data Cache",
+      "page": "main",
+      "screen_index": 4,
+      "value": "48 KB x 2",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "48 KB x 2",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Displays the Performance-core L1 Data Cache size.",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "32 KB x 2",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "L1 Instruction Cache",
+      "page": "main",
+      "screen_index": 4,
+      "value": "32 KB x 2",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Displays the Performance-core L1 Instruction Cache size.",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "1280 KB x 2",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "L2 Cache",
+      "page": "main",
+      "screen_index": 4,
+      "value": "1280 KB x 2",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Displays the Performance-core L2 Cache size.",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "L3 Cache",
+      "page": "main",
+      "screen_index": 4,
+      "value": "10 MB",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "10 MB",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Displays the Performance-core L3 Cache size.",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Memory Information",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "0.0.4.184",
+      "page": "main",
+      "screen_index": 4,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Memory RC Version",
+      "page": "main",
+      "screen_index": 4,
+      "value": "0.0.4.184",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Total Memory",
+      "page": "main",
+      "screen_index": 5,
+      "value": "8192 MB",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "8192 MB",
+      "page": "main",
+      "screen_index": 5,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Total Memory in the System.",
+      "page": "main",
+      "screen_index": 5,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Memory Frequency",
+      "page": "main",
+      "screen_index": 5,
+      "value": "4800 MHz",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "4800 MHz",
+      "page": "main",
+      "screen_index": 5,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Displays the Frequency of Memory",
+      "page": "main",
+      "screen_index": 5,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "0 MB (DDR5)",
+      "page": "main",
+      "screen_index": 5,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "DIMM A Size",
+      "page": "main",
+      "screen_index": 5,
+      "value": "0 MB (DDR5)",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "8192 MB (DDR5)",
+      "page": "main",
+      "screen_index": 5,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "DIMM B Size",
+      "page": "main",
+      "screen_index": 5,
+      "value": "8192 MB (DDR5)",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "PCH-FW Configuration",
+      "page": "main",
+      "screen_index": 5,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "ME FW Version",
+      "page": "main",
+      "screen_index": 5,
+      "value": "16.1.40.2765",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "16.1.40.2765",
+      "page": "main",
+      "screen_index": 5,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "ME Firmware Version",
+      "page": "main",
+      "screen_index": 5,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "ME Firmware Mode",
+      "page": "main",
+      "screen_index": 5,
+      "value": "Normal Mode",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Normal Mode",
+      "page": "main",
+      "screen_index": 5,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "ME Firmware SKU",
+      "page": "main",
+      "screen_index": 5,
+      "value": "Consumer SKU",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Consumer SKU",
+      "page": "main",
+      "screen_index": 5,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "PMC FW Version",
+      "page": "main",
+      "screen_index": 5,
+      "value": "160.1.0.1031",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "160.1.0.1031",
+      "page": "main",
+      "screen_index": 5,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "PMC Firmware Version",
+      "page": "main",
+      "screen_index": 5,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Svstem Language",
+      "page": "main",
+      "screen_index": 5,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "System Language",
+      "page": "main",
+      "screen_index": 6,
+      "value": "English",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "English",
+      "page": "main",
+      "screen_index": 6,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Choose the system default language",
+      "page": "main",
+      "screen_index": 6,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "MAC Address Pass Through",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Configure MAC Address Pass Through",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Trusted Computing",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Trusted Computing Settings",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Previous",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Device Control",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Values",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Device Control Information",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Hardware Monitor",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Hardware Monitor Information",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Optimized",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Defaults",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Network Stack Configuration",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Network Stack Settings",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Back",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "TLS Auth. Configuration",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Press <Enter> to select TIs Auth Configuration.",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Absolute Persistence(R) Module",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Save & Exit",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Wake on PCI/PCIE",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": "Enabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enabled",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+      "page": "advanced",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enable/Disable Wake on PCI/PCIE Devices.",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Wake on LAN",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": "Enabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enable/Disable integrated LAN to wake the system.",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Wake on Keyboard/Mouse USB",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": "Enabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enable/Disable Wake On USB Keyboard/Mouse",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "USB Charger",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": "Disabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Disabled",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enable/Disable USB Charger in DC mode when system in S4/S5.",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Wake on RTC Alarm",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": "Disabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enable or disable System wake on alarm event. Select FixedTime, system will wake on the",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "hr::min::sec specified. Select DynamicTime, System will wake on the current time + Increase",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "minute(s)",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "SATA Mode Selection",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": "AHCI",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "AHCI",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Determines how SATA controller(s) operate.",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Primary Display",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": "IGFX",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "IGFX",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Select which of IGFX/PEG/PCI Graphics device should be Primary Display Or select HG for Hybrid Gfx.",
+      "page": "advanced",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "GTT Size",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": "8MB",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "8MB",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Select the GTT Size",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Aperture Size",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": "256MB",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "256MB",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Select the Aperture Size",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Note: Above 4GB MMIO BIOS assignment is automatically enabled when selecting 2048MB",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "aperture. To use this feature, please disable CSM Support.",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "DVMT Pre-Allocated",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": "512MB",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "512MB",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Select DVMT 5.0 Pre-Allocated (Fixed) Graphics Memory size used by the Internal Graphics Device.",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Intel VT-d",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": "Enabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enable/Disable support to Intel VT-d (Intel® Virtualization Technology for Directed I/O). The VT-d",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "implements a IOMMU. If X2APIC is supported and enabled, this option will be blocked.",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Intel Virtualization Technology",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": "Enabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "When enabled, a VMM can utilize the additional hardware capabilities provided by Vanderpool",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Technology (VT-x).",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "ME FW Image Re-Flash",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": "Disabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enable/Disable ME FW Image Re-Flash function.",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Removable Boot Devices",
+      "page": "advanced",
+      "screen_index": 2,
+      "value": "Enabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enable 'Removable Boot Driver means the system is allowed to boot from removable boot Driver.",
+      "page": "advanced",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Disable 'Removable Boot Driver means the system is NOT allowed to boot from removable boot",
+      "page": "advanced",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Driver.",
+      "page": "advanced",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "S.M.A.R.T. Status Check",
+      "page": "advanced",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Run SMART Self Test on all SSDs/HDDs during POST",
+      "page": "advanced",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Audio DSP",
+      "page": "advanced",
+      "screen_index": 3,
+      "value": "Enabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enable/Disable Audio DSP.",
+      "page": "advanced",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "The password length must be",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "in the following range:",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Minimum length",
+      "page": "security",
+      "screen_index": 0,
+      "value": "6",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "6",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Previous",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Values",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "20",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Maximum length",
+      "page": "security",
+      "screen_index": 0,
+      "value": "20",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Administrator Password -Not Installed",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Set the Administrator password.",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Optimized",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Defaults",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "User Password -Not Installed",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Set the User password. An Administrator password is required. The User cannot change Setup, only",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "visualize.",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Back",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Password Check",
+      "page": "security",
+      "screen_index": 0,
+      "value": "Setup",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Setup",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Setup: Request password only to enter BIOS Setup or change default boot path.",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Always: Request password to enter BIOS Setup and to Boot (Power On).",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Save & Exit",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Config. Inventory Monitoring",
+      "page": "security",
+      "screen_index": 0,
+      "value": "Enabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enabled",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enabled: Enables the Configuration Inventory Monitoring.",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Disabled: Disables the Configuration Inventory monitoring.",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Reset: Clear the Configuration Inventory changed alert. Sets the current Processor, RAM, HDD/SSD",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+      "page": "security",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "and Network Config. as the default system configuration baseline. MAC restore supported only for",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Intel GBE.",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Monitor UEFI Network Stack Config.",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enables the UEFI Network Stack Configuration and Intel GBE MAC Monitor (when available) to detect",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "and revert changes. Configuration Inventory Monitoring must be enabled too.",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Removable Storage Devices Policy",
+      "page": "security",
+      "screen_index": 1,
+      "value": "Read-Write",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Read-Write",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Defines a policy for write access to Removable Storage Devices (e.g. USB devices). Works under",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Windows(R) and requires \"Positivo BIOS Companion Apps\" to be installed.",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Flash Write Protection",
+      "page": "security",
+      "screen_index": 1,
+      "value": "Disabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Disabled",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enable/Disable Flash Write Protection. If enabled, Firmware Updates, BIOS Updates and SMBIOS",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Modifications will not be possible.",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "BIOS Version Downgrade",
+      "page": "security",
+      "screen_index": 1,
+      "value": "Disabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enable/Disable flashing an older BIOS version. The option will be automatically disabled after next",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "reboot. Option disabled for systems with Absolute Persistence(R) enabled.",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Media Sanitization",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enter Media Sanitization Page.",
+      "page": "security",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Secure Boot",
+      "page": "security",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Secure Boot configuration",
+      "page": "security",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "TCG Storage Security Configuration:",
+      "page": "security",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "SAMSUNG MZVL2256HCHQ-00B00",
+      "page": "security",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "TCG Storage device Security Configuration",
+      "page": "security",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Boot Configuration",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "BIOS POST Logo Delay",
+      "page": "boot",
+      "screen_index": 0,
+      "value": "Standard",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Standard",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Increases the time that Logo will be visible during BIOS POST.",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Bootup NumLock State",
+      "page": "boot",
+      "screen_index": 0,
+      "value": "off",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "off",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Previous",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Values",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Select the keyboard NumLock state",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "NumLock Disabled During Pre-Boot",
+      "page": "boot",
+      "screen_index": 0,
+      "value": "Enabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enabled",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Optimized",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "If this option is enabled, the BIOS will ignore requests to activate Integrated Keyboard's NumLock",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Defaults",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "until the Operating System takes control of the hardware. Useful when Microsoft® BitLocker® is",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "enabled with an alphanumeric password.",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "BIOS POST Logo",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Back",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enables/Disable show BIOS POST Logo",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Fast Boot",
+      "page": "boot",
+      "screen_index": 0,
+      "value": "Enabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enables or disables boot with initialization of a minimal set of devices required to launch active boot",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Save & Exit",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "option. Has no effect for BBS boot options.",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "POPUP Boot Menu Hotkey [F11]",
+      "page": "boot",
+      "screen_index": 0,
+      "value": "Enabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enable/Disable POPUP Boot Menu Hotkey [F11] function.",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "LAN PXE Boot Hotkev [F12]",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+      "page": "boot",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "cudvieu",
+      "page": "boot",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enable/Disable LAN PXE Boot Hotkey [F12] function.",
+      "page": "boot",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "PXE Boot after Wake on LAN",
+      "page": "boot",
+      "screen_index": 1,
+      "value": "Disabled",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Disabled",
+      "page": "boot",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Enable/Disable PXE Boot after Wake on LAN function.",
+      "page": "boot",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Driver Option Priorities",
+      "page": "boot",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "FIXED BOOT ORDER Priorities",
+      "page": "boot",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Boot Option #1",
+      "page": "boot",
+      "screen_index": 1,
+      "value": "Hard Disk",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Hard Disk",
+      "page": "boot",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Sets the system boot order",
+      "page": "boot",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Boot Option #2",
+      "page": "boot",
+      "screen_index": 1,
+      "value": "NVME",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "NVME",
+      "page": "boot",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Boot Option #3",
+      "page": "boot",
+      "screen_index": 1,
+      "value": "CD/DVD",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "CD/DVD",
+      "page": "boot",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Boot Option #4",
+      "page": "boot",
+      "screen_index": 1,
+      "value": "SD",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "SD",
+      "page": "boot",
+      "screen_index": 1,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Boot Option #5",
+      "page": "boot",
+      "screen_index": 2,
+      "value": "USB Hard Disk",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "USB Hard Disk",
+      "page": "boot",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Boot Option #6",
+      "page": "boot",
+      "screen_index": 2,
+      "value": "USB CD/DVD",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "USB CD/DVD",
+      "page": "boot",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Boot Option #7",
+      "page": "boot",
+      "screen_index": 2,
+      "value": "USB Key",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "USB Key",
+      "page": "boot",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Boot Option #8",
+      "page": "boot",
+      "screen_index": 2,
+      "value": "USB Floppy",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "USB Floppy",
+      "page": "boot",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Boot Option #9",
+      "page": "boot",
+      "screen_index": 2,
+      "value": "USB Lan",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "USB Lan",
+      "page": "boot",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Boot Option #10",
+      "page": "boot",
+      "screen_index": 2,
+      "value": "Network:UEFI: PXE IPv4 Intel(R)",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Network:UEFI: PXE IPv4 Intel(R)",
+      "page": "boot",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Boot Option #11",
+      "page": "boot",
+      "screen_index": 2,
+      "value": "Other Device:Positivo Diag 2.2",
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Other Device:Positivo Diag 2.2",
+      "page": "boot",
+      "screen_index": 2,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "UEFI NETWORK Drive BBS Priorities",
+      "page": "boot",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Specifies the Boot Device Priority sequence from available UEFI NETWORK Drives.",
+      "page": "boot",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "UEFI Other Drive BBS Priorities",
+      "page": "boot",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Specifies the Boot Device Priority sequence from available UEFI Other Drives.",
+      "page": "boot",
+      "screen_index": 3,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "SMBIOS Event Log Settings",
+      "page": "event_log",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Press <Enter> to change the SMBIOS Event Log configuration.",
+      "page": "event_log",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Event Log",
+      "page": "event_log",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Press <Enter> to view the Event Log records.",
+      "page": "event_log",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Previous",
+      "page": "event_log",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Values",
+      "page": "event_log",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Optimized",
+      "page": "event_log",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Defaults",
+      "page": "event_log",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Back",
+      "page": "event_log",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Save & Exit",
+      "page": "event_log",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    },
+    {
+      "label": "Version 2.22.0058. Copyright (C) 2025 Positivo Tecnologia SA.",
+      "page": "event_log",
+      "screen_index": 0,
+      "value": null,
+      "provenance": "CONFIRMADO"
+    }
+  ]
+}

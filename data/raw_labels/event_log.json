@@ -1,0 +1,123 @@
+[
+  {
+    "text": "» SMBIOS Event Log Settings",
+    "screen": "event_log",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 72,
+      "width": 201,
+      "height": 24
+    }
+  },
+  {
+    "text": "Press <Enter> to change the SMBIOS Event Log configuration.",
+    "screen": "event_log",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 101,
+      "width": 302,
+      "height": 16
+    }
+  },
+  {
+    "text": "» Event Log",
+    "screen": "event_log",
+    "screen_index": 0,
+    "bbox": {
+      "left": 426,
+      "top": 131,
+      "width": 86,
+      "height": 24
+    }
+  },
+  {
+    "text": "Press <Enter> to view the Event Log records.",
+    "screen": "event_log",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 158,
+      "width": 219,
+      "height": 18
+    }
+  },
+  {
+    "text": "Previous",
+    "screen": "event_log",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1210,
+      "top": 192,
+      "width": 49,
+      "height": 16
+    }
+  },
+  {
+    "text": "Values",
+    "screen": "event_log",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1214,
+      "top": 205,
+      "width": 42,
+      "height": 17
+    }
+  },
+  {
+    "text": "Optimized",
+    "screen": "event_log",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1206,
+      "top": 289,
+      "width": 57,
+      "height": 16
+    }
+  },
+  {
+    "text": "Defaults",
+    "screen": "event_log",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1210,
+      "top": 303,
+      "width": 50,
+      "height": 17
+    }
+  },
+  {
+    "text": "Back",
+    "screen": "event_log",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1219,
+      "top": 388,
+      "width": 31,
+      "height": 15
+    }
+  },
+  {
+    "text": "Save & Exit",
+    "screen": "event_log",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1205,
+      "top": 487,
+      "width": 59,
+      "height": 14
+    }
+  },
+  {
+    "text": "Version 2.22.0058. Copyright (C) 2026 Positivo Tecnologia SA.",
+    "screen": "event_log",
+    "screen_index": 0,
+    "bbox": {
+      "left": 614,
+      "top": 684,
+      "width": 358,
+      "height": 16
+    }
+  }
+]

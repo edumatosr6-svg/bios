@@ -1,0 +1,321 @@
+[
+  {
+    "text": "Boot Configuration",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 74,
+      "width": 136,
+      "height": 20
+    }
+  },
+  {
+    "text": "BIOS POST Logo Delay",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 426,
+      "top": 108,
+      "width": 158,
+      "height": 24
+    }
+  },
+  {
+    "text": "Standard",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 819,
+      "top": 112,
+      "width": 63,
+      "height": 24
+    }
+  },
+  {
+    "text": "Increases the time that Logo will be visible during BIOS POST.",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 150,
+      "width": 309,
+      "height": 15
+    }
+  },
+  {
+    "text": "off",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 816,
+      "top": 181,
+      "width": 34,
+      "height": 27
+    }
+  },
+  {
+    "text": "Bootup NumLock State",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 182,
+      "width": 163,
+      "height": 20
+    }
+  },
+  {
+    "text": "Previous",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1210,
+      "top": 192,
+      "width": 50,
+      "height": 16
+    }
+  },
+  {
+    "text": "Values",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1212,
+      "top": 203,
+      "width": 44,
+      "height": 20
+    }
+  },
+  {
+    "text": "Select the keyboard NumLock state",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 221,
+      "width": 178,
+      "height": 16
+    }
+  },
+  {
+    "text": "NumLock Disabled During Pre-Boot",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 252,
+      "width": 244,
+      "height": 21
+    }
+  },
+  {
+    "text": "Enabled",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 820,
+      "top": 256,
+      "width": 54,
+      "height": 21
+    }
+  },
+  {
+    "text": "Optimized",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1207,
+      "top": 290,
+      "width": 57,
+      "height": 16
+    }
+  },
+  {
+    "text": "If this option is enabled, the BIOS will ignore requests to activate Integrated Keyboard's NumLock until the Operating System takes control",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 291,
+      "width": 688,
+      "height": 18
+    }
+  },
+  {
+    "text": "Defaults",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1210,
+      "top": 303,
+      "width": 50,
+      "height": 17
+    }
+  },
+  {
+    "text": "of the hardware. Useful when Microsoft® BitLocker® is enabled with an alphanumeric password.",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 304,
+      "width": 479,
+      "height": 18
+    }
+  },
+  {
+    "text": "BIOS POST Logo",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 426,
+      "top": 337,
+      "width": 118,
+      "height": 22
+    }
+  },
+  {
+    "text": "Enables/Disable show BIOS POST Logo",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 376,
+      "width": 196,
+      "height": 17
+    }
+  },
+  {
+    "text": "Back",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1218,
+      "top": 386,
+      "width": 33,
+      "height": 18
+    }
+  },
+  {
+    "text": "Fast Boot",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 409,
+      "width": 73,
+      "height": 20
+    }
+  },
+  {
+    "text": "Enabled",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 820,
+      "top": 413,
+      "width": 54,
+      "height": 20
+    }
+  },
+  {
+    "text": "Enables or disables boot with initialization of a minimal set of devices required to launch active boot option. Has no effect for BBS boot",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 448,
+      "width": 670,
+      "height": 16
+    }
+  },
+  {
+    "text": "options.",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 462,
+      "width": 46,
+      "height": 16
+    }
+  },
+  {
+    "text": "Save & Exit",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1204,
+      "top": 485,
+      "width": 61,
+      "height": 17
+    }
+  },
+  {
+    "text": "POPUP Boot Menu Hotkey [F11]",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 426,
+      "top": 492,
+      "width": 220,
+      "height": 22
+    }
+  },
+  {
+    "text": "Enabled",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 819,
+      "top": 497,
+      "width": 55,
+      "height": 21
+    }
+  },
+  {
+    "text": "Enable/Disable POPUP Boot Menu Hotkey [F11] function.",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 532,
+      "width": 280,
+      "height": 17
+    }
+  },
+  {
+    "text": "LAN PXE Boot Hotkey [F12]",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 563,
+      "width": 189,
+      "height": 22
+    }
+  },
+  {
+    "text": "Enabled",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 819,
+      "top": 567,
+      "width": 56,
+      "height": 24
+    }
+  },
+  {
+    "text": "Version 2.22.0058. Copyright (C) 2026 Positivo Tecnologia SA.",
+    "screen": "boot",
+    "screen_index": 0,
+    "bbox": {
+      "left": 612,
+      "top": 682,
+      "width": 361,
+      "height": 20
+    }
+  }
+]

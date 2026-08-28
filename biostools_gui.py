@@ -127,6 +127,15 @@ class BiosAssistantApp:
         self.llm_model_var = tk.StringVar(value=DEFAULT_MODEL)
         ttk.Entry(row2, textvariable=self.llm_model_var, width=18).pack(side=tk.LEFT, padx=(4, 0))
 
+        row_nav = ttk.Frame(conn)
+        row_nav.pack(fill=tk.X, padx=6, pady=(2, 2))
+        ttk.Label(row_nav, text="Navegacao:").pack(side=tk.LEFT)
+        self.nav_mode_var = tk.StringVar(value="keyboard")
+        for value, label in (("keyboard", "Teclado"), ("mouse", "Mouse"),
+                             ("auto", "Auto")):
+            ttk.Radiobutton(row_nav, text=label, value=value,
+                            variable=self.nav_mode_var).pack(side=tk.LEFT, padx=(4, 0))
+
         row3 = ttk.Frame(conn)
         row3.pack(fill=tk.X, padx=6, pady=(2, 6))
         self.connect_button = ttk.Button(row3, text="Conectar", command=self._connect)
@@ -328,7 +337,7 @@ class BiosAssistantApp:
 
         def work():
             return assistant.ask(question, self.session, host=host, port=port,
-                                 model=model)
+                                 model=model, nav_mode=self.nav_mode_var.get())
 
         def done(result, error):
             if error is not None:
@@ -399,7 +408,7 @@ class BiosAssistantApp:
         self._show_answer(f"(rodando {name}...)")
 
         def work():
-            return run_tool(name, self.session)
+            return run_tool(name, self.session, mode=self.nav_mode_var.get())
 
         def done(result, error):
             if error is not None:

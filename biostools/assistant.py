@@ -45,28 +45,63 @@ from dataclasses import dataclass, field
 
 from extract import DEFAULT_HOST, DEFAULT_MODEL, DEFAULT_PORT, ExtractionError
 
-from . import list_tools, run_tool
+from . import all_tools, run_tool
 from .registry import UnknownTool
 
-# Read-only, no arguments -- every tool today decides everything from its
-# own declaration (route + reader) and the live screen, never from
-# caller-supplied parameters. Revisit this shape if a tool ever needs one
-# (e.g. "read this specific field") rather than adding parameters nobody
-# reads.
+# Read-only. Most tools decide everything from their own declaration
+# (route + reader) and the live screen, never from caller-supplied
+# parameters -- those get `properties: {}` below, same as always. A
+# router-based tool (`goto_screen`) is the one exception: it needs the
+# caller (the model) to say WHICH screen, so its `Tool.params` is handed
+# through as this function call's JSON-schema properties instead of being
+# ignored. Everything required is required; nothing here silently accepts
+# an argument a tool would then throw away.
 def _tool_schemas():
-    return [
-        {"type": "function", "function": {
-            "name": name, "description": question,
-            "parameters": {"type": "object", "properties": {}},
-        }}
-        for name, question in list_tools().items()
-    ]
+    schemas = []
+    for name, tool in all_tools().items():
+        schemas.append({"type": "function", "function": {
+            "name": name, "description": tool.question,
+            "parameters": {
+                "type": "object",
+                "properties": tool.params,
+                "required": (getattr(tool, "required_params", None)
+                             or list(tool.params)),
+            },
+        }})
+    return schemas
 
 
 # Rounds of "model requests tools, gets results back" before giving up.
 # Bounds a model stuck re-requesting the same reading -- these tools drive
 # real hardware and a runaway loop must not run unbounded, even read-only.
 MAX_ROUNDS = 4
+
+# There was no system prompt here at all until 2026-08-28: the model got
+# the bare question and a JSON dump of the tool result, with nothing said
+# about how to answer. That is a lot to leave to a 4B model, and it showed
+# -- asked "o fast boot esta desabilitado ou habilitado?" it relayed the
+# whole five-field screen instead of answering the yes/no actually asked.
+# The tool had worked, the routing had worked; only the phrasing step had
+# no instructions.
+#
+# Rule 2 is not politeness, it is what keeps the verification in `_finish`
+# from rejecting a correct answer: a narration that never mentions the
+# value it is reporting cannot be checked against the screen, so it falls
+# back to the raw dump even when it was right. Telling the model to cite
+# the value is the cheapest way to make "verifiable" and "readable" the
+# same sentence rather than competing goals.
+#
+# Rule 4 exists because the opposite failure is worse than a clumsy
+# answer: a model that fills a gap in a reading with something plausible
+# produces exactly the silent, confident error this whole project is
+# built to prevent (see extract.py: 2026 -> 20026, live).
+_SYSTEM_PROMPT = """Você responde perguntas sobre a tela de uma BIOS, usando as tools disponíveis para ler a máquina real.
+
+Regras:
+1. Responda DIRETAMENTE o que foi perguntado, em português, numa frase completa. Se a pergunta é de sim/não ("o fast boot está habilitado?"), comece por "Sim" ou "Não".
+2. A frase tem que se sustentar sozinha: nomeie o campo e cite o valor lido EXATAMENTE como a tool devolveu (ex.: "Enabled", "61C", "06/26/2026 16:01:12"), sem reformatar, traduzir ou reordenar o valor em si. Ex.: "Sim, o Fast Boot está Enabled." Uma resposta de uma palavra só ("Habilitado") não serve -- quem lê depois não sabe de qual campo era.
+3. Não liste os outros campos da tela que não foram perguntados. A tool pode ler a tela inteira; a resposta é só sobre o que o usuário pediu.
+4. Se a tool não trouxe o campo perguntado, diga isso claramente. Nunca invente, estime ou complete um valor que não foi lido."""
 
 
 class RoutingError(Exception):
@@ -103,17 +138,68 @@ class AssistantAnswer:
         }
 
 
+# A closed, declared table -- same discipline as labels.py, not a general
+# translator -- for the one class of value where a faithful PT-BR
+# narration can never be byte-identical to the English screen text: a
+# BIOS toggle field. Confirmed live 2026-08-28: asked "o fast boot esta
+# habilitado?", the model correctly answered in Portuguese ("sim, esta
+# habilitado") and the plain verbatim check rejected it for not
+# containing the literal English word "Enabled", falling back to the raw
+# five-field dump on every such question -- not the module docstring's
+# "model reworded/altered a number" risk this check exists to catch, just
+# the model doing the translation it was asked to do. A temperature or a
+# date is never in this table, so that protection is untouched: "61C"
+# still has to appear as "61C", not as some accepted "close enough" text.
+_VALUE_SYNONYMS = {
+    "enabled": ("habilitado", "habilitada", "ativado", "ativada", "ativo", "ativa"),
+    "disabled": ("desabilitado", "desabilitada", "desativado", "desativada",
+                "inativo", "inativa"),
+    "on": ("ligado", "ligada"),
+    "off": ("desligado", "desligada"),
+    "yes": ("sim",),
+    "no": ("nao", "não"),
+}
+
+
 def _verbatim(value, text):
     norm = lambda s: " ".join(str(s).split())
-    return norm(value) in norm(text)
+    if norm(value) in norm(text):
+        return True
+    synonyms = _VALUE_SYNONYMS.get(norm(value).lower())
+    if not synonyms:
+        return False
+    lowered = norm(text).lower()
+    return any(syn in lowered for syn in synonyms)
 
 
 def _required_values(calls):
-    """Every value a narrated answer must reproduce verbatim, plus whether
-    any call returned a listing -- which disqualifies narration outright
-    regardless of what the values check finds (see module docstring).
+    """What a narrated answer must reproduce verbatim, split two ways.
+
+    `values` are checked with ALL-must-appear: a single field the caller
+    asked for by name (`kind == "field"`), or a short caller-picked list
+    (`Fields`, `open_ended=False`) -- short because the question already
+    named exactly what matters, so the narration has no excuse to drop
+    one.
+
+    `open_groups` are checked with ANY-must-appear, one entry per
+    open-ended read (`AllFields`, `open_ended=True`, e.g. `goto_screen`
+    landing on a whole screen it does not know the relevant field of in
+    advance). Forcing every value from a dozen unrelated fields into the
+    narration -- the old, single ALL-must-appear rule -- made concise
+    answers to a specific question (e.g. "is Fast Boot on?", landing five
+    fields including 'BIOS POST Logo Delay') impossible to narrate: the
+    model correctly answers with just the one relevant value, and the old
+    check rejected that for not also repeating the other four, falling
+    back to the raw dump every time. ANY-must-appear keeps the actual
+    protection this exists for -- an answer that echoes NONE of what the
+    screen showed is still rejected -- without demanding an unrelated
+    field be recited to prove a claim about a different one.
+
+    Also reports whether any call returned a listing, which disqualifies
+    narration outright regardless of what either check finds (see module
+    docstring).
     """
-    values, has_entries = [], False
+    values, open_groups, has_entries = [], [], False
     for call in calls:
         r = call.result
         if r is None or not r.ok:
@@ -121,10 +207,14 @@ def _required_values(calls):
         if r.kind == "field":
             values.append(r.value)
         elif r.kind == "fields":
-            values.extend(r.values.values())
+            if r.open_ended:
+                if r.values:
+                    open_groups.append(list(r.values.values()))
+            else:
+                values.extend(r.values.values())
         elif r.kind == "entries":
             has_entries = True
-    return values, has_entries
+    return values, open_groups, has_entries
 
 
 def _deterministic_answer(calls):
@@ -140,9 +230,13 @@ def _deterministic_answer(calls):
 
 
 def ask(question, session, host=DEFAULT_HOST, port=DEFAULT_PORT,
-        model=DEFAULT_MODEL, timeout=60):
+        model=DEFAULT_MODEL, timeout=60, nav_mode="keyboard"):
     """The whole loop: let the model call tools until it can answer, then
     verify what it says before showing it.
+
+    `nav_mode` is the operator's choice of how any tool the model picks
+    drives sidebar navigation -- "keyboard", "mouse", or "auto" -- passed
+    straight through to every `run_tool` call this loop makes.
 
     Never raises for "no tool matched" or a tool that found nothing on
     screen -- those are answers, returned in `.answer`. Only an
@@ -151,7 +245,8 @@ def ask(question, session, host=DEFAULT_HOST, port=DEFAULT_PORT,
     BIOS said something unexpected.
     """
     tools = _tool_schemas()
-    messages = [{"role": "user", "content": question}]
+    messages = [{"role": "system", "content": _SYSTEM_PROMPT},
+                {"role": "user", "content": question}]
     calls = []
 
     for _ in range(MAX_ROUNDS):
@@ -176,8 +271,20 @@ def ask(question, session, host=DEFAULT_HOST, port=DEFAULT_PORT,
         messages.append({"role": "assistant", "tool_calls": tool_calls})
         for tc in tool_calls:
             name = tc["function"]["name"].strip().replace("-", "_")
+            # Arguments arrive as a JSON-encoded string, same as every
+            # OpenAI-style tool call -- and possibly malformed, since it is
+            # the model's own text generation, not a parsed structure the
+            # server guarantees. A tool with no `params` (every route-based
+            # one) never looks at this, so garbage here only matters for
+            # `goto_screen`, which reports it as a normal "faltou o
+            # parametro" answer rather than raising.
+            raw_args = tc["function"].get("arguments") or "{}"
             try:
-                result = run_tool(name, session)
+                call_args = json.loads(raw_args)
+            except json.JSONDecodeError:
+                call_args = {}
+            try:
+                result = run_tool(name, session, mode=nav_mode, args=call_args)
                 calls.append(ToolCall(tool=name, result=result))
                 tool_content = json.dumps(result.as_dict(), ensure_ascii=False)
             except UnknownTool:
@@ -195,9 +302,13 @@ def ask(question, session, host=DEFAULT_HOST, port=DEFAULT_PORT,
 
 
 def _finish(question, calls, final_text):
-    required, has_entries = _required_values(calls)
-    verified = (not has_entries
-                and all(_verbatim(v, final_text) for v in required))
+    required, open_groups, has_entries = _required_values(calls)
+    verified = (
+        not has_entries
+        and all(_verbatim(v, final_text) for v in required)
+        and all(any(_verbatim(v, final_text) for v in group)
+                for group in open_groups)
+    )
 
     if verified and final_text.strip():
         return AssistantAnswer(question=question, calls=calls,

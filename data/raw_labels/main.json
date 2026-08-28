@@ -1,0 +1,420 @@
+[
+  {
+    "text": "System Information",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 429,
+      "top": 76,
+      "width": 140,
+      "height": 17
+    }
+  },
+  {
+    "text": "Developed by Positivo Tecnologia SA",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 92,
+      "width": 252,
+      "height": 20
+    }
+  },
+  {
+    "text": "Copyright© 2026 Positivo Tecnologia SA",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 429,
+      "top": 110,
+      "width": 276,
+      "height": 19
+    }
+  },
+  {
+    "text": "Compliant with NIST SP 800-147 Secure Flash",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 430,
+      "top": 128,
+      "width": 309,
+      "height": 17
+    }
+  },
+  {
+    "text": "Compliant with NIST SP 800-88r1 Media Sanitization",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 429,
+      "top": 144,
+      "width": 358,
+      "height": 19
+    }
+  },
+  {
+    "text": "www.positivotecnologia.com.br",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 429,
+      "top": 163,
+      "width": 217,
+      "height": 17
+    }
+  },
+  {
+    "text": "Previous",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1210,
+      "top": 192,
+      "width": 49,
+      "height": 16
+    }
+  },
+  {
+    "text": "2026/08/24",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 814,
+      "top": 197,
+      "width": 89,
+      "height": 19
+    }
+  },
+  {
+    "text": "System Date",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 198,
+      "width": 93,
+      "height": 19
+    }
+  },
+  {
+    "text": "Values",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1215,
+      "top": 206,
+      "width": 40,
+      "height": 14
+    }
+  },
+  {
+    "text": "Set the Date. Use Tab to switch between Date elements.",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 223,
+      "width": 280,
+      "height": 16
+    }
+  },
+  {
+    "text": "Default Ranges:",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 235,
+      "width": 85,
+      "height": 19
+    }
+  },
+  {
+    "text": "Year: 1998-2099",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 249,
+      "width": 87,
+      "height": 17
+    }
+  },
+  {
+    "text": "Months: 1-12",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 260,
+      "width": 73,
+      "height": 20
+    }
+  },
+  {
+    "text": "Days: Dependent on month",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 277,
+      "width": 138,
+      "height": 16
+    }
+  },
+  {
+    "text": "Range of Years may vary.",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 288,
+      "width": 128,
+      "height": 20
+    }
+  },
+  {
+    "text": "Optimized",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1208,
+      "top": 292,
+      "width": 55,
+      "height": 13
+    }
+  },
+  {
+    "text": "Defaults",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1210,
+      "top": 303,
+      "width": 50,
+      "height": 17
+    }
+  },
+  {
+    "text": "14:14:44",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 814,
+      "top": 322,
+      "width": 69,
+      "height": 19
+    }
+  },
+  {
+    "text": "System Time",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 323,
+      "width": 95,
+      "height": 19
+    }
+  },
+  {
+    "text": "Set the Time. Use Tab to switch between Time elements.",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 347,
+      "width": 283,
+      "height": 18
+    }
+  },
+  {
+    "text": "Intel BIOS Guard Technology",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 379,
+      "width": 201,
+      "height": 23
+    }
+  },
+  {
+    "text": "Enabled",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 815,
+      "top": 381,
+      "width": 52,
+      "height": 17
+    }
+  },
+  {
+    "text": "Back",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1219,
+      "top": 388,
+      "width": 31,
+      "height": 15
+    }
+  },
+  {
+    "text": "BIOS Version",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 417,
+      "width": 95,
+      "height": 19
+    }
+  },
+  {
+    "text": "7.2.4.XD22CPG7.I219V.P",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 816,
+      "top": 417,
+      "width": 146,
+      "height": 16
+    }
+  },
+  {
+    "text": "06/26/2026 16:01:12",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 816,
+      "top": 453,
+      "width": 129,
+      "height": 17
+    }
+  },
+  {
+    "text": "BIOS Build Date (MM/DD/YYYY)",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 429,
+      "top": 454,
+      "width": 214,
+      "height": 17
+    }
+  },
+  {
+    "text": "Save & Exit",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 1205,
+      "top": 487,
+      "width": 59,
+      "height": 14
+    }
+  },
+  {
+    "text": "Platform BIOS Type",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 489,
+      "width": 138,
+      "height": 20
+    }
+  },
+  {
+    "text": "RaptorLake P I219-V",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 816,
+      "top": 489,
+      "width": 124,
+      "height": 17
+    }
+  },
+  {
+    "text": "01.22",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 814,
+      "top": 524,
+      "width": 40,
+      "height": 18
+    }
+  },
+  {
+    "text": "EC FW Version",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 428,
+      "top": 526,
+      "width": 100,
+      "height": 17
+    }
+  },
+  {
+    "text": "EC Build Date (MM/DD/YYYY)",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 427,
+      "top": 560,
+      "width": 199,
+      "height": 20
+    }
+  },
+  {
+    "text": "05/29/2026 17:57:43",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 815,
+      "top": 560,
+      "width": 130,
+      "height": 16
+    }
+  },
+  {
+    "text": "Administrator",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 815,
+      "top": 597,
+      "width": 87,
+      "height": 16
+    }
+  },
+  {
+    "text": "Access Level",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 430,
+      "top": 599,
+      "width": 85,
+      "height": 13
+    }
+  },
+  {
+    "text": "Version 2.22.0058. Copyright (C) 2026 Positivo Tecnologia SA.",
+    "screen": "main",
+    "screen_index": 0,
+    "bbox": {
+      "left": 614,
+      "top": 684,
+      "width": 358,
+      "height": 16
+    }
+  }
+]

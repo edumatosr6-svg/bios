@@ -301,6 +301,13 @@ class _FakeLLM:
 
     def __init__(self, script, port):
         self.calls = []
+        # Cada payload recebido, para um teste poder afirmar o que foi
+        # ENVIADO ao modelo (system prompt, tools), nao so o que ele
+        # respondeu. Antes o corpo era lido e jogado fora, entao a
+        # ausencia de system prompt em `ask()` -- a causa raiz do
+        # "despejou a tela em vez de responder sim/nao", 2026-08-28 --
+        # nao tinha como ser pega por nenhum teste.
+        self.payloads = []
         script_ = script
 
         class Handler(BaseHTTPRequestHandler):
@@ -309,7 +316,11 @@ class _FakeLLM:
 
             def do_POST(self):
                 length = int(self.headers.get("Content-Length", 0))
-                self.rfile.read(length)
+                body = self.rfile.read(length)
+                try:
+                    outer.payloads.append(json.loads(body.decode("utf-8")))
+                except (ValueError, UnicodeDecodeError):
+                    outer.payloads.append(None)
                 message = script_[min(len(self._server_calls()), len(script_) - 1)]
                 self._server_calls().append(message)
                 payload = json.dumps({"choices": [{"message": message}]}).encode()
@@ -460,6 +471,39 @@ def test_assistant_catches_a_hallucinated_value(menu, readings):
     check_that("fallback usa a lista verificada pela caminhada",
                "Event Log" in r.answer, r.answer)
 
+    # Cenarios 8-9: `goto_screen` (AllFields, open_ended=True) contra uma
+    # pergunta sobre UM campo entre varios lidos -- o caso real relatado
+    # 2026-08-28 ("fast boot esta habilitado?" caindo sempre no dump bruto
+    # porque a narracao nunca citava os outros 4 campos irrelevantes, ex.:
+    # 'BIOS POST Logo Delay'). ANY-must-appear substitui ALL-must-appear
+    # so para leituras abertas -- ver ToolResult.open_ended e
+    # assistant._required_values.
+    boot_call = ToolCall(tool="goto_screen", result=ToolResult(
+        tool="goto_screen", ok=True, kind="fields", open_ended=True,
+        values={"BIOS POST Logo Delay": "Standard", "Bootup NumLock State": "off",
+                "NumLock Disabled During Pre-Boot": "Enabled",
+                "Fast Boot": "Enabled",
+                "POPUP Boot Menu Hotkey [F11]": "Enabled"},
+    ))
+
+    r = _finish("o fast boot esta habilitado?", [boot_call],
+                "Sim, o campo Fast Boot esta como Enabled.")
+    check_that("cita SO o campo relevante de uma leitura aberta -> aceita",
+               r.narrated, r.answer)
+
+    r = _finish("o fast boot esta habilitado?", [boot_call],
+                "Nao, o Fast Boot esta Disabled no momento.")
+    check("narracao que nao cita NENHUM valor real da leitura aberta -> REJEITADA",
+          r.narrated, False)
+    # 'Disabled' aparece no dump bruto -- mas so como parte do ROTULO
+    # 'NumLock Disabled During Pre-Boot', nunca como o VALOR de 'Fast
+    # Boot' (que e 'Enabled'). E essa distincao que importa: a mentira do
+    # modelo nao vira a resposta mostrada.
+    check_that("fallback nao afirma 'Fast Boot: Disabled'",
+               "Fast Boot                        : Disabled" not in r.answer, r.answer)
+    check_that("fallback mostra o valor real de Fast Boot",
+               "Fast Boot                        : Enabled" in r.answer, r.answer)
+
 
 def test_label_aliases():
     print("\nrotulos canonicos: conceito separado da grafia da tela")
@@ -584,6 +628,206 @@ def test_cpu_temperature(menu, readings):
     # the submenu, where the entry it navigates to no longer exists.
     check("fechou o que abriu (repetivel)", bios.keys.count("esc"), 2)
     check("esc veio depois do enter", bios.keys[-1], "esc")
+
+
+def test_goto_screen(menu):
+    print("\ntool goto_screen: chega numa tela do menu principal por nome, sem rota fixa")
+
+    # A tela chega no ARGUMENTO da chamada, nao numa Step declarada em
+    # tempo de import -- entao o unico jeito de exercitar isto de ponta a
+    # ponta e uma tela cujo fixture ja existe. 'advanced' e a propria
+    # pagina em que `menu` foi capturado, entao um unico ENTER (ancorar,
+    # contar ate o indice 1, apertar enter) basta para "chegar".
+    bios = FakeBios(menu, opens_to=[menu], simulate_nav=True)
+    result = run_tool("goto_screen", bios, args={"screen": "advanced"})
+    check_that("chegou", result.ok, result.error)
+    check("um enter, um nivel", bios.keys.count("enter"), 1)
+    # restore=False e o ponto do tool: ao contrario de cpu_temperature
+    # (que fecha tudo que abriu), aqui a BIOS deve FICAR na tela pedida.
+    check("nao restaurou (ficou na tela)", bios.keys.count("esc"), 0)
+    check("opened continua 1 (nao fechou)", bios.opened, 1)
+
+    # Tolerante a maiuscula/minuscula e espaco, mas nunca inventa uma tela
+    # que nao esteja em navigate.TOP_LEVEL_SCREENS -- normalizado ANTES de
+    # navegar, entao o teste abaixo nao precisa mexer no cursor.
+    bios_case = FakeBios(menu, opens_to=[menu], simulate_nav=True)
+    result_case = run_tool("goto_screen", bios_case, args={"screen": "Advanced"})
+    check_that("aceita grafia com maiuscula", result_case.ok, result_case.error)
+
+    bios_missing = FakeBios(menu, opens_to=[menu], simulate_nav=True)
+    result_missing = run_tool("goto_screen", bios_missing, args={})
+    check("sem parametro 'screen' -> falha, sem tocar teclado",
+          (result_missing.ok, bios_missing.keys), (False, []))
+
+    # 'hardware_monitor' e uma tela CONHECIDA (labels.SCREENS) mas nao e
+    # uma entrada de topo da barra lateral -- enter_main_menu_screen nao
+    # sabe chegar la direto, entao o tool tem que recusar em vez de tentar
+    # e falhar misteriosamente no meio da navegacao.
+    bios_nested = FakeBios(menu, opens_to=[menu], simulate_nav=True)
+    result_nested = run_tool("goto_screen", bios_nested,
+                             args={"screen": "hardware_monitor"})
+    check("tela aninhada (nao e topo da barra) -> recusa sem tocar teclado",
+          (result_nested.ok, bios_nested.keys), (False, []))
+
+    bios_unknown = FakeBios(menu, opens_to=[menu], simulate_nav=True)
+    result_unknown = run_tool("goto_screen", bios_unknown,
+                              args={"screen": "nao existe"})
+    check("tela desconhecida -> recusa sem tocar teclado",
+          (result_unknown.ok, bios_unknown.keys), (False, []))
+
+    # O schema que o assistant.py manda ao modelo tem que anunciar
+    # exatamente as telas alcancaveis -- nem mais (o modelo pediria uma
+    # tela que o tool vai recusar) nem menos (o modelo nem saberia que
+    # pode pedir).
+    from biostools import navigate
+    from biostools.assistant import _tool_schemas
+
+    schema = next(s for s in _tool_schemas()
+                  if s["function"]["name"] == "goto_screen")
+    check("enum do parametro 'screen' bate com as telas de topo",
+          set(schema["function"]["parameters"]["properties"]["screen"]["enum"]),
+          set(navigate.TOP_LEVEL_SCREENS))
+    check("'screen' e obrigatorio no schema",
+          schema["function"]["parameters"]["required"], ["screen"])
+
+
+def test_all_fields_scroll_merges_pages():
+    print("\nreader AllFields(scroll=True): junta campos que so aparecem depois de rolar")
+
+    # Caso real relatado 2026-08-28: "qual e a boot option 1?" respondeu
+    # so com os 5 campos do primeiro frame porque ninguem rolava o painel
+    # de conteudo. `screen.field_pairs` e o que qualquer AllFields chama
+    # por leitura -- trocado por um dublê aqui porque montar um contrato
+    # `full` de verdade so para variar entre leituras nao testaria nada
+    # que `field_pairs` em si (ja coberto em test_main_info/test_bios_info)
+    # nao cobre; o que este teste verifica e a MECANICA DE ROLAGEM, nao a
+    # extracao de pares.
+    import biostools.registry as registry_mod
+    from biostools.registry import AllFields
+
+    class _FakeSession:
+        def __init__(self):
+            self.keys = []
+
+        def press(self, key):
+            self.keys.append(key)
+
+        def read_stable(self, timeout=None):
+            return type("R", (), {"full": {}})()
+
+    seed = {"BIOS POST Logo Delay": "Standard", "Fast Boot": "Enabled"}
+    # O que cada tecla "down" revela: a 1a rolagem traz Boot Option #1
+    # (novidade), a 2a substitui a tela inteira por #1/#2 (ainda uma
+    # novidade, #2), e as duas seguintes nao trazem nada que ja nao
+    # estivesse acumulado -- duas leituras iguais seguidas e o sinal de
+    # "acabou", pelo `_scroll_and_merge`.
+    per_press = [
+        {"BIOS POST Logo Delay": "Standard", "Fast Boot": "Enabled",
+         "Boot Option #1": "Windows Boot Manager"},
+        {"Boot Option #1": "Windows Boot Manager", "Boot Option #2": "USB HDD"},
+        {"Boot Option #1": "Windows Boot Manager", "Boot Option #2": "USB HDD"},
+        {"Boot Option #1": "Windows Boot Manager", "Boot Option #2": "USB HDD"},
+    ]
+    calls = {"n": 0}
+
+    def fake_field_pairs(full, exclude_ids=frozenset()):
+        i = min(calls["n"], len(per_press) - 1)
+        calls["n"] += 1
+        return dict(per_press[i])
+
+    original = registry_mod.screen.field_pairs
+    registry_mod.screen.field_pairs = fake_field_pairs
+    try:
+        session = _FakeSession()
+        reader = AllFields(scroll=True, max_scroll=10)
+        values, steps, notes = reader._scroll_and_merge(session, seed)
+    finally:
+        registry_mod.screen.field_pairs = original
+
+    check("achou o campo que so aparecia depois de rolar",
+          values.get("Boot Option #1"), "Windows Boot Manager")
+    check("achou o segundo tambem", values.get("Boot Option #2"), "USB HDD")
+    check("nao perdeu os campos do frame inicial", values.get("Fast Boot"), "Enabled")
+    check("parou apos duas leituras sem nada novo, nao gastou os 10 do teto",
+          steps, 4)
+    check("sem aviso de 'pode haver mais' quando parou por fim de lista", notes, [])
+
+    # Segundo cenario: TODA rolagem traz algo novo (lista maior que o
+    # teto) -- tem que parar no `max_scroll` e AVISAR, nao voltar
+    # silenciosamente como se tivesse lido tudo.
+    calls["n"] = 0
+
+    def ever_growing(full, exclude_ids=frozenset()):
+        calls["n"] += 1
+        return {f"Boot Option #{calls['n']}": f"Device {calls['n']}"}
+
+    registry_mod.screen.field_pairs = ever_growing
+    try:
+        session2 = _FakeSession()
+        reader2 = AllFields(scroll=True, max_scroll=5)
+        values2, steps2, notes2 = reader2._scroll_and_merge(session2, {})
+    finally:
+        registry_mod.screen.field_pairs = original
+
+    check("gastou o teto inteiro (nunca deu stall)", steps2, 5)
+    check_that("avisou que pode haver mais campos", bool(notes2), notes2)
+
+
+def test_ask_sends_a_system_prompt(menu, readings):
+    print("\nassistant.ask: manda system prompt instruindo a responder direto")
+
+    # Regressao da causa raiz relatada 2026-08-28: `ask()` montava
+    # `messages` com APENAS a pergunta do usuario, sem nenhuma instrucao
+    # de como responder -- e o modelo (4B) devolvia a tela inteira em vez
+    # de responder a pergunta feita. Medido no endpoint real depois do
+    # fix: "o fast boot esta desabilitado ou habilitado?" passou de
+    # "O Fast Boot esta **habilitado**." para "Sim, o Fast Boot esta
+    # Enabled." -- direto, nomeando o campo, e com o valor literal (logo
+    # verificavel sem depender da tabela de sinonimos).
+    llm = _FakeLLM([
+        _tool_call_message("call_1", "cpu_temperature"),
+        _content_message("A temperatura da CPU esta em 61C no momento."),
+    ], port=18105)
+    try:
+        bios = FakeBios(menu, opens_to=[menu, readings])
+        assistant.ask("qual a temperatura da cpu?", bios, port=18105)
+    finally:
+        llm.close()
+
+    check_that("houve pelo menos uma chamada ao modelo", bool(llm.payloads),
+               f"payloads={llm.payloads}")
+    first = llm.payloads[0]
+    roles = [m.get("role") for m in first["messages"]]
+    check("a primeira mensagem e o system prompt", roles[0], "system")
+    check("a pergunta do usuario vem logo depois", roles[1], "user")
+
+    system_text = first["messages"][0]["content"]
+    # Nao trava a redacao exata do prompt (ela vai ser afinada contra o
+    # modelo real), so as duas instrucoes que existem por um motivo
+    # medido: responder direto, e citar o valor como lido -- esta segunda
+    # e o que mantem a verificacao do _finish possivel.
+    check_that("instrui a responder com sim/nao quando cabe",
+               "Sim" in system_text and "Não" in system_text, system_text)
+    check_that("instrui a citar o valor exatamente como lido",
+               "EXATAMENTE" in system_text, system_text)
+
+
+def test_verbatim_accepts_pt_br_toggle_synonyms():
+    print("\nassistant._verbatim: aceita traducao PT-BR de Enabled/Disabled etc, "
+          "sem afrouxar valores numericos/datas")
+    from biostools.assistant import _verbatim
+
+    check("Enabled == habilitado", _verbatim("Enabled", "sim, esta habilitado"), True)
+    check("Enabled == ativado", _verbatim("Enabled", "o campo esta ativado"), True)
+    check("Disabled == desabilitado",
+          _verbatim("Disabled", "nao, esta desabilitado"), True)
+    check("Disabled NAO == habilitado (nao inverte o sentido)",
+          _verbatim("Disabled", "sim, esta habilitado"), False)
+    check("On == ligado", _verbatim("On", "o modo esta ligado"), True)
+    check("valor numerico continua exigindo o literal (sem sinonimo)",
+          _verbatim("61C", "a cpu esta quente"), False)
+    check("valor numerico literal continua batendo normalmente",
+          _verbatim("61C", "a cpu esta a 61C"), True)
 
 
 def test_menu_walk(menu):
@@ -724,6 +968,10 @@ def main():
     test_main_info(main)
     test_bios_info(main)
     test_cpu_temperature(menu, readings)
+    test_goto_screen(menu)
+    test_all_fields_scroll_merges_pages()
+    test_ask_sends_a_system_prompt(menu, readings)
+    test_verbatim_accepts_pt_br_toggle_synonyms()
     test_assistant_catches_a_hallucinated_value(menu, readings)
     test_menu_walk(menu)
     test_walk_survives_stuck_cursor(menu)

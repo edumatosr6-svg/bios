@@ -74,6 +74,16 @@ def parse_args():
     parser.add_argument("--serial-port",
                         help="COM port of the USB-KM232 cable, e.g. COM3. Required "
                              "for any tool whose route needs to move the cursor.")
+    parser.add_argument("--screen",
+                        help="Argument for goto-screen, e.g. --screen boot. "
+                             "Ignored by every other tool.")
+    parser.add_argument("--term",
+                        help="Argument for find-setting: the name of the BIOS "
+                             "setting to look up. Ignored by other tools.")
+    parser.add_argument("--question",
+                        help="Optional for find-setting: the operator's "
+                             "original question, verbatim. Used for diagnosis "
+                             "and for the read-only guard.")
     parser.add_argument("--engine", choices=ENGINE_CHOICES, default=DEFAULT_ENGINE)
     parser.add_argument("--resolution", default="1280x720")
     parser.add_argument("--frames", type=int, default=1,
@@ -86,12 +96,86 @@ def parse_args():
     return parser.parse_args()
 
 
+# Subcommands that answer from committed files alone. Dispatched before
+# anything touches the camera or the cable -- an operator checking the
+# index the morning of a demo should not have to plug the machine in, and
+# a CI job has neither. They are named in the same `tool` slot as a real
+# tool because that is where an operator's fingers already go; the check
+# below is what keeps them from being routed into `registry.get`.
+def validate_index_command(args):
+    from . import index
+
+    try:
+        data = index.load()
+    except (index.IndexMissing, index.IndexInvalid) as e:
+        print(f"indice invalido: {e}")
+        return 1
+    pages = len(data["pages"])
+    print(f"indice ok: {len(data['entries'])} rotulos em {pages} pagina(s), "
+          f"capturado em {data['captured_at']} "
+          f"({data['bios_model']} {data['bios_version']})")
+    print(index.coverage(data)["text"])
+    return 0
+
+
+def validate_question_bank_command(args):
+    from . import question_bank
+
+    try:
+        questions = question_bank.load()
+    except question_bank.BankInvalid as e:
+        print(f"banco invalido: {e}")
+        return 1
+    counts = question_bank.counts(questions)
+    print(f"banco: {counts['total']} perguntas "
+          f"({counts['nao_ensaiada']} nao ensaiadas, "
+          f"{counts['nao_existe']} 'nao-existe', "
+          f"{counts['fora_de_escopo_escrita']} 'fora-de-escopo-escrita')")
+    problems = question_bank.shortfalls(questions)
+    for problem in problems:
+        print(f"  ! {problem}")
+    if problems:
+        print("  -> K1-K4 permanecem NAO MEDIDO ate isto ser resolvido "
+              "(CA-F5.5); as perguntas nao ensaiadas tem de ser escritas por "
+              "uma pessoa que nao viu a implementacao.")
+    return 1 if problems else 0
+
+
+def kpis_command(args):
+    from . import kpis
+
+    report = kpis.full_report()
+    print(report.as_text())
+    failed = [k for k in report.automatic if k.ok is False]
+    return 1 if failed else 0
+
+
+OFFLINE_COMMANDS = {
+    "validate_index": validate_index_command,
+    "validate_question_bank": validate_question_bank_command,
+    "kpis": kpis_command,
+}
+
+
 def main():
     args = parse_args()
+
+    if args.tool:
+        offline = OFFLINE_COMMANDS.get(args.tool.replace("-", "_"))
+        if offline is not None:
+            return offline(args)
 
     if args.list or not (args.tool or args.ask):
         for name, question in list_tools().items():
             print(f"  {name.replace('_', '-'):24s} {question}")
+        print("\n  verificacoes offline (sem camera nem cabo):")
+        for name in sorted(OFFLINE_COMMANDS):
+            print(f"  {name.replace('_', '-'):24s} ", end="")
+            print({"validate_index":
+                   "Valida data/label_index.json e mostra a cobertura",
+                   "validate_question_bank":
+                   "Valida specs/.../question-bank.md (K14)",
+                   "kpis": "Relatorio de KPIs: bloco automatico + bancada"}[name])
         return 0 if args.list else 1
 
     try:
@@ -115,7 +199,7 @@ def main():
         except UnknownTool as e:
             sys.exit(str(e))
 
-        if tool.route and not args.serial_port:
+        if (tool.route or tool.router) and not args.serial_port:
             sys.exit(
                 f"{args.tool} has to move the cursor to reach its screen, so it needs "
                 f"the USB-KM232 cable: pass --serial-port (e.g. --serial-port COM3). "
@@ -166,7 +250,14 @@ def main():
                 )
                 return 1 if failed else 0
 
-            result = tool.run(session)
+            tool_args = {}
+            if args.screen:
+                tool_args["screen"] = args.screen
+            if args.term:
+                tool_args["term"] = args.term
+            if args.question:
+                tool_args["question"] = args.question
+            result = tool.run(session, args=tool_args or None)
     except CameraUnavailable as e:
         sys.exit(f"camera: {e}")
     except ActuatorUnavailable as e:
