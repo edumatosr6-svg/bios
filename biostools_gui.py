@@ -35,6 +35,7 @@ import queue
 import subprocess
 import sys
 import threading
+import time
 import tkinter as tk
 from tkinter import scrolledtext, ttk
 
@@ -49,13 +50,13 @@ from biostools.session import ActuatorUnavailable, CameraUnavailable
 
 AI_CHECK_TIMEOUT = 2.0
 
-# How long to wait before deciding an `ssh -L ...` child is actually up.
-# Too short and a slow handshake reads as a failure; too long and a
-# genuine auth/connection failure (which exits almost immediately) leaves
-# the operator staring at "abrindo..." for no reason. 2s covers a normal
-# LAN handshake with room to spare -- this is a local factory network,
-# not a link expected to be slow.
-TUNNEL_STARTUP_WAIT_MS = 2000
+# How often `_poll_tunnel` checks whether the ssh child is still alive,
+# and how long to wait, from launch, before treating "still alive" as
+# "the tunnel is up" -- has to be generous enough for a human to notice a
+# password prompt in the console window that popped up and type into it,
+# not just long enough for the network handshake itself.
+TUNNEL_POLL_INTERVAL_MS = 1500
+TUNNEL_GRACE_PERIOD_S = 8
 
 
 class _Indicator:
@@ -345,67 +346,78 @@ class BiosAssistantApp:
             self.tunnel_status_var.set(f"porta de IA invalida: {self.llm_port_var.get()!r}")
             return
 
-        # -N: only forward, never run a remote command. -o BatchMode=yes:
-        # NEVER prompt for a password/passphrase -- this project's own
-        # rule is that a password is never entered on someone's behalf,
-        # and a subprocess with no attached terminal would just hang
-        # forever on a prompt nobody can answer. Key-based auth only; if
-        # that is not set up, this fails fast instead of hanging, and the
-        # stderr captured below says so. -o StrictHostKeyChecking=accept-new
-        # avoids the equivalent interactive prompt for a first-time host
-        # (still verified on every later connection, just not asked about
-        # this once) -- also required for BatchMode not to simply refuse
-        # an unknown host outright.
+        # -N: only forward, never run a remote command. No BatchMode, and
+        # (on Windows) CREATE_NEW_CONSOLE instead of CREATE_NO_WINDOW: ssh
+        # gets a REAL, separate console, so a password or host-key
+        # confirmation prompt shows up exactly as it would in a terminal
+        # the operator opened by hand -- and the operator types straight
+        # into THAT window. This process only ever watches whether the
+        # child is still alive (`proc.poll()`); it never reads, stores,
+        # or relays a single byte of what gets typed there. That is the
+        # line: automating the *launch* of an interactive prompt is
+        # convenience, capturing or entering the *credential* on someone's
+        # behalf is the thing this project never does, in the GUI or
+        # anywhere else. -o StrictHostKeyChecking=accept-new still saves
+        # one extra prompt for a first-time host (later connections are
+        # still verified against known_hosts as usual).
         cmd = [
             "ssh", "-N",
             "-L", f"{port}:127.0.0.1:{port}",
-            "-o", "BatchMode=yes",
             "-o", "StrictHostKeyChecking=accept-new",
-            "-o", "ConnectTimeout=10",
+            "-o", "ConnectTimeout=15",
             target,
         ]
         kwargs = {}
         if sys.platform == "win32":
-            kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+            kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
 
-        self.tunnel_status_var.set("abrindo...")
-        self.tunnel_button.config(state=tk.DISABLED)
+        self.tunnel_status_var.set("abrindo -- digite a senha na janela que abriu, se pedido")
         try:
-            self.tunnel_process = subprocess.Popen(
-                cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
-                text=True, **kwargs)
+            self.tunnel_process = subprocess.Popen(cmd, **kwargs)
         except FileNotFoundError:
             self.tunnel_process = None
-            self.tunnel_button.config(state=tk.NORMAL)
             self.tunnel_status_var.set(
                 "'ssh' nao encontrado -- instale o OpenSSH Client do Windows "
                 "(Configuracoes > Aplicativos > Recursos opcionais)")
             return
 
-        self.root.after(TUNNEL_STARTUP_WAIT_MS, self._check_tunnel_started)
+        self._tunnel_confirmed = False
+        self._tunnel_opened_at = time.monotonic()
+        self.tunnel_button.config(text="Fechar tunel")
+        self.root.after(TUNNEL_POLL_INTERVAL_MS, self._poll_tunnel)
 
-    def _check_tunnel_started(self):
-        """Ran once, `TUNNEL_STARTUP_WAIT_MS` after launch: a tunnel that
-        fails (bad host, auth rejected, port already in use) exits almost
-        immediately, so still being alive after this wait is the signal
-        it is up -- confirmed for real by handing off to `_check_ai`,
-        which is the same reachability probe "Conectar" already uses,
-        rather than trusting "the process didn't crash" on its own.
+    def _poll_tunnel(self):
+        """Runs every `TUNNEL_POLL_INTERVAL_MS` for as long as a tunnel
+        process is tracked -- not a one-shot check. Two jobs: notice a
+        tunnel that never came up (wrong password typed, host unreachable,
+        port already in use -- ssh exits, often within seconds) without
+        guessing why from here (that detail is in the console window
+        itself, not captured by this process), and notice a tunnel that
+        was up and later dropped (window closed, network blip) instead of
+        the GUI silently believing a dead tunnel is still there.
         """
         proc = self.tunnel_process
         if proc is None:
-            return
-        self.tunnel_button.config(state=tk.NORMAL)
+            return  # closed via the button meanwhile; nothing to poll
         code = proc.poll()
         if code is not None:
-            detail = (proc.stderr.read() or "").strip() if proc.stderr else ""
             self.tunnel_process = None
+            self.tunnel_button.config(text="Abrir tunel")
             self.tunnel_status_var.set(
-                f"tunel caiu (codigo {code}): {detail[:80] or 'sem detalhe'}")
+                f"tunel fechou (codigo {code}) -- veja a janela do terminal "
+                f"que abriu para o motivo")
             return
-        self.tunnel_button.config(text="Fechar tunel")
-        self.tunnel_status_var.set(f"tunel ativo (pid {proc.pid})")
-        self._check_ai()
+        elapsed = time.monotonic() - self._tunnel_opened_at
+        if not self._tunnel_confirmed and elapsed >= TUNNEL_GRACE_PERIOD_S:
+            # Enough time for a human to notice the prompt and type a
+            # password; still alive past this point is the signal it is
+            # up. Confirmed for real by handing off to `_check_ai`, the
+            # same reachability probe "Conectar" already uses, rather than
+            # trusting "the process didn't exit" on its own.
+            self._tunnel_confirmed = True
+            self.tunnel_status_var.set(f"tunel ativo (pid {proc.pid})")
+            self._check_ai()
+        self.root.after(TUNNEL_POLL_INTERVAL_MS, self._poll_tunnel)
 
     def _close_tunnel(self):
         if self.tunnel_process is None:
