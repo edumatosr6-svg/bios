@@ -5,3 +5,6 @@ rapidocr==3.9.2
 onnxruntime==1.28.0
 openvino==2026.3.0
 pyserial>=3.5
+numpy>=2.0
+requests>=2.32
+reportlab>=5.0
