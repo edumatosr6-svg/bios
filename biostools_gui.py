@@ -32,19 +32,31 @@ thread, which is the only thread allowed to touch widgets.
 from __future__ import annotations
 
 import queue
+import subprocess
+import sys
 import threading
+import time
 import tkinter as tk
 from tkinter import scrolledtext, ttk
 
 from actuator import CableNotResponding, list_serial_ports
 from capture import list_camera_devices
-from extract import DEFAULT_HOST, DEFAULT_MODEL, DEFAULT_PORT
+from extract import DEFAULT_HOST, DEFAULT_PORT
 from ocr import DEFAULT_ENGINE, ENGINE_CHOICES
 
 from biostools import BiosSession, list_tools, run_tool
+from biostools.assistant import ASSISTANT_MODEL
 from biostools.session import ActuatorUnavailable, CameraUnavailable
 
 AI_CHECK_TIMEOUT = 2.0
+
+# How often `_poll_tunnel` checks whether the ssh child is still alive,
+# and how long to wait, from launch, before treating "still alive" as
+# "the tunnel is up" -- has to be generous enough for a human to notice a
+# password prompt in the console window that popped up and type into it,
+# not just long enough for the network handshake itself.
+TUNNEL_POLL_INTERVAL_MS = 1500
+TUNNEL_GRACE_PERIOD_S = 8
 
 
 class _Indicator:
@@ -86,6 +98,7 @@ class BiosAssistantApp:
         self.busy = False
         self.queue = queue.Queue()
         self.tools_window = None
+        self.tunnel_process = None
 
         self._build_ui()
         self._refresh_devices()
@@ -124,8 +137,31 @@ class BiosAssistantApp:
         self.llm_port_var = tk.StringVar(value=str(DEFAULT_PORT))
         ttk.Entry(row2, textvariable=self.llm_port_var, width=7).pack(side=tk.LEFT, padx=(4, 8))
         ttk.Label(row2, text="modelo:").pack(side=tk.LEFT)
-        self.llm_model_var = tk.StringVar(value=DEFAULT_MODEL)
+        # The assistant's own model, not the OCR-extraction one -- this
+        # field only ever feeds assistant.ask(). See assistant.py for
+        # the measurement behind the choice.
+        self.llm_model_var = tk.StringVar(value=ASSISTANT_MODEL)
         ttk.Entry(row2, textvariable=self.llm_model_var, width=18).pack(side=tk.LEFT, padx=(4, 0))
+
+        # Optional: the machine running the LLM binds its API to loopback
+        # only (see docs/reference/MANUAL_APRESENTACAO_BIOS.md, "Máquina de
+        # IA") -- when it hasn't been reconfigured to listen on the LAN, an
+        # SSH tunnel is what makes "IA host: 127.0.0.1" above actually
+        # reach it. Independent of "Conectar": the tunnel is a network
+        # path to the IA, not part of the camera/cable session, so it has
+        # its own open/close pair rather than being folded into connect.
+        row_tunnel = ttk.Frame(conn)
+        row_tunnel.pack(fill=tk.X, padx=6, pady=(2, 2))
+        ttk.Label(row_tunnel, text="Tunel SSH ate a IA (opcional):").pack(side=tk.LEFT)
+        self.ssh_target_var = tk.StringVar()
+        ttk.Entry(row_tunnel, textvariable=self.ssh_target_var, width=22).pack(
+            side=tk.LEFT, padx=(4, 8))
+        self.tunnel_button = ttk.Button(row_tunnel, text="Abrir tunel",
+                                        command=self._toggle_tunnel)
+        self.tunnel_button.pack(side=tk.LEFT)
+        self.tunnel_status_var = tk.StringVar(value="sem tunel")
+        ttk.Label(row_tunnel, textvariable=self.tunnel_status_var).pack(
+            side=tk.LEFT, padx=(8, 0))
 
         row_nav = ttk.Frame(conn)
         row_nav.pack(fill=tk.X, padx=6, pady=(2, 2))
@@ -291,6 +327,114 @@ class BiosAssistantApp:
         self.connect_button.config(state=tk.NORMAL)
         self.disconnect_button.config(state=tk.DISABLED)
 
+    # -- SSH tunnel to the IA machine ---------------------------------------
+
+    def _toggle_tunnel(self):
+        if self.tunnel_process is None:
+            self._open_tunnel()
+        else:
+            self._close_tunnel()
+
+    def _open_tunnel(self):
+        target = self.ssh_target_var.get().strip()
+        if not target:
+            self.tunnel_status_var.set("informe usuario@host antes de abrir")
+            return
+        try:
+            port = int(self.llm_port_var.get())
+        except ValueError:
+            self.tunnel_status_var.set(f"porta de IA invalida: {self.llm_port_var.get()!r}")
+            return
+
+        # -N: only forward, never run a remote command. No BatchMode, and
+        # (on Windows) CREATE_NEW_CONSOLE instead of CREATE_NO_WINDOW: ssh
+        # gets a REAL, separate console, so a password or host-key
+        # confirmation prompt shows up exactly as it would in a terminal
+        # the operator opened by hand -- and the operator types straight
+        # into THAT window. This process only ever watches whether the
+        # child is still alive (`proc.poll()`); it never reads, stores,
+        # or relays a single byte of what gets typed there. That is the
+        # line: automating the *launch* of an interactive prompt is
+        # convenience, capturing or entering the *credential* on someone's
+        # behalf is the thing this project never does, in the GUI or
+        # anywhere else. -o StrictHostKeyChecking=accept-new still saves
+        # one extra prompt for a first-time host (later connections are
+        # still verified against known_hosts as usual).
+        cmd = [
+            "ssh", "-N",
+            "-L", f"{port}:127.0.0.1:{port}",
+            "-o", "StrictHostKeyChecking=accept-new",
+            "-o", "ConnectTimeout=15",
+            target,
+        ]
+        kwargs = {}
+        if sys.platform == "win32":
+            kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+
+        self.tunnel_status_var.set("abrindo -- digite a senha na janela que abriu, se pedido")
+        try:
+            self.tunnel_process = subprocess.Popen(cmd, **kwargs)
+        except FileNotFoundError:
+            self.tunnel_process = None
+            self.tunnel_status_var.set(
+                "'ssh' nao encontrado -- instale o OpenSSH Client do Windows "
+                "(Configuracoes > Aplicativos > Recursos opcionais)")
+            return
+
+        self._tunnel_confirmed = False
+        self._tunnel_opened_at = time.monotonic()
+        self.tunnel_button.config(text="Fechar tunel")
+        self.root.after(TUNNEL_POLL_INTERVAL_MS, self._poll_tunnel)
+
+    def _poll_tunnel(self):
+        """Runs every `TUNNEL_POLL_INTERVAL_MS` for as long as a tunnel
+        process is tracked -- not a one-shot check. Two jobs: notice a
+        tunnel that never came up (wrong password typed, host unreachable,
+        port already in use -- ssh exits, often within seconds) without
+        guessing why from here (that detail is in the console window
+        itself, not captured by this process), and notice a tunnel that
+        was up and later dropped (window closed, network blip) instead of
+        the GUI silently believing a dead tunnel is still there.
+        """
+        proc = self.tunnel_process
+        if proc is None:
+            return  # closed via the button meanwhile; nothing to poll
+        code = proc.poll()
+        if code is not None:
+            self.tunnel_process = None
+            self.tunnel_button.config(text="Abrir tunel")
+            self.tunnel_status_var.set(
+                f"tunel fechou (codigo {code}) -- veja a janela do terminal "
+                f"que abriu para o motivo")
+            return
+        elapsed = time.monotonic() - self._tunnel_opened_at
+        if not self._tunnel_confirmed and elapsed >= TUNNEL_GRACE_PERIOD_S:
+            # Enough time for a human to notice the prompt and type a
+            # password; still alive past this point is the signal it is
+            # up. Confirmed for real by handing off to `_check_ai`, the
+            # same reachability probe "Conectar" already uses, rather than
+            # trusting "the process didn't exit" on its own.
+            self._tunnel_confirmed = True
+            self.tunnel_status_var.set(f"tunel ativo (pid {proc.pid})")
+            self._check_ai()
+        self.root.after(TUNNEL_POLL_INTERVAL_MS, self._poll_tunnel)
+
+    def _close_tunnel(self):
+        if self.tunnel_process is None:
+            return
+        # terminate() sends SIGTERM (Windows: TerminateProcess) -- there is
+        # no in-flight hardware state to protect here, unlike
+        # `_disconnect`'s refusal while busy; a port forward has nothing
+        # equivalent to a stuck key mid-press.
+        self.tunnel_process.terminate()
+        try:
+            self.tunnel_process.wait(timeout=3)
+        except subprocess.TimeoutExpired:
+            self.tunnel_process.kill()
+        self.tunnel_process = None
+        self.tunnel_button.config(text="Abrir tunel")
+        self.tunnel_status_var.set("sem tunel")
+
     def _check_ai(self):
         """A lightweight reachability probe, separate from asking a real
         question -- so the light can turn red/green without spending a
@@ -433,6 +577,8 @@ class BiosAssistantApp:
             return
         if self.session is not None:
             self.session.close()
+        if self.tunnel_process is not None:
+            self._close_tunnel()
         self.root.destroy()
 
 
