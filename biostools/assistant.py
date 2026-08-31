@@ -71,6 +71,37 @@ def _tool_schemas():
     return schemas
 
 
+# The model this loop asks, deliberately NOT `extract.DEFAULT_MODEL`.
+#
+# That constant is shared with the OCR field-extraction path
+# (`watcher.py`, `gui.py`, `main.py`, `cognition.py`), which is a
+# different job with different economics: it runs per captured frame and
+# only has to copy values out of OCR text, which the 4B already does.
+# Nothing here was measured against that path, so nothing here should
+# silently change it -- one constant serving two unrelated workloads is
+# how a latency regression reaches code nobody was testing.
+#
+# Measured 2026-08-28 on the real endpoint, this loop's three live
+# failure cases, tool choice then final phrasing:
+#
+#   qwen3-it-4b-FLM        2.7-3.1s/call   goto_screen for "fast boot?"
+#   qwen3.6-moe-35b-a3b    11.5-28.6s/call find_setting("Fast Boot")
+#
+# The MoE routes more precisely -- it picks the tool that reads the ONE
+# setting asked about, where the 4B picks the one that reads the whole
+# screen and leaves the filtering to later. Both phrase the final answer
+# identically ("Sim, o Fast Boot está Enabled."). It costs ~4x the
+# latency: ~10.3 tok/s, so a full question (route + phrase) is ~25s
+# against ~6s. That trade was made deliberately, with both numbers in
+# hand -- precision over speed for an operator asking one question at a
+# time, not a throughput path.
+#
+# NOTE the A3B did NOT buy back the speed its 3B active parameters
+# suggest: the FLM/NPU runtime appears to charge for the full 35B. That
+# was predicted otherwise before it was measured; keep the measurement,
+# not the prediction, if this is revisited.
+ASSISTANT_MODEL = "qwen3.6-moe-35b-a3b-FLM"
+
 # Rounds of "model requests tools, gets results back" before giving up.
 # Bounds a model stuck re-requesting the same reading -- these tools drive
 # real hardware and a runaway loop must not run unbounded, even read-only.
@@ -102,7 +133,8 @@ Regras:
 2. A frase tem que se sustentar sozinha: nomeie o campo e cite o valor lido EXATAMENTE como a tool devolveu (ex.: "Enabled", "61C", "06/26/2026 16:01:12"), sem reformatar, traduzir ou reordenar o valor em si. Ex.: "Sim, o Fast Boot está Enabled." Uma resposta de uma palavra só ("Habilitado") não serve -- quem lê depois não sabe de qual campo era.
 3. Não liste os outros campos da tela que não foram perguntados. A tool pode ler a tela inteira; a resposta é só sobre o que o usuário pediu.
 4. Se a tool não trouxe o campo perguntado, diga isso claramente. Nunca invente, estime ou complete um valor que não foi lido.
-5. Antes de dizer que uma informação não está disponível, tente a tool find_setting, passando em `term` só o nome do ajuste (ex.: "hora do sistema", "Bootup NumLock State") -- ela procura QUALQUER configuração desta BIOS pelo nome, mesmo sem tool nomeada para o assunto. Só conclua que não há resposta depois que find_setting também não achar."""
+5. Antes de dizer que uma informação não está disponível, tente a tool find_setting, passando em `term` só o nome do ajuste (ex.: "hora do sistema", "Bootup NumLock State") -- ela procura QUALQUER configuração desta BIOS pelo nome, mesmo sem tool nomeada para o assunto. Só conclua que não há resposta depois que find_setting também não achar.
+6. Se find_setting responder que o ajuste "não existe nesta BIOS", tente explore_setting com o MESMO `term` antes de repassar essa resposta ao usuário -- explore_setting procura ao vivo na tela em vez de um índice que pode estar desatualizado ou incompleto. Só diga que a informação não existe depois que as duas tiverem tentado."""
 
 
 class RoutingError(Exception):
@@ -231,13 +263,24 @@ def _deterministic_answer(calls):
 
 
 def ask(question, session, host=DEFAULT_HOST, port=DEFAULT_PORT,
-        model=DEFAULT_MODEL, timeout=60, nav_mode="keyboard"):
+        model=ASSISTANT_MODEL, timeout=180, nav_mode="keyboard"):
     """The whole loop: let the model call tools until it can answer, then
     verify what it says before showing it.
 
     `nav_mode` is the operator's choice of how any tool the model picks
     drives sidebar navigation -- "keyboard", "mouse", or "auto" -- passed
     straight through to every `run_tool` call this loop makes.
+
+    `timeout` is per model call, not per question -- a question needing
+    several rounds gets this budget for each. Raised from 60s when
+    `ASSISTANT_MODEL` became the MoE: the slowest call measured on it was
+    28.6s (a cold load), against 2.7-3.1s for the 4B it replaced, and a
+    long answer generated at ~10 tok/s eats the rest of a 60s budget
+    quickly. Too short a timeout here fails as "chamada ao modelo
+    falhou", which reads like a broken endpoint rather than a slow one --
+    the confusing shape. Too long only means waiting longer to learn the
+    endpoint is genuinely dead, which the status light already shows
+    separately.
 
     Never raises for "no tool matched" or a tool that found nothing on
     screen -- those are answers, returned in `.answer`. Only an
@@ -250,6 +293,7 @@ def ask(question, session, host=DEFAULT_HOST, port=DEFAULT_PORT,
                 {"role": "user", "content": question}]
     calls = []
     nudged = False
+    nudged_explore = False
 
     for _ in range(MAX_ROUNDS):
         try:
@@ -324,6 +368,34 @@ def ask(question, session, host=DEFAULT_HOST, port=DEFAULT_PORT,
                 tool_content = json.dumps({"error": "tool desconhecida"})
             messages.append({
                 "role": "tool", "tool_call_id": tc["id"], "content": tool_content,
+            })
+
+        # Same belt-and-suspenders shape as the `nudged` guard above, one
+        # step later in the chain: rule 6 in the prompt is not enough on
+        # its own either, for the identical reason rule 5 needed a nudge
+        # -- a model that just received find_setting's honest "não existe"
+        # can simply repeat that as its final answer instead of trying
+        # explore_setting, and `_finish` cannot catch it (the refusal
+        # verifies vacuously against a required-values list that is
+        # itself empty). Fires once, only when find_setting is the tool
+        # that just abstained -- never for a call that actually found
+        # something, and never twice, so a genuinely absent setting still
+        # reaches "não existe" in bounded rounds instead of looping.
+        find_setting_abstained = any(
+            c.tool == "find_setting" and c.result is not None
+            and c.result.ok and c.result.value is None
+            for c in calls[len(calls) - len(tool_calls):]
+        )
+        explore_already_tried = any(c.tool == "explore_setting" for c in calls)
+        if find_setting_abstained and not explore_already_tried and not nudged_explore:
+            nudged_explore = True
+            messages.append({
+                "role": "user",
+                "content": ("find_setting não achou no índice. Antes de "
+                            "concluir que o ajuste não existe: chame "
+                            "explore_setting com o MESMO `term`, que procura "
+                            "ao vivo na tela em vez do índice. Só desista se "
+                            "explore_setting também não achar."),
             })
 
     return AssistantAnswer(

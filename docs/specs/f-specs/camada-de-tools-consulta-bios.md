@@ -8,15 +8,25 @@ Existe porque o ciclo ler→agir→verificar foi provado em hardware real em 202
 
 ## Escopo
 
-Três tools, definidas pelo usuário:
+Começou com três tools definidas pelo usuário (`main_menu`, `main_info`, `cpu_temperature`); cresceu para **32** ao longo do projeto, a maioria em uma sessão só (2026-08-31) puxando o índice de rótulos e navegação ao vivo. Duas famílias de tool convivem:
 
-| Tool | Pergunta | Forma da resposta |
-|---|---|---|
-| `main_menu` | Quais opções existem no menu principal? | lista de opções |
-| `main_info` | O que a tela Main informa (versão da BIOS, etc.)? | pares rótulo→valor |
-| `cpu_temperature` | Qual a temperatura da CPU? | um campo |
+- **Genéricas** (4): `goto_screen` (qualquer tela de topo, lê tudo), `find_setting`/`explore_setting` (qualquer ajuste pelo nome, índice ou varredura ao vivo), `main_menu` (caminha o menu).
+- **Nomeadas** (28): uma pergunta fixa cada, agrupadas por onde vivem:
 
-- **Dentro**: sessão compartilhada (câmera + pipeline quente + atuador), leitura do contrato com resolução de cursor, navegação verificada com guardas de parada, caminhada por menu, extração de pares rótulo→valor, registro declarativo, CLI, e suíte offline (`test_biostools.py`).
+| Tela | Tools |
+|---|---|
+| Main | `main_info`, `bios_info`, `system_datetime`, `ec_info`, `product_info`, `memory_info`, `mac_address`, `management_engine_info` |
+| Security | `password_policy`, `flash_protection_status`, `removable_storage_policy` |
+| Boot | `fast_boot_status`, `numlock_settings`, `bios_post_settings`, `boot_hotkeys`, `boot_order`, `boot_device_integrity` |
+| Advanced (campos próprios) | `wake_settings`, `usb_charger_mode`, `sata_mode`, `graphics_settings`, `virtualization_status`, `audio_dsp_status` |
+| Advanced → Hardware Monitor | `cpu_temperature`, `fan_speed` |
+| Advanced → Trusted Computing | `tpm_status` |
+| Advanced → Device Control | `device_control_info` |
+| Advanced → Absolute Persistence(R) Module | `absolute_persistence_status` |
+
+A lista completa e atualizada, sempre: `py -3.13 -m biostools --list`.
+
+- **Dentro**: sessão compartilhada (câmera + pipeline quente + atuador), leitura do contrato com resolução de cursor, navegação verificada com guardas de parada, caminhada por menu, extração de pares rótulo→valor (com rolagem de página quando o campo mora além do primeiro screenful — ver "Rolagem de página" abaixo), registro declarativo, CLI, e suíte offline (`test_biostools.py`).
 - **Fora**: alterar configuração da BIOS — esta geração **observa**, e `registry.SAFE_KEYS` recusa rota que use tecla capaz de modificar (`+`/`-`/F10/`y`). Também fora: tool-calling por LLM (a saída já nasce estruturada para isso, mas nada foi ligado a um modelo) e empacotamento em `.exe`.
 - **Não substitui** `bios_navigate_demo.py`, que fica como registro do experimento.
 
@@ -146,6 +156,10 @@ Compartilhar a sessão é o que torna "tool chamando tool" viável. `import bios
 
 Motor de OCR: o default do projeto ([`selecao-motor-ocr.md`](selecao-motor-ocr.md)). Cabo: [`cabo-usb-km232.md`](../d-specs/cabo-usb-km232.md).
 
+### Rolagem de página
+
+Um campo pedido nem sempre está no primeiro screenful da tela onde a tool navega — `registry.Fields`/`AllFields` aceitam `scroll=True` para continuar pressionando `scroll_key` até achar. O critério de quando parar de rolar (achou tudo, ou a página realmente acabou) foi corrigido duas vezes ao vivo em 2026-08-31, contra hardware real, depois de o primeiro critério (e o segundo) terem se mostrado errados em produção — ver [`sinal-de-progresso-de-rolagem-precisa-ser-a-pagina-inteira.md`](../p-specs/sinal-de-progresso-de-rolagem-precisa-ser-a-pagina-inteira.md) para a história completa e as medições. Resumo: o sinal de "ainda tem coisa nova" tem que ser o **texto bruto da tela inteira**, não o campo específico pedido nem só os pares rótulo→valor — os dois sinais mais estreitos liam prosa de ajuda rolando como "parei" e desistiam no meio de uma página que ainda tinha o campo pedido mais adiante.
+
 ## Critérios de aceite
 
 `py -3.13 test_biostools.py` — suíte offline, sem câmera e sem cabo, com um `FakeBios` servindo contratos reais e movendo um cursor simulado. 28 verificações, cobrindo:
@@ -166,17 +180,18 @@ Complementarmente: `py -3.13 -m perception.run --describe` continua listando os 
 
 ## Status
 
-**Em andamento — 2026-08-20.** As três tools implementadas, com suíte offline passando (28 verificações).
+**32 tools registradas — 2026-08-31.** Cresceu de 3 (2026-08-20) para 32 em várias sessões, a maior parte delas puxando conceitos já `CONFIRMADO` de `data/label_index.json` (o índice colhido em 2026-08-28) ou navegando ao vivo para os submenus de Advanced que aquele índice não cobria (Trusted Computing, Device Control, Absolute Persistence — este último nem estava previsto em `labels.py` até ser encontrado ao vivo). Suíte offline com mais de 100 verificações, `py -3.13 test_biostools.py` — "tudo passou".
 
-**`cpu_temperature` validada fim a fim contra hardware real no mesmo dia — primeira tool a fechar o ciclo.** Partindo da página Advanced, navegou três passos sozinha (`MAC Address Pass-Through` → `Trusted Computing` → `Device Control` → `Hardware Monitor`), abriu com ENTER e leu `CPU Temperature: 64 C`. Conferido contra a tela: `64 C` e `3098 RPM` são o que o monitor mostrava.
+**`cpu_temperature` validada fim a fim contra hardware real em 2026-08-20 — primeira tool a fechar o ciclo.** Partindo da página Advanced, navegou três passos sozinha (`MAC Address Pass-Through` → `Trusted Computing` → `Device Control` → `Hardware Monitor`), abriu com ENTER e leu `CPU Temperature: 64 C`. Conferido contra a tela: `64 C` e `3098 RPM` são o que o monitor mostrava. Roda com o motor default em ~5-10s e é repetível.
 
-**Roda com o motor default, em ~5-10s, e é repetível** (4 execuções seguidas OK). A primeira versão só funcionava com `--engine paddleocr` a 63.5s; ver "Cursor pelo caminho legado" acima para o porquê e a correção.
-
-`main_menu` e `main_info` **rodaram e falharam** — bloqueadas pela semântica de foco descrita abaixo, não por defeito da camada.
+**27 das 28 tools nomeadas validadas ao vivo em 2026-08-31**, contra uma unidade real (Positivo, BIOS `1.2.5.XD22.I219V.P`) — incluindo todas as que dependem de rolagem de página, só depois da correção descrita em "Rolagem de página" acima. Só `main_menu`/`main_info` continuam bloqueadas (ver abaixo). A sessão de validação foi interrompida por uma falha de hardware real (o cabo USB-KM232 parou de responder, `CableNotResponding`) no meio de uma varredura completa — não uma falha de software; a maioria das tools já tinha sido confirmada individualmente antes disso.
 
 ## Questões em aberto
 
-- **A barra lateral é indetectável enquanto o cursor está nela — é isto que bloqueia `main_menu` e `main_info`.** A semântica de foco foi medida tecla a tecla e não é mais incógnita: `left` leva do conteúdo para a lateral, **`right` volta**, `right` a partir do conteúdo vai para a coluna de ícones da direita, e `esc` sobe um nível. A lateral responde a up/down. O problema é outro: **a aba ativa e o cursor desenham barras escuras quase idênticas**, então com o cursor em `Main` e a aba em `Advanced` existem **duas barras**, e `selection.py` corretamente se recusa a eleger uma (devolve vazio, pela própria disciplina de "um único vencedor"). Confirmado por screenshot. Consequência: com o foco na lateral **nenhuma tool navega** — até `cpu_temperature` falha com `cursor_undetermined` até alguém apertar `right`. Resolver isso exige distinguir aba ativa de cursor na lateral, o que nenhum dos dois caminhos faz hoje.
+- **A barra lateral é indetectável enquanto o cursor está nela — é isto que bloqueia `main_menu` e `main_info`.** A semântica de foco foi medida tecla a tecla e não é mais incógnita: `left` leva do conteúdo para a lateral, **`right` volta**, `right` a partir do conteúdo vai para a coluna de ícones da direita, e `esc` sobe um nível. A lateral responde a up/down. O problema é outro: **a aba ativa e o cursor desenham barras escuras quase idênticas**, então com o cursor em `Main` e a aba em `Advanced` existem **duas barras**, e `selection.py` corretamente se recusa a eleger uma (devolve vazio, pela própria disciplina de "um único vencedor"). Confirmado por screenshot. Consequência: com o foco na lateral **nenhuma tool navega** — até `cpu_temperature` falha com `cursor_undetermined` até alguém apertar `right`. Resolver isso exige distinguir aba ativa de cursor na lateral, o que nenhum dos dois caminhos faz hoje. Ainda não resolvido em 2026-08-31.
 - **Depende do nível menos confiável do motor.** [`motor-percepcao-interface.md`](motor-percepcao-interface.md) documenta `nav_menu` como sólido (0.76–0.91) e `settings_list` como não confiável. A rota da `cpu_temperature` passa exatamente por um `settings_list`. A taxa real de abstenção ao vivo é desconhecida.
 - **Risco herdado agora ativo**: [`caixa-de-deteccao-engloba-barra-de-destaque.md`](../p-specs/caixa-de-deteccao-engloba-barra-de-destaque.md) nomeia HDMI como gatilho de um teto que até então só se manifestava em imagem sintética — e desde 2026-08-20 a entrada é uma capture card HDMI. Se a detecção falhar de forma estranha ao vivo, comparar contra `--engine paddleocr` antes de culpar esta camada.
-- A suíte cobre um único modelo de BIOS (Positivo), porque é o único com fixtures.
+- A suíte offline cobre um único modelo de BIOS (Positivo) com fixture de imagem, e só para as telas Main/Advanced/Save & Exit — Security, Boot e os submenus de Advanced (Trusted Computing, Device Control, Network Stack, MAPT, Absolute Persistence) não têm fixture de imagem no repositório, então as tools que os leem não têm cobertura de regressão offline, só a validação ao vivo pontual registrada acima.
+- **`network_stack` e `mapt` foram lidos ao vivo (2026-08-31) mas não viraram tool nomeada** — dado real, sem `Tool(...)` declarado ainda. Pendência conhecida, não bloqueio.
+- **`smart_charging` e `pap` (Positivo Asset Protection), previstos em `labels.py` desde o início, não existem na unidade testada em 2026-08-31** — a varredura completa do menu de Advanced (8 entradas reais) não os contém. Pode ser variação entre unidades/SKUs; os dois continuam declarados como `palpite` para não bloquear um modelo onde de fato existam.
+- **Promoção de `trusted_computing`/`device_control`/`network_stack`/`absolute_persistence` a `CONFIRMADO` em `labels.SUBMENUS` é decisão humana pendente** — o conteúdo de cada um já foi visto ao vivo e as tools que os leem já funcionam (a rota usada, `Step`/`move_to`, não depende dessa marca), mas a marca em si não foi trocada, seguindo a disciplina de que promoção é ato humano (ver `labels.py`).

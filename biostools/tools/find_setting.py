@@ -38,12 +38,15 @@ from __future__ import annotations
 
 import re
 
+from .. import discovered as discovered_mod
 from .. import index as index_mod
 from .. import labels
 from .. import screen as screen_mod
 from .. import submenu as submenu_mod
 from ..navigate import enter_main_menu_screen
-from ..page import lines_of, reposition
+from ..page import (
+    MAX_SCREENS, NORMALISE_MARGIN, find_pair, lines_of, reposition, scan_page,
+)
 from ..registry import Tool, ToolResult, register
 
 # The exact wording of the "this machine does not have it" answer. A
@@ -329,6 +332,70 @@ def _read_value(reading, label):
     return None, None, None
 
 
+def _try_discovered(tool, session, targets, mode):
+    """Se `explore_setting` ja achou algo assim, vai DIRETO la e le de
+    novo -- sem varrer as cinco telas de topo.
+
+    Retorna `(ToolResult, evicted_note, steps)`: o result e None num cache
+    miss puro (nenhuma entrada casa) e nesse caso o chamador segue para o
+    "não existe" de sempre; `evicted_note`, quando não-None, é o que
+    aconteceu com uma entrada que casou mas não se confirmou (a posição
+    mudou) -- anexado à mensagem final em vez de escondido, porque um
+    cache que erra silenciosamente é pior que não ter cache. `steps`
+    conta o que foi de fato tentado mesmo quando o resultado é None, para
+    que a resposta final não subestime quantas teclas foram enviadas.
+
+    Empate entre candidatos não é resolvido aqui -- ao contrário do
+    índice oficial, que abstém e pede para o operador escolher. Isto é
+    só um atalho de velocidade; um empate aqui simplesmente não usa o
+    atalho e cai no caminho normal (`explore_setting`, via a regra 6 do
+    system prompt), que resolve do mesmo jeito que sempre resolveu.
+    """
+    score, hits = discovered_mod.search(targets)
+    if score == 0 or len(hits) != 1:
+        return None, None, 0
+
+    entry = hits[0]
+    steps = 0
+    if entry.get("submenu"):
+        arrival = submenu_mod.enter_submenu(
+            session, entry["submenu"], mode=mode, restore=False)
+        steps += arrival.steps
+        if not arrival.ok:
+            discovered_mod.forget(entry["label"], entry["screen"], entry.get("submenu"))
+            return None, (f"cache apontava para {entry['screen']}/"
+                          f"{entry['submenu']}, mas não consegui mais chegar "
+                          f"lá ({arrival.reason}) -- esqueci essa localização"), steps
+    else:
+        outcome, _ = enter_main_menu_screen(session, entry["screen"], mode=mode)
+        steps += outcome.steps
+        if not outcome.ok:
+            discovered_mod.forget(entry["label"], entry["screen"], None)
+            return None, (f"cache apontava para {entry['screen']}, mas não "
+                          f"consegui mais chegar lá ({outcome.reason}) -- "
+                          f"esqueci essa localização"), steps
+
+    scan = scan_page(session, max_screens=MAX_SCREENS)
+    steps += (MAX_SCREENS + NORMALISE_MARGIN) + scan.total_screens
+    found = find_pair(scan, targets)
+    if found is None:
+        discovered_mod.forget(entry["label"], entry["screen"], entry.get("submenu"))
+        local = entry["screen"] + (f"/{entry['submenu']}" if entry.get("submenu") else "")
+        return None, (f"cache apontava para {local}, mas {entry['label']!r} "
+                      f"não está mais lá -- esqueci essa localização"), steps
+
+    index, label, value = found
+    discovered_mod.remember(label=label, screen=entry["screen"],
+                            submenu=entry.get("submenu"))
+    local = entry["screen"] + (f"/{entry['submenu']}" if entry.get("submenu") else "")
+    return ToolResult(
+        tool=tool.name, ok=True, kind="field", label=label, value=value,
+        raw_value=value, steps=steps,
+        notes=[f"lido em {local} (localização memorizada por explore_setting "
+               f"numa pergunta anterior; valor lido agora, ao vivo)"],
+    ), None, steps
+
+
 def _find_setting(tool, session, args, mode):
     args = args or {}
     term = (args.get("term") or "").strip()
@@ -368,10 +435,21 @@ def _find_setting(tool, session, args, mode):
     candidates = _distinct(candidates)
 
     if not candidates:
+        # O índice oficial não tem -- mas talvez uma pergunta anterior já
+        # tenha mandado `explore_setting` varrer e achar isto ao vivo. Ver
+        # `discovered.py`: cache de POSIÇÃO, nunca de valor, então mesmo
+        # um acerto aqui ainda lê a tela de novo antes de responder.
+        targets = concept_spellings(term)
+        result, evicted_note, disc_steps = _try_discovered(tool, session, targets, mode)
+        if result is not None:
+            return result
+
+        notes = [f"{NOT_EXIST}: {term!r}", scope["text"],
+                 "resposta vinda do índice, sem enviar nenhuma tecla"
+                 if evicted_note is None else evicted_note]
         return ToolResult(
             tool=tool.name, ok=True, kind="field", value=None, label=term,
-            notes=[f"{NOT_EXIST}: {term!r}", scope["text"],
-                   "resposta vinda do índice, sem enviar nenhuma tecla"],
+            steps=disc_steps, notes=notes,
         )
 
     if len(candidates) > 1:

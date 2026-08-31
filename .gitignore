@@ -37,3 +37,9 @@ out.json
 
 # Perception contracts cached by test_biostools.py (regenerated on demand)
 .biostools_cache/
+
+# Where explore_setting found things, per machine -- NOT the reviewed
+# tour output (that is data/label_index.json, which IS committed). See
+# biostools/discovered.py's module docstring for why the two must never
+# share a file.
+data/discovered_settings.json

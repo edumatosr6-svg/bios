@@ -39,12 +39,13 @@ for _noisy in ("rapidocr", "onnxruntime", "openvino"):
     logging.getLogger(_noisy).setLevel(logging.ERROR)
 
 from actuator import CableNotResponding, list_serial_ports
-from extract import DEFAULT_HOST, DEFAULT_MODEL, DEFAULT_PORT
+from extract import DEFAULT_HOST, DEFAULT_PORT
 from ocr import DEFAULT_ENGINE, ENGINE_CHOICES
 
 from . import BiosSession, list_tools
 from . import get as _get
 from . import _load
+from .assistant import ASSISTANT_MODEL
 from .registry import UnknownTool
 from .session import ActuatorUnavailable, CameraUnavailable
 
@@ -68,7 +69,10 @@ def parse_args():
                              "picks the tool and phrases the answer. See --llm-*.")
     parser.add_argument("--llm-host", default=DEFAULT_HOST)
     parser.add_argument("--llm-port", type=int, default=DEFAULT_PORT)
-    parser.add_argument("--llm-model", default=DEFAULT_MODEL)
+    # assistant.ASSISTANT_MODEL, not extract.DEFAULT_MODEL: only the
+    # --ask path uses this, and that is the path the model choice was
+    # measured against. See assistant.py.
+    parser.add_argument("--llm-model", default=ASSISTANT_MODEL)
     parser.add_argument("--camera-source", default="0",
                         help="Camera index or stream URL showing the BIOS screen")
     parser.add_argument("--serial-port",

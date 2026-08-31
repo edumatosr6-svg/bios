@@ -390,6 +390,30 @@ def find_line(scan, target):
     return best[1], best[2]
 
 
+def find_pair(scan, target):
+    """`(screen_index, label, value)` for the best-matching label->value
+    pair in `scan`, or None.
+
+    `find_line`'s sibling: same scoring (`screen.match_score`, exact-after-
+    normalisation beats containment, no "nearest" fallback), but over
+    `slice_.pairs` -- already emparelhado por `pairs_of` during the scan --
+    instead of over bare lines, because the caller wants the VALUE beside
+    the label, not just confirmation the label is on the page. Shared
+    between `explore_setting` (searching a freshly scanned page) and
+    `find_setting`'s discovered-cache lookup (searching a page it was told
+    to jump straight to) -- one algorithm, not two copies drifting apart.
+    """
+    best = None
+    for slice_ in scan.screens:
+        for label, value in slice_.pairs.items():
+            score = screen_mod.match_score(target, label)
+            if score and (best is None or score > best[0]):
+                best = (score, slice_.index, label, value)
+    if best is None:
+        return None
+    return best[1], best[2], best[3]
+
+
 def pairs_of(reading, lines=None):
     """Label->value pairs on this screenful.
 

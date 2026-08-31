@@ -622,6 +622,24 @@ def test_bios_info(main):
                "Previous" not in version.value, version.value)
 
 
+def test_system_datetime(main):
+    print("\ntool system_datetime: hora e data do sistema nomeadas")
+    full = main["full"]
+    from biostools import labels
+
+    time = screen.field_value(full, labels.field("system_time"))
+    check("hora do sistema", time.value, "16:30:17")
+
+    # 'System Date' nao aparece neste frame especifico (a fixture e uma
+    # unica captura ao vivo da tela Main, e nem todo campo cabe/aparece em
+    # todo frame) -- field_value devolvendo None aqui e a mesma resposta
+    # honesta que Fields.read devolve para um rotulo ausente da tela, nao
+    # uma falha da tool. Documentado, nao escondido: se um capture futuro
+    # tiver System Date visivel, este teste passa a poder afirmar o valor
+    # tambem.
+    check("data do sistema ausente deste frame", screen.field_value(full, labels.field("system_date")), None)
+
+
 def test_cpu_temperature(menu, readings):
     print("\ntool cpu_temperature, fim a fim")
     bios = FakeBios(menu, opens_to=[menu, readings])
@@ -658,6 +676,18 @@ def test_cpu_temperature(menu, readings):
     # the submenu, where the entry it navigates to no longer exists.
     check("fechou o que abriu (repetivel)", bios.keys.count("esc"), 2)
     check("esc veio depois do enter", bios.keys[-1], "esc")
+
+
+def test_fan_speed(menu, readings):
+    print("\ntool fan_speed, fim a fim")
+    # Mesma rota de cpu_temperature (Advanced -> Hardware Monitor), entao a
+    # mesma FakeBios de duas paginas serve -- ver o docstring de fan_speed.py
+    # sobre porque as duas ficam como tools separadas.
+    bios = FakeBios(menu, opens_to=[menu, readings])
+    result = run_tool("fan_speed", bios)
+    check("resposta", result.value, "3098 RPM")
+    check("abriu com enter, um por nivel", bios.keys.count("enter"), 2)
+    check("fechou o que abriu (repetivel)", bios.keys.count("esc"), 2)
 
 
 def test_goto_screen(menu):
@@ -769,7 +799,11 @@ def test_all_fields_scroll_merges_pages():
     registry_mod.screen.field_pairs = fake_field_pairs
     try:
         session = _FakeSession()
-        reader = AllFields(scroll=True, max_scroll=10)
+        # stall_limit=2 pinned explicitly: this scenario tests the STOP
+        # RULE itself (N stalls -> done), independent of whatever the
+        # class default happens to be -- see the dead-zone scenario below
+        # for a test of the DEFAULT.
+        reader = AllFields(scroll=True, max_scroll=10, stall_limit=2)
         values, steps, notes = reader._scroll_and_merge(session, seed)
     finally:
         registry_mod.screen.field_pairs = original
@@ -794,13 +828,194 @@ def test_all_fields_scroll_merges_pages():
     registry_mod.screen.field_pairs = ever_growing
     try:
         session2 = _FakeSession()
-        reader2 = AllFields(scroll=True, max_scroll=5)
+        reader2 = AllFields(scroll=True, max_scroll=5, stall_limit=2)
         values2, steps2, notes2 = reader2._scroll_and_merge(session2, {})
     finally:
         registry_mod.screen.field_pairs = original
 
     check("gastou o teto inteiro (nunca deu stall)", steps2, 5)
     check_that("avisou que pode haver mais campos", bool(notes2), notes2)
+
+    # Terceiro cenario: o BUG REAL medido ao vivo em 2026-08-31 -- os
+    # PRIMEIROS DOIS "down" depois de abrir uma pagina nao revelam nada
+    # (so o relogio muda na tela real; aqui, nada de novo no dublê), e so
+    # o terceiro comeca a rolar de verdade. Com stall_limit=2 (o valor
+    # antigo, fixo) isto travava com "nao achei" para um campo que existe
+    # de verdade, so um pouco mais abaixo. Usa o `stall_limit` PADRAO
+    # (nao passado) -- e exatamente essa protecao que teve que mudar.
+    calls["n"] = 0
+    dead_zone_then_real = [
+        {},  # 1o down: nada novo (zona morta medida ao vivo)
+        {},  # 2o down: nada novo -- com stall_limit=2 pararia AQUI
+        {"EC Build Date (MM/DD/YYYY)": "04/22/2025 17:05:39"},  # 3o: real
+    ]
+
+    def fake_dead_zone(full, exclude_ids=frozenset()):
+        i = min(calls["n"], len(dead_zone_then_real) - 1)
+        calls["n"] += 1
+        return dict(dead_zone_then_real[i])
+
+    registry_mod.screen.field_pairs = fake_dead_zone
+    try:
+        session3 = _FakeSession()
+        reader3 = AllFields(scroll=True, max_scroll=10)  # stall_limit no padrao
+        values3, steps3, notes3 = reader3._scroll_and_merge(session3, {})
+    finally:
+        registry_mod.screen.field_pairs = original
+
+    check_that("sobreviveu a zona morta de 2 presses e achou o campo real",
+               values3.get("EC Build Date (MM/DD/YYYY)") == "04/22/2025 17:05:39",
+               values3)
+
+
+def test_fields_scroll_finds_specs_past_the_first_screenful():
+    print("\nreader Fields(scroll=True): acha specs que so aparecem depois de rolar")
+
+    # Motivado por uma falha real ficada ANTES de rodar contra hardware:
+    # `ec_info`/`product_info`/etc. pedem rotulos que, medido em
+    # data/label_index.json, ficam em screen_index > 0 da tela onde a
+    # tool navega -- sem rolar, `Fields` reportaria "nao esta nesta tela"
+    # para sempre, em hardware real tambem, nao so numa fixture
+    # desatualizada. Dublê de `screen.field_value` pela mesma razao do
+    # teste analogo de `AllFields` (test_all_fields_scroll_merges_pages):
+    # o que se verifica aqui e a MECANICA de rolagem por spec, nao a
+    # extracao em si (ja coberta em test_field_reading/test_bios_info).
+    # Nenhuma captura real cobre o screenful 1 da Main ainda -- isto prova
+    # o mecanismo, nao a posicao exata medida (essa exige hardware).
+    import biostools.registry as registry_mod
+    from biostools.registry import Field, Fields
+
+    state = {"presses": 0}
+
+    class _FakeSession:
+        def __init__(self):
+            self.keys = []
+
+        def press(self, key):
+            self.keys.append(key)
+            state["presses"] += 1
+
+        def read_stable(self, timeout=None):
+            return type("R", (), {"full": {}})()
+
+    class _FieldRead:
+        def __init__(self, label, value):
+            self.label = label
+            self.value = value
+            self.parsed = None
+            self.row = f"{label} {value}"
+
+    # O que cada "down" revela: EC FW Version ja esta no frame inicial,
+    # EC Build Date so aparece depois de UM down -- os dois specs pedidos
+    # a `ec_info` de verdade, na posicao relativa medida no indice real.
+    per_frame = [
+        {"EC FW Version": "01.22"},
+        {"EC Build Date (MM/DD/YYYY)": "04/22/2025 17:05:39"},
+        {}, {},
+    ]
+
+    def fake_field_value(full, spellings, pattern=None):
+        frame = per_frame[min(state["presses"], len(per_frame) - 1)]
+        for spelling in spellings:
+            if spelling in frame:
+                return _FieldRead(spelling, frame[spelling])
+        return None
+
+    original = registry_mod.screen.field_value
+    registry_mod.screen.field_value = fake_field_value
+    try:
+        session = _FakeSession()
+        reader = Fields([Field("ec_version"), Field("ec_build_date")],
+                        scroll=True, max_scroll=10)
+        result = reader.read(type("T", (), {"name": "probe"})(), session,
+                             session.read_stable(), 0)
+    finally:
+        registry_mod.screen.field_value = original
+
+    check("achou o campo do primeiro frame sem rolar",
+          result.values.get("EC FW Version"), "01.22")
+    check("achou o campo que so aparecia depois de rolar",
+          result.values.get("EC Build Date (MM/DD/YYYY)"),
+          "04/22/2025 17:05:39")
+    check("parou assim que achou os dois -- nao gastou o teto de 10",
+          session.keys.count("down"), 1)
+    check("resposta ok", result.ok, True)
+
+    # Segundo cenario: um spec que nunca aparece em nenhum frame -- tem
+    # que desistir depois de DUAS rolagens sem nada novo (mesma regra de
+    # `AllFields`), nao no teto cego, e reportar honestamente que faltou.
+    state["presses"] = 0
+    per_frame_missing = [{"EC FW Version": "01.22"}, {}, {}, {}, {}]
+
+    def fake_field_value_missing(full, spellings, pattern=None):
+        frame = per_frame_missing[min(state["presses"], len(per_frame_missing) - 1)]
+        for spelling in spellings:
+            if spelling in frame:
+                return _FieldRead(spelling, frame[spelling])
+        return None
+
+    registry_mod.screen.field_value = fake_field_value_missing
+    try:
+        session2 = _FakeSession()
+        reader2 = Fields([Field("ec_version"), Field("ec_build_date")],
+                         scroll=True, max_scroll=10)
+        result2 = reader2.read(type("T", (), {"name": "probe"})(), session2,
+                               session2.read_stable(), 0)
+    finally:
+        registry_mod.screen.field_value = original
+
+    check("achou o que existe", result2.values.get("EC FW Version"), "01.22")
+    check("parou por stall (teto padrao), nao pelo teto de 10",
+          session2.keys.count("down"), 8)
+    check_that("avisou honestamente que o outro rotulo nao apareceu",
+               any("EC Build Date" in n for n in result2.notes), result2.notes)
+
+    # Terceiro cenario: o BUG REAL medido ao vivo em 2026-08-31 contra
+    # hardware de verdade (Positivo, BIOS 1.2.5.XD22.I219V.P) -- pedido
+    # 'MAC Address' na tela Main, e o rotulo so aparece na 6a rolagem,
+    # com CONTEUDO NAO RELACIONADO (Product Name, EC Build Date, ...)
+    # aparecendo em toda rolagem no meio do caminho. A versao antiga
+    # deste leitor so contava rolagem sem novidade NO PROPRIO spec
+    # pedido -- cinco tentativas seguidas sem 'MAC Address' e ela
+    # desistia, mesmo com a pagina claramente ainda revelando coisa nova.
+    # Reproduz isso com os DOIS dublês (field_value E field_pairs) porque
+    # e exatamente a pagina inteira que tem que ser observada, nao so o
+    # spec -- so assim o teste prova a correcao de verdade, e nao so o
+    # aumento do teto de tentativas (esse ja seria coberto pelo cenario
+    # anterior sozinho).
+    state["presses"] = 0
+    mac_frame = 6
+    from biostools import labels as labels_mod
+    target_spellings = labels_mod.field("mac_address")
+
+    def _mac_field_value(full, spellings, pattern=None):
+        if state["presses"] >= mac_frame and spellings == target_spellings:
+            return _FieldRead("MAC Address", "84:47:09:2F:09:C0")
+        return None
+
+    def _mac_content_lines(reading):
+        # Cada rolagem ate a 8a revela texto novo e diferente -- a pagina
+        # nunca fica parada antes de 'MAC Address' aparecer no dublê acima.
+        # Texto cru, nao par rotulo/valor -- e exatamente a diferenca que
+        # o bug de `boot_device_integrity` expos ao vivo (prosa de ajuda
+        # que rola sem nunca formar um par): o sinal certo e "a pagina
+        # mudou", nao "um par novo apareceu".
+        return [{"text": f"Filler prose line {state['presses']}"}]
+
+    original_content_lines = registry_mod.page_mod.content_lines
+    registry_mod.screen.field_value = _mac_field_value
+    registry_mod.page_mod.content_lines = _mac_content_lines
+    try:
+        session3 = _FakeSession()
+        reader3 = Fields([Field("mac_address")], scroll=True, max_scroll=10)
+        result3 = reader3.read(type("T", (), {"name": "probe"})(), session3,
+                               session3.read_stable(), 0)
+    finally:
+        registry_mod.screen.field_value = original
+        registry_mod.page_mod.content_lines = original_content_lines
+
+    check_that("sobreviveu ate a 6a rolagem porque a pagina seguia mudando",
+               result3.value == "84:47:09:2F:09:C0", result3.as_dict())
 
 
 def test_ask_sends_a_system_prompt(menu, readings):
@@ -840,6 +1055,253 @@ def test_ask_sends_a_system_prompt(menu, readings):
                "Sim" in system_text and "Não" in system_text, system_text)
     check_that("instrui a citar o valor exatamente como lido",
                "EXATAMENTE" in system_text, system_text)
+
+
+def test_find_setting_resolves_pt_br_terms():
+    print("\nfind_setting: termo em portugues chega no rotulo em ingles do indice")
+
+    # Relatado ao vivo 2026-08-28: "que horario esta no sistema" respondeu
+    # "esse ajuste nao existe na BIOS desta maquina" -- com
+    # 'System Time : 16:23:35' visivel na MESMA tela Main, e a entrada
+    # presente no indice com provenance=CONFIRMADO. A causa nao era o
+    # indice nem a navegacao: `system_time` simplesmente nao existia como
+    # conceito, entao `concept_spellings` devolvia so o termo cru em
+    # portugues e a busca nao casava com nada.
+    #
+    # Este e o teste que faltava para a duvida levantada na revisao do
+    # PR #1 ("find_setting resolve termos em portugues por outro
+    # caminho?"). Resolve -- por `labels.TERMS` -- mas so para os
+    # conceitos declarados la, e um conceito ausente falha exatamente
+    # assim, em silencio, parecendo uma resposta honesta.
+    from biostools import index
+    from biostools.tools.find_setting import search
+
+    try:
+        data = index.load()
+    except Exception as e:      # noqa: BLE001 -- indice e um artefato de campo
+        check_that("indice carregavel", False, str(e))
+        return
+
+    for term, esperado in (("hora do sistema", "System Time"),
+                           ("horario do sistema", "System Time"),
+                           ("que horas sao", "System Time"),
+                           ("data do sistema", "System Date"),
+                           ("System Time", "System Time")):
+        score, hits = search(data, term)
+        found = [h.get("label") for h in hits]
+        check(f"{term!r} -> {esperado!r}", (score, found), (2, [esperado]))
+
+    # A outra metade, e a que impede o conserto de virar um motor de
+    # sinonimos: um ajuste que a maquina realmente nao tem continua
+    # respondendo "nao existe" em vez de casar com a linha mais parecida.
+    for ausente in ("ajuste que nao existe mesmo", "overclock da memoria"):
+        score, hits = search(data, ausente)
+        check(f"{ausente!r} continua ausente", (score, hits), (0, []))
+
+
+def test_explore_setting_crawls_live_when_index_misses(main):
+    print("\ntool explore_setting: acha ao vivo o que find_setting so acharia via indice")
+    from biostools.tools import find_setting as find_setting_mod
+
+    # `main` (fixture real, positivo_main_live) nao carrega nenhum estado
+    # de sidebar-ativa gravado -- foi capturada para o CONTEUDO (usada por
+    # test_main_info/test_bios_info), nao para a posicao do cursor na
+    # barra lateral. `enter_main_menu_screen` PRECISA dessa marca para
+    # confirmar chegada (R5: nunca assumir, sempre verificar) -- sem ela
+    # toda tentativa de chegar em QUALQUER tela de topo falha por "nao
+    # confirmei a chegada", fixture real ou nao. Uma unica marca sintetica
+    # (a mesma tecnica que `FakeBios.simulate_nav` e `test_safety_guards`
+    # ja usam: copiar o contrato e injetar um estado) resolve isso so para
+    # 'Main' -- o suficiente para provar que a VARREDURA acha um campo
+    # real ('System Time', que esta de fato nesta captura) sem depender
+    # do indice, e sem inventar nada no conteudo lido.
+    main_active = copy.deepcopy(main)
+    main_active["full"]["states"] = [{
+        "element_id": "p012", "class_id": "cFAKE", "name": "selected",
+        "channels": ["S1_background"], "magnitude": 9.0, "confidence": 0.9,
+        "evidence": {},
+    }]
+
+    bios = FakeBios(main_active, opens_to=[main_active])
+    r = run_tool("explore_setting", bios, args={"term": "hora do sistema"})
+    check_that("achou ao vivo (sem passar pelo indice)", r.ok and r.value == "16:30:17",
+              f"ok={r.ok} value={r.value!r} notes={r.notes}")
+    check("rotulo real devolvido", r.label, "System Time")
+    check_that("parou na primeira tela (main) -- nao precisou ir alem",
+               all("advanced" not in n for n in r.notes), r.notes)
+
+    # Termo que nao existe em lugar nenhum: percorre as cinco telas de
+    # topo (menos save_and_exit, R6) e responde honestamente -- a MESMA
+    # frase que find_setting usa para "nao existe", so que vinda de uma
+    # varredura ao vivo em vez do indice. 'main' e a unica que este fixture
+    # sabe confirmar chegada; as outras falham a verificacao de chegada e
+    # isso e reportado, nao escondido.
+    bios2 = FakeBios(main_active, opens_to=[main_active])
+    r2 = run_tool("explore_setting", bios2,
+                  args={"term": "Overclock de Memoria Fantasma"})
+    check("nao existe em lugar nenhum -> resposta honesta, nao falha",
+          (r2.ok, r2.value), (True, None))
+    check_that("mesma frase de find_setting.NOT_EXIST",
+               any(find_setting_mod.NOT_EXIST in n for n in r2.notes), r2.notes)
+    check_that("visitou as 5 telas de topo (nao save_and_exit)",
+               all(s in r2.notes[-1] for s in
+                   ("main", "advanced", "security", "boot", "event_log"))
+               and "save_and_exit" not in r2.notes[-1],
+               r2.notes)
+
+    # Guarda de somente-leitura: a MESMA funcao de find_setting, nao uma
+    # copia -- um pedido de mudanca e recusado antes de qualquer tecla.
+    bios3 = FakeBios(main_active, opens_to=[main_active])
+    r3 = run_tool("explore_setting", bios3,
+                  args={"term": "Fast Boot", "question": "liga o fast boot"})
+    check("pedido de mudanca recusado, sem tocar teclado",
+          (r3.ok, bios3.keys), (False, []))
+
+    bios4 = FakeBios(main_active, opens_to=[main_active])
+    r4 = run_tool("explore_setting", bios4, args={})
+    check("sem 'term' -> falha, sem tocar teclado",
+          (r4.ok, bios4.keys), (False, []))
+
+
+def test_discovered_cache_lets_find_setting_skip_the_crawl_next_time(main):
+    print("\ncache de descoberta: explore_setting ensina find_setting, sem varrer de novo")
+
+    # Objetivo direto do usuario (2026-08-31): "tem como o modelo aprender
+    # aonde fica tudo, em vez de fazer uma varredura total?" -- a resposta
+    # e este ciclo. 'BIOS Setup UI Mode' esta na captura real usada por
+    # este teste mas NAO esta em data/label_index.json (confirmado por
+    # inspecao: o indice oficial deste Main tem 'Recovery File Pattern'
+    # mas nao 'BIOS Setup UI Mode' nem 'BIOS Recovery Device' -- nem toda
+    # captura do tour registrou tudo). Por isso find_setting abstem na
+    # primeira vez -- e e exatamente esse buraco que o cache fecha.
+    #
+    # Usa o caminho de disco REAL (discovered.DISCOVERED_PATH), nao um
+    # temporario: as funcoes de discovered.py vinculam esse caminho como
+    # valor padrao NO MOMENTO da definicao (`def load(path=DISCOVERED_PATH)`),
+    # entao um monkeypatch do atributo do modulo em tempo de teste nao
+    # alcancaria as chamadas internas de find_setting.py/explore_setting.py
+    # (elas nao passam `path=` explicitamente). Ao contrario do indice
+    # oficial (um artefato committado, com estado real para testar
+    # contra), este cache nao tem estado "de verdade" a preservar --
+    # limpar antes e depois mantem o teste hermetico sem precisar mudar a
+    # assinatura das funcoes so por causa do teste.
+    from biostools import discovered
+
+    cache_path = discovered.DISCOVERED_PATH
+    original = cache_path.read_text(encoding="utf-8") if cache_path.exists() else None
+    if cache_path.exists():
+        cache_path.unlink()
+    try:
+        main_active = copy.deepcopy(main)
+        main_active["full"]["states"] = [{
+            "element_id": "p012", "class_id": "cFAKE", "name": "selected",
+            "channels": ["S1_background"], "magnitude": 9.0, "confidence": 0.9,
+            "evidence": {},
+        }]
+
+        bios0 = FakeBios(main_active, opens_to=[main_active])
+        r0 = run_tool("find_setting", bios0, args={"term": "BIOS Setup UI Mode"})
+        check("1a vez: find_setting abstem (indice oficial nao tem)",
+              (r0.ok, r0.value), (True, None))
+        check("nenhuma tecla enviada so para consultar o indice",
+              bios0.keys, [])
+
+        bios1 = FakeBios(main_active, opens_to=[main_active])
+        r1 = run_tool("explore_setting", bios1, args={"term": "BIOS Setup UI Mode"})
+        check_that("explore_setting acha ao vivo", (r1.ok, r1.value) == (True, "Graphic"),
+                  f"ok={r1.ok} value={r1.value!r}")
+
+        cache = discovered.load()
+        check("descoberta gravada no cache", len(cache["entries"]), 1)
+        check("gravou ONDE, nao o valor (nunca 'value' na entrada)",
+              "value" in cache["entries"][0], False)
+
+        bios2 = FakeBios(main_active, opens_to=[main_active])
+        # Grafia diferente da usada para descobrir (maiuscula/minuscula) --
+        # prova que o cache casa pelo ROTULO gravado via match_score
+        # (normalizado), nao por reencontrar literalmente o texto que a
+        # 1a pergunta usou.
+        r2 = run_tool("find_setting", bios2, args={"term": "bios setup ui mode"})
+        check_that("2a vez: find_setting acha via cache, valor lido ao vivo",
+                  (r2.ok, r2.value) == (True, "Graphic"),
+                  f"ok={r2.ok} value={r2.value!r} notes={r2.notes}")
+        # Cada tentativa de alcancar uma tela de topo manda um "left"
+        # (foco na barra lateral) -- uma varredura completa mandaria ate
+        # 5; o atalho do cache manda exatamente 1.
+        check("nao varreu as 5 telas -- foi direto para 'main' (so 1 'left')",
+              bios2.keys.count("left"), 1)
+        crawl_cost = (12 + 2) * 5  # ordem de grandeza de uma varredura completa
+        check_that(f"custou bem menos que uma varredura completa (~{crawl_cost} teclas)",
+                  len(bios2.keys) < crawl_cost, len(bios2.keys))
+
+        # Autocorrecao: uma entrada que aponta para um rotulo que nao esta
+        # mais la e esquecida, e a resposta cai de volta na "nao existe"
+        # honesta -- nunca um valor errado por confiar demais no cache.
+        discovered.remember(label="Campo Que Sumiu", screen="main")
+        bios3 = FakeBios(main_active, opens_to=[main_active])
+        r3 = run_tool("find_setting", bios3, args={"term": "Campo Que Sumiu"})
+        check("cache errado nao produz valor errado -- 'nao existe', honesto",
+              (r3.ok, r3.value), (True, None))
+        check_that("entrada errada foi esquecida",
+                  any("esqueci essa localiza" in n for n in r3.notes), r3.notes)
+        remaining_labels = {e["label"] for e in discovered.load()["entries"]}
+        check_that("so a entrada errada saiu do cache (a legitima continua)",
+                  "Campo Que Sumiu" not in remaining_labels
+                  and "BIOS Setup UI Mode" in remaining_labels,
+                  remaining_labels)
+    finally:
+        if original is not None:
+            cache_path.write_text(original, encoding="utf-8")
+        elif cache_path.exists():
+            cache_path.unlink()
+
+
+def test_assistant_nudges_toward_explore_setting_after_find_setting_abstains():
+    print("\nassistant.ask: insiste em explore_setting quando find_setting nao acha")
+
+    # O nudge de find_setting (regra 5 / cenario 3b) so cobre o modelo
+    # desistir SEM tentar nada. Este e o proximo elo: o modelo TENTA
+    # find_setting, recebe a resposta honesta de "nao existe" (ok=True,
+    # value=None -- nao um erro), e para exatamente nesse ponto o loop
+    # tem que insistir de novo, desta vez em explore_setting -- a unica
+    # tool que procura ao vivo em vez do indice congelado.
+    #
+    # Testado como a CONDICAO isolada (nao ponta a ponta via _FakeLLM,
+    # como o cenario 3b faz para find_setting): reproduzir aqui exigiria
+    # um FakeBios que alcance de verdade 'main' com find_setting E depois
+    # alcance as cinco telas de topo com explore_setting, o que nenhum
+    # fixture deste repositorio sustenta sem mais sinteticos do que o
+    # necessario (ver test_explore_setting_crawls_live_when_index_misses,
+    # que ja cobre a navegacao/varredura de verdade). O que falta cobrir
+    # aqui e so a MATEMATICA do gatilho -- mesma razao os cenarios 5-7 de
+    # test_assistant_catches_a_hallucinated_value testam `_finish` isolado
+    # em vez de via `ask()`.
+    from biostools.assistant import ToolCall
+    from biostools.registry import ToolResult
+    from biostools.tools import find_setting as find_setting_mod
+
+    not_found = ToolResult(
+        tool="find_setting", ok=True, kind="field", value=None,
+        label="hora do sistema",
+        notes=[f"{find_setting_mod.NOT_EXIST}: 'hora do sistema'"],
+    )
+    calls = [ToolCall(tool="find_setting", result=not_found)]
+    find_setting_abstained = any(
+        c.tool == "find_setting" and c.result is not None
+        and c.result.ok and c.result.value is None
+        for c in calls
+    )
+    explore_already_tried = any(c.tool == "explore_setting" for c in calls)
+    check("condicao do nudge dispara quando find_setting abstem",
+          find_setting_abstained and not explore_already_tried, True)
+
+    calls_after_explore = calls + [ToolCall(
+        tool="explore_setting",
+        result=ToolResult(tool="explore_setting", ok=True, kind="field",
+                          value=None, label="hora do sistema"))]
+    explore_already_tried = any(c.tool == "explore_setting" for c in calls_after_explore)
+    check("nao insiste de novo depois que explore_setting ja foi tentado",
+          explore_already_tried, True)
 
 
 def test_verbatim_accepts_pt_br_toggle_synonyms():
@@ -997,10 +1459,17 @@ def main():
     test_field_reading(readings)
     test_main_info(main)
     test_bios_info(main)
+    test_system_datetime(main)
     test_cpu_temperature(menu, readings)
+    test_fan_speed(menu, readings)
     test_goto_screen(menu)
     test_all_fields_scroll_merges_pages()
+    test_fields_scroll_finds_specs_past_the_first_screenful()
     test_ask_sends_a_system_prompt(menu, readings)
+    test_find_setting_resolves_pt_br_terms()
+    test_explore_setting_crawls_live_when_index_misses(main)
+    test_discovered_cache_lets_find_setting_skip_the_crawl_next_time(main)
+    test_assistant_nudges_toward_explore_setting_after_find_setting_abstains()
     test_verbatim_accepts_pt_br_toggle_synonyms()
     test_assistant_catches_a_hallucinated_value(menu, readings)
     test_menu_walk(menu)

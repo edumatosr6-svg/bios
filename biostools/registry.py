@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from . import labels, screen
+from . import labels, page as page_mod, screen
 from .navigate import (
     activate, enter_main_menu_screen, looks_like_dialog, move_to, walk_group,
 )
@@ -159,8 +159,47 @@ class Field:
 
 @dataclass
 class Fields:
-    """Reader: pull specific labelled fields off the screen we landed on."""
+    """Reader: pull specific labelled fields off the screen we landed on.
+
+    `scroll`, off by default (matching every tool before it needed this),
+    presses `scroll_key` and re-checks only the specs still missing --
+    exists because a settings page can spread its fields across more than
+    one screenful, and a spec's label simply is not on the frame the tool
+    lands on. Confirmed against `data/label_index.json` (the F3 harvest):
+    e.g. 'Product Name'/'Manufacturer Name'/'Serial Number' all sit at
+    screen_index 1 on the Main page, one scroll past 'System Time'/'EC FW
+    Version' at screen_index 0 -- a tool grouping either set alone is
+    fine, but reading past its own screenful without scrolling would
+    silently report "not on this screen" forever, on real hardware too,
+    not just a stale offline fixture.
+
+    `stall_limit` measures a real dead zone, not a guess. Confirmed live
+    2026-08-31 against real hardware (Positivo, BIOS 1.2.5.XD22.I219V.P):
+    landing on Main and pressing `scroll_key` twice changes NOTHING
+    visible (only the live clock) -- the page only starts actually
+    scrolling on the THIRD press. A `stall_limit` of 2 (this reader's
+    first version, and still `AllFields._scroll_and_merge`'s) means the
+    loop gives up at the exact edge of that dead zone, one press before
+    it would have started working -- reproduced live: `ec_info`,
+    `product_info`, `memory_info`, `mac_address`,
+    `management_engine_info` and every Security/Boot/Advanced field past
+    screen_index 0 abstained "not on this screen" on a real, connected
+    machine where the field plainly exists a few presses further down.
+
+    The dead zone is not the same size on every page, measured the same
+    day: 2 presses on Main, but **6** on Boot -- 'PXE Boot after Wake on
+    LAN' and the boot order only turn up on the 8th/9th press, with
+    almost nothing new in between. A `stall_limit` tuned to Main's dead
+    zone (4) still cut Boot off before it ever reached them. 8 clears the
+    worst measured case with margin; `max_scroll` (20) is the hard
+    ceiling regardless, so a genuinely absent field costs at most a
+    handful of extra presses, never an unbounded search.
+    """
     specs: list
+    scroll: bool = False
+    scroll_key: str = "down"
+    max_scroll: int = 30
+    stall_limit: int = 8
 
     # Named labels identify their own screen: 'CPU Temperature' exists on
     # the Hardware Monitor page and nowhere else, so finding it is proof
@@ -168,31 +207,114 @@ class Fields:
     # when the answer is already in front of it.
     identifies_screen = True
 
+    def __post_init__(self):
+        if self.scroll and self.scroll_key not in SAFE_KEYS:
+            raise UnsafeRoute(
+                f"Fields(scroll=True) usaria a tecla {self.scroll_key!r}, "
+                f"que nao esta em SAFE_KEYS"
+            )
+        if self.scroll:
+            # The identify-without-navigating shortcut (Tool.run) would
+            # otherwise scroll blindly on whatever screen the BIOS happens
+            # to be showing BEFORE this tool's own route ever runs -- fine
+            # when that guess is right, but a real side effect (cursor
+            # left mid-scroll on an unrelated page) when it is not. A
+            # scrolling Fields always takes the real route instead, which
+            # lands on a known screen_index 0 before it scrolls from there.
+            self.identifies_screen = False
+
     def read(self, tool, session, reading, steps):
         full = reading.full
+        values, notes = {}, []
+        single = None
+        remaining = list(self.specs)
+
+        def scan(full):
+            nonlocal single
+            still = []
+            for spec in remaining:
+                found = screen.field_value(full, spec.spellings, pattern=spec.pattern)
+                if found is None:
+                    still.append(spec)
+                    continue
+                if not found.value:
+                    # On a scrolling read this is not necessarily the real
+                    # field -- confirmed live 2026-08-31: 'Intel VT-d'
+                    # matched a wrapped HELP-TEXT line ("...support to
+                    # Intel VT-d (Intel Virtualization Technology for
+                    # Directed I/O)...") on the frame before the real
+                    # toggle line scrolled into view. Treating that as
+                    # terminal made `virtualization_status` permanently
+                    # give up on a field that plainly existed a screenful
+                    # later. Keep looking while there is still scrolling
+                    # left to do; a single-frame (non-scrolling) read has
+                    # nowhere else to look, so there this stays terminal,
+                    # same as before.
+                    if self.scroll:
+                        still.append(spec)
+                    else:
+                        notes.append(f"achei {found.label!r} mas nada a direita dele")
+                    continue
+                # `parsed` is None when the pattern did not match: keep the
+                # raw text as the answer rather than dropping it. A BIOS
+                # value that does not fit the expected shape is exactly the
+                # anomaly this system exists to surface.
+                values[found.label] = found.parsed or found.value
+                single = found
+            return still
+
+        remaining = scan(full)
+
+        if self.scroll and remaining:
+            # Stall tracks whether the PAGE is still revealing anything
+            # new at all -- not whether one of OUR specs showed up yet,
+            # and not only whether a new label/value PAIR showed up.
+            # Measured live 2026-08-31 why both distinctions matter: on
+            # the real Main page, 'MAC Address' first appears at the 6th
+            # press and 'ME FW Version' at the 10th, with OTHER content
+            # (Product Name, EC Build Date, ...) turning up on every
+            # frame in between -- a stall counter watching only THIS
+            # reader's own specs gave up long before reaching them, even
+            # though the page was plainly still moving. Watching PAIRS
+            # (what the first fix used) still wasn't enough on Advanced:
+            # 'S.M.A.R.T. Status Check' sits behind several screenfuls of
+            # wrapped HELP-TEXT prose that scrolls new RAW TEXT every
+            # press without forming a new label/value pair (no value to
+            # its right), so a pairs-only signal reads that stretch as
+            # stalled and quits mid-page. Raw text lines are the widest
+            # honest signal: they change even while scrolling through
+            # pure prose, and only truly stop changing at the real end of
+            # the page (or a wrap, or a stuck key) -- same content this
+            # already reads for `field_value`, just watched as a whole
+            # instead of matched piece by piece.
+            seen_texts = {l["text"] for l in page_mod.content_lines(reading)}
+            stall = 0
+            for _ in range(self.max_scroll):
+                if not remaining:
+                    break
+                session.press(self.scroll_key)
+                steps += 1
+                reading = session.read_stable()
+                full = reading.full
+                remaining = scan(full)
+                current_texts = {l["text"] for l in page_mod.content_lines(reading)}
+                new_texts = current_texts - seen_texts
+                seen_texts |= current_texts
+                if new_texts:
+                    stall = 0
+                else:
+                    stall += 1
+                    if stall >= self.stall_limit:
+                        break
+
+        notes = ([f"rotulo {s.label!r} nao esta nesta tela (grafias tentadas: "
+                  f"{s.spellings})" for s in remaining] + notes)
+
         common = {
             "tool": tool.name, "steps": steps,
             "screen_id": screen.screen_id(full),
             "abstentions": screen.selection_abstentions(full),
         }
-        values, notes = {}, []
-        single = None
-
-        for spec in self.specs:
-            found = screen.field_value(full, spec.spellings, pattern=spec.pattern)
-            if found is None:
-                notes.append(f"rotulo {spec.label!r} nao esta nesta tela "
-                             f"(grafias tentadas: {spec.spellings})")
-                continue
-            if not found.value:
-                notes.append(f"achei {found.label!r} mas nada a direita dele")
-                continue
-            # `parsed` is None when the pattern did not match: keep the raw
-            # text as the answer rather than dropping it. A BIOS value that
-            # does not fit the expected shape is exactly the anomaly this
-            # system exists to surface.
-            values[found.label] = found.parsed or found.value
-            single = found
 
         if not values:
             return ToolResult(ok=False, notes=notes,
@@ -232,11 +354,18 @@ class AllFields:
     not just the ones that need it; `goto_screen` turns it on because it
     does not know ahead of time whether the screen it is about to land on
     is one page or several.
+
+    `stall_limit`/`max_scroll`: see `Fields.stall_limit` -- same fix, same
+    evidence (2026-08-31, real hardware). The dead zone after landing on
+    a page is not the same size everywhere (2 presses on Main, 6 on
+    Boot), so a limit tuned to the shortest one cuts pages with a longer
+    one off before they ever start revealing what is being searched for.
     """
     exclude_nav: bool = True
     scroll: bool = False
     scroll_key: str = "down"
-    max_scroll: int = 15
+    max_scroll: int = 30
+    stall_limit: int = 8
 
     # Any settings page has label->value pairs, so reading some proves
     # nothing about *which* page this is. Never skip navigation for this.
@@ -272,14 +401,15 @@ class AllFields:
     def _scroll_and_merge(self, session, values):
         """Press `scroll_key`, re-read, merge in whatever label is new.
 
-        Stops after TWO consecutive presses that add nothing -- one could
-        be a redraw quirk, but two in a row means either the list ended
-        (a non-wrapping content panel simply stops moving, same as the
-        sidebar in `navigate.enter_main_menu_screen_by_count`) or it
-        wrapped back to labels already merged in. Either way there is
-        nothing left to gain by continuing, and stopping early keeps a
-        short page (most of them) to the couple of presses that confirm
-        it, not the full `max_scroll` budget.
+        Stops after `stall_limit` consecutive presses that add nothing --
+        one could be a redraw quirk, but `stall_limit` in a row means
+        either the list ended (a non-wrapping content panel simply stops
+        moving, same as the sidebar in
+        `navigate.enter_main_menu_screen_by_count`) or it wrapped back to
+        labels already merged in. Either way there is nothing left to
+        gain by continuing, and stopping early keeps a short page (most
+        of them) to the few presses that confirm it, not the full
+        `max_scroll` budget.
         """
         values = dict(values)
         notes = []
@@ -299,7 +429,7 @@ class AllFields:
                 stall = 0
             else:
                 stall += 1
-                if stall >= 2:
+                if stall >= self.stall_limit:
                     break
         else:
             notes.append(

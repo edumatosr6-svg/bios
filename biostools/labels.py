@@ -73,6 +73,201 @@ FIELDS = {
         "Platform BIOS Type",       # CONFIRMADO -- Positivo, 2026-08-20
         "Platform Type",
     ],
+    # Os dois estao na tela Main e no indice colhido desta maquina
+    # (data/label_index.json, provenance=CONFIRMADO), mas nao tinham
+    # conceito declarado -- entao `find_setting` so os alcancava se o
+    # operador escrevesse a grafia inglesa exata. Relatado ao vivo
+    # 2026-08-28: "que horario esta no sistema" respondeu "esse ajuste nao
+    # existe na BIOS desta maquina", com 'System Time : 16:23:35' visivel
+    # na mesma tela. Ver TERMS abaixo para a outra metade do conserto.
+    "system_time": [
+        "System Time",              # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "system_date": [
+        "System Date",              # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+
+    # Tudo abaixo vem do mesmo indice colhido em 2026-08-28
+    # (data/label_index.json, captured_at 2026-08-28T15:25:44,
+    # provenance=CONFIRMADO por entrada) -- grafias reais desta maquina,
+    # nunca previstas. Nenhuma tem fixture de imagem em captures/ ainda
+    # (so main/advanced/save_and_exit tem foto), entao as tools que as
+    # usam nao passam pela suite de regressao com contrato real -- ver a
+    # nota nos arquivos de tools que as consomem.
+    "ec_build_date": [
+        "EC Build Date (MM/DD/YYYY)",   # CONFIRMADO -- Positivo, 2026-08-28
+        "EC Build Date",
+    ],
+    "product_name": [
+        "Product Name",             # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "manufacturer_name": [
+        "Manufacturer Name",        # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "serial_number": [
+        "Serial Number",            # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "total_memory": [
+        "Total Memory",             # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "memory_frequency": [
+        "Memory Frequency",         # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "mac_address": [
+        "MAC Address",              # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "me_fw_version": [
+        "ME FW Version",            # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "password_check_mode": [
+        "Password Check",           # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "config_inventory_monitoring": [
+        "Config. Inventory Monitoring",   # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "removable_storage_policy": [
+        "Removable Storage Devices Policy",   # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "flash_write_protection": [
+        "Flash Write Protection",   # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "bios_version_downgrade": [
+        "BIOS Version Downgrade",   # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "bios_post_logo_delay": [
+        "BIOS POST Logo Delay",     # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "bootup_numlock_state": [
+        "Bootup NumLock State",     # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "numlock_disabled_preboot": [
+        "NumLock Disabled During Pre-Boot",   # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "fast_boot": [
+        "Fast Boot",                # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "popup_boot_hotkey": [
+        "POPUP Boot Menu Hotkey [F11]",   # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "pxe_boot_after_wol": [
+        "PXE Boot after Wake on LAN",   # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "boot_option_1": [
+        "Boot Option #1",            # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "boot_option_2": [
+        "Boot Option #2",            # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "boot_option_3": [
+        "Boot Option #3",            # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+
+    # A propria tela Advanced -- nao um submenu -- tambem tem campos
+    # rotulo->valor diretos, misturados na mesma lista rolavel que as
+    # entradas de submenu (Trusted Computing, Device Control, ...). Mesmo
+    # indice de 2026-08-28.
+    "wake_on_pci_pcie": [
+        "Wake on PCI/PCIE",         # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "wake_on_lan": [
+        "Wake on LAN",               # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "wake_on_keyboard_mouse_usb": [
+        "Wake on Keyboard/Mouse USB",   # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "wake_on_rtc_alarm": [
+        "Wake on RTC Alarm",         # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "usb_charger": [
+        "USB Charger",               # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "sata_mode_selection": [
+        "SATA Mode Selection",       # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "primary_display": [
+        "Primary Display",           # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "gtt_size": [
+        "GTT Size",                  # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "aperture_size": [
+        "Aperture Size",             # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "dvmt_preallocated": [
+        "DVMT Pre-Allocated",        # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "intel_vtd": [
+        "Intel VT-d",                # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "intel_virtualization_technology": [
+        "Intel Virtualization Technology",   # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "removable_boot_devices": [
+        "Removable Boot Devices",    # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "smart_status_check": [
+        "S.M.A.R.T. Status Check",   # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "me_fw_reflash": [
+        "ME FW Image Re-Flash",      # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+    "audio_dsp": [
+        "Audio DSP",                 # CONFIRMADO -- Positivo, 2026-08-28
+    ],
+
+    # Dentro dos submenus de Advanced -- navegados AO VIVO nesta sessao
+    # (2026-08-31), nao a partir de um indice colhido antes. Diferente do
+    # resto deste arquivo: aqui a maquina real foi vista respondendo, tela
+    # por tela, e o texto abaixo e o que a percepcao leu literalmente.
+    "tpm_support": [
+        "TPM Support",               # CONFIRMADO -- Positivo, 2026-08-31 (Trusted Computing)
+    ],
+    "tpm_state": [
+        "TPM State",                 # CONFIRMADO -- Positivo, 2026-08-31 (Trusted Computing)
+    ],
+    "tpm_owner_status": [
+        "TPM Owner Status",          # CONFIRMADO -- Positivo, 2026-08-31 (Trusted Computing)
+        "TPM Owner Status:",         # o OCR le com dois pontos colados ao rotulo
+    ],
+    "tpm_pending_operation": [
+        "Pending operation",         # CONFIRMADO -- Positivo, 2026-08-31 (Trusted Computing)
+    ],
+    "onboard_video": [
+        "Onboard Video",             # CONFIRMADO -- Positivo, 2026-08-31 (Device Control)
+    ],
+    "hd_audio": [
+        "HD Audio",                  # CONFIRMADO -- Positivo, 2026-08-31 (Device Control)
+    ],
+    "sata_controllers": [
+        "SATA Controller(s)",        # CONFIRMADO -- Positivo, 2026-08-31 (Device Control)
+    ],
+    # 'SIot' (I maiusculo) e como o OCR desta BIOS le 'Slot' aqui --
+    # mesmo tipo de troca que TIS/TLS em labels.SCREENS["tls_auth"].
+    # Grafia declarada como lida, nao corrigida.
+    "m2_slot1_sata_ssd": [
+        "M.2 SIot 1 SATA SSD",       # CONFIRMADO -- Positivo, 2026-08-31 (Device Control)
+        "M.2 Slot 1 SATA SSD",
+    ],
+    "m2_slot1_nvme_ssd": [
+        "M.2 SIot 1 NVME SSD",       # CONFIRMADO -- Positivo, 2026-08-31 (Device Control)
+        "M.2 Slot 1 NVME SSD",
+    ],
+    "m2_slot2_nvme_ssd": [
+        "M.2 SIot 2 NVME SSD",       # CONFIRMADO -- Positivo, 2026-08-31 (Device Control)
+        "M.2 Slot 2 NVME SSD",
+    ],
+    "card_reader": [
+        "Card Reader",               # CONFIRMADO -- Positivo, 2026-08-31 (Device Control)
+    ],
+    "absolute_persistence_version": [
+        "Absolute Persistence Version",   # CONFIRMADO -- Positivo, 2026-08-31 (Absolute Persistence)
+    ],
+    "absolute_persistence_interface_status": [
+        "Activation Interface Status",   # CONFIRMADO -- Positivo, 2026-08-31 (Absolute Persistence)
+    ],
+    "absolute_persistence_activation": [
+        "Absolute Persistence",      # CONFIRMADO -- Positivo, 2026-08-31 (Absolute Persistence)
+    ],
 }
 
 # Text that is navigated *to* -- a menu entry or a page name.
@@ -173,6 +368,13 @@ SCREENS = {
         "Positivo Asset Protection",
         "PAP",
     ],
+    # Visto AO VIVO em 2026-08-31 (nao previsto antes) -- a entrada real
+    # da lista de Advanced desta maquina, grafia exata lida pela
+    # percepcao. Continua "palpite" mesmo assim: ver a nota logo abaixo
+    # sobre promocao ser ato humano, nao do codigo.
+    "absolute_persistence": [
+        "Absolute Persistence(R) Module",
+    ],
 }
 
 # Onde cada submenu mora: submenu canonico -> {parent, provenance}.
@@ -203,6 +405,7 @@ SUBMENUS = {
     "smart_charging": {"parent": "advanced", "provenance": "palpite"},
     "tls_auth": {"parent": "advanced", "provenance": "palpite"},
     "pap": {"parent": "advanced", "provenance": "palpite"},
+    "absolute_persistence": {"parent": "advanced", "provenance": "palpite"},
 }
 
 
@@ -235,6 +438,21 @@ TERMS = {
     ],
     "bios_build_date": [
         "Data de build da BIOS",
+    ],
+    # "que horario esta no sistema" chegava aqui e nao casava com nada,
+    # entao `concept_spellings` devolvia so o termo cru em portugues, que
+    # nao existe em tela nenhuma -- e a resposta honesta "nao existe nesta
+    # BIOS" saia para um ajuste que estava visivel na Main. As formas
+    # abaixo sao as que uma pessoa realmente usa; a metade em ingles mora
+    # em FIELDS, e e ela que o indice contem.
+    "system_time": [
+        "Hora do sistema",
+        "Horario do sistema",
+        "Que horas sao",
+    ],
+    "system_date": [
+        "Data do sistema",
+        "Que dia e hoje",
     ],
 }
 
